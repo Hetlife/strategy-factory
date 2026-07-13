@@ -42,17 +42,28 @@ jobs:
           python factory.py report
 
       - name: Commit updated state
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+  run: |
+    git config --global user.name "github-actions[bot]"
+    git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add factory_state
+    git add factory_state
 
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "Factory update $(date -u +'%Y-%m-%d')" || true
+    if git diff --cached --quiet; then
+      echo "No changes to commit."
+      exit 0
+    fi
 
-git pull --rebase origin main
-git push origin main
-          fi
+    git commit -m "Factory update $(date -u +'%Y-%m-%d')"
+
+    for i in 1 2 3; do
+      git pull --rebase origin main
+      if git push origin main; then
+        echo "Push successful."
+        exit 0
+      fi
+      echo "Push conflict detected. Retrying in 5 seconds..."
+      sleep 5
+    done
+
+    echo "Failed after 3 attempts."
+    exit 1
