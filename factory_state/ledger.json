@@ -1,0 +1,558 @@
+{
+ "registry": {
+  "event_cement_t30": {
+   "fn": "event_drift",
+   "sector": "cement",
+   "leader": "ULTRACEMCO.NS",
+   "threshold": 0.03,
+   "hold": 3
+  },
+  "event_cement_t40": {
+   "fn": "event_drift",
+   "sector": "cement",
+   "leader": "ULTRACEMCO.NS",
+   "threshold": 0.04,
+   "hold": 3
+  },
+  "event_cement_t50": {
+   "fn": "event_drift",
+   "sector": "cement",
+   "leader": "ULTRACEMCO.NS",
+   "threshold": 0.05,
+   "hold": 3
+  },
+  "event_infra_t30": {
+   "fn": "event_drift",
+   "sector": "infra",
+   "leader": "LT.NS",
+   "threshold": 0.03,
+   "hold": 3
+  },
+  "event_infra_t40": {
+   "fn": "event_drift",
+   "sector": "infra",
+   "leader": "LT.NS",
+   "threshold": 0.04,
+   "hold": 3
+  },
+  "event_infra_t50": {
+   "fn": "event_drift",
+   "sector": "infra",
+   "leader": "LT.NS",
+   "threshold": 0.05,
+   "hold": 3
+  },
+  "event_steel_t30": {
+   "fn": "event_drift",
+   "sector": "steel",
+   "leader": "TATASTEEL.NS",
+   "threshold": 0.03,
+   "hold": 3
+  },
+  "event_steel_t40": {
+   "fn": "event_drift",
+   "sector": "steel",
+   "leader": "TATASTEEL.NS",
+   "threshold": 0.04,
+   "hold": 3
+  },
+  "event_steel_t50": {
+   "fn": "event_drift",
+   "sector": "steel",
+   "leader": "TATASTEEL.NS",
+   "threshold": 0.05,
+   "hold": 3
+  },
+  "mom_cement_lb40": {
+   "fn": "momentum",
+   "sector": "cement",
+   "lookback": 40,
+   "top_frac": 0.34
+  },
+  "mom_cement_lb60": {
+   "fn": "momentum",
+   "sector": "cement",
+   "lookback": 60,
+   "top_frac": 0.34
+  },
+  "mom_cement_lb90": {
+   "fn": "momentum",
+   "sector": "cement",
+   "lookback": 90,
+   "top_frac": 0.34
+  },
+  "mom_infra_lb40": {
+   "fn": "momentum",
+   "sector": "infra",
+   "lookback": 40,
+   "top_frac": 0.34
+  },
+  "mom_infra_lb60": {
+   "fn": "momentum",
+   "sector": "infra",
+   "lookback": 60,
+   "top_frac": 0.34
+  },
+  "mom_infra_lb90": {
+   "fn": "momentum",
+   "sector": "infra",
+   "lookback": 90,
+   "top_frac": 0.34
+  },
+  "mom_pipes_tiles_lb40": {
+   "fn": "momentum",
+   "sector": "pipes_tiles",
+   "lookback": 40,
+   "top_frac": 0.34
+  },
+  "mom_pipes_tiles_lb60": {
+   "fn": "momentum",
+   "sector": "pipes_tiles",
+   "lookback": 60,
+   "top_frac": 0.34
+  },
+  "mom_pipes_tiles_lb90": {
+   "fn": "momentum",
+   "sector": "pipes_tiles",
+   "lookback": 90,
+   "top_frac": 0.34
+  },
+  "input_cost_lag": {
+   "fn": "input_cost",
+   "sector": "cement",
+   "proxy": "TATASTEEL.NS",
+   "lb": 20,
+   "drop": -0.05
+  },
+  "monsoon_cement": {
+   "fn": "monsoon",
+   "csv": "imd_rainfall_departure.csv",
+   "lag": 10,
+   "sector": "cement",
+   "thresh": 10.0
+  }
+ },
+ "contestants": {
+  "event_cement_t30": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 1.0,
+   "peak": 1.0,
+   "positions": {},
+   "trades": 0,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "event_cement_t40": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 1.0,
+   "peak": 1.0,
+   "positions": {},
+   "trades": 0,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "event_cement_t50": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 1.0,
+   "peak": 1.0,
+   "positions": {},
+   "trades": 0,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "event_infra_t30": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 1.0,
+   "peak": 1.0,
+   "positions": {},
+   "trades": 0,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "event_infra_t40": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 1.0,
+   "peak": 1.0,
+   "positions": {},
+   "trades": 0,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "event_infra_t50": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 1.0,
+   "peak": 1.0,
+   "positions": {},
+   "trades": 0,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "event_steel_t30": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 1.0,
+   "peak": 1.0,
+   "positions": {},
+   "trades": 0,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "event_steel_t40": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 1.0,
+   "peak": 1.0,
+   "positions": {},
+   "trades": 0,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "event_steel_t50": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 1.0,
+   "peak": 1.0,
+   "positions": {},
+   "trades": 0,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "mom_cement_lb40": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 0.9981,
+   "peak": 1.0,
+   "positions": {
+    "SHREECEM.NS": 0.5,
+    "RAMCOCEM.NS": 0.5
+   },
+   "trades": 1,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     -0.0019,
+     0.9981
+    ]
+   ]
+  },
+  "mom_cement_lb60": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 0.9981,
+   "peak": 1.0,
+   "positions": {
+    "SHREECEM.NS": 0.5,
+    "ACC.NS": 0.5
+   },
+   "trades": 1,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     -0.0019,
+     0.9981
+    ]
+   ]
+  },
+  "mom_cement_lb90": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 0.9981,
+   "peak": 1.0,
+   "positions": {
+    "SHREECEM.NS": 0.5,
+    "JKCEMENT.NS": 0.5
+   },
+   "trades": 1,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     -0.0019,
+     0.9981
+    ]
+   ]
+  },
+  "mom_infra_lb40": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 0.9981,
+   "peak": 1.0,
+   "positions": {
+    "PNCINFRA.NS": 1.0
+   },
+   "trades": 1,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     -0.0019,
+     0.9981
+    ]
+   ]
+  },
+  "mom_infra_lb60": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 0.9981,
+   "peak": 1.0,
+   "positions": {
+    "PNCINFRA.NS": 1.0
+   },
+   "trades": 1,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     -0.0019,
+     0.9981
+    ]
+   ]
+  },
+  "mom_infra_lb90": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 0.9981,
+   "peak": 1.0,
+   "positions": {
+    "PNCINFRA.NS": 1.0
+   },
+   "trades": 1,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     -0.0019,
+     0.9981
+    ]
+   ]
+  },
+  "mom_pipes_tiles_lb40": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 0.9981,
+   "peak": 1.0,
+   "positions": {
+    "KAJARIACER.NS": 1.0
+   },
+   "trades": 1,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     -0.0019,
+     0.9981
+    ]
+   ]
+  },
+  "mom_pipes_tiles_lb60": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 0.9981,
+   "peak": 1.0,
+   "positions": {
+    "CERA.NS": 1.0
+   },
+   "trades": 1,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     -0.0019,
+     0.9981
+    ]
+   ]
+  },
+  "mom_pipes_tiles_lb90": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 0.9981,
+   "peak": 1.0,
+   "positions": {
+    "KAJARIACER.NS": 1.0
+   },
+   "trades": 1,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     -0.0019,
+     0.9981
+    ]
+   ]
+  },
+  "input_cost_lag": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 1.0,
+   "peak": 1.0,
+   "positions": {},
+   "trades": 0,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "monsoon_cement": {
+   "rung": 0,
+   "days_on_rung": 1,
+   "equity": 1.0,
+   "peak": 1.0,
+   "positions": {},
+   "trades": 0,
+   "days_in_market": 0,
+   "sum_ret": 0.0,
+   "sum_sq": 0.0,
+   "paper_failures": 0,
+   "retired": false,
+   "history": [
+    [
+     "2026-07-13",
+     0.0,
+     1.0
+    ]
+   ]
+  }
+ }
+}
