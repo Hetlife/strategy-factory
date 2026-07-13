@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
   schedule:
-    # Runs every weekday at 6:15 PM IST (12:45 UTC)
+    # Runs every weekday at 6:15 PM IST
     - cron: "45 12 * * 1-5"
 
 jobs:
@@ -21,11 +21,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.10'
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install yfinance pandas numpy
 
       - name: Create state directory
@@ -41,7 +40,7 @@ jobs:
         run: |
           python factory.py report
 
-  - name: Commit updated state
+      - name: Commit updated state
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -70,3 +69,4 @@ jobs:
 
           echo "Failed after 3 attempts."
           exit 1
+        
