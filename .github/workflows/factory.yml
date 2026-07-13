@@ -53,15 +53,18 @@ jobs:
       exit 0
     fi
 
-    git commit -m "Factory update $(date -u +'%Y-%m-%d')"
+    git commit -m "Factory update $(date -u +'%Y-%m-%d')" || true
 
     for i in 1 2 3; do
-      git pull --rebase origin main
-      if git push origin main; then
+      git fetch origin
+      git rebase origin/main
+
+      if git push origin HEAD:main; then
         echo "Push successful."
         exit 0
       fi
-      echo "Push conflict detected. Retrying in 5 seconds..."
+
+      echo "Push conflict detected. Retrying..."
       sleep 5
     done
 
