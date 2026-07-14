@@ -135,7 +135,7 @@
  "contestants": {
   "event_cement_t30": {
    "rung": 0,
-   "days_on_rung": 3,
+   "days_on_rung": 4,
    "equity": 1.0,
    "peak": 1.0,
    "positions": {},
@@ -158,6 +158,11 @@
     ],
     [
      "2026-07-10",
+     0.0,
+     1.0
+    ],
+    [
+     "2026-07-14",
      0.0,
      1.0
     ]
@@ -165,7 +170,7 @@
   },
   "event_cement_t40": {
    "rung": 0,
-   "days_on_rung": 3,
+   "days_on_rung": 4,
    "equity": 1.0,
    "peak": 1.0,
    "positions": {},
@@ -188,6 +193,11 @@
     ],
     [
      "2026-07-10",
+     0.0,
+     1.0
+    ],
+    [
+     "2026-07-14",
      0.0,
      1.0
     ]
@@ -195,7 +205,7 @@
   },
   "event_cement_t50": {
    "rung": 0,
-   "days_on_rung": 3,
+   "days_on_rung": 4,
    "equity": 1.0,
    "peak": 1.0,
    "positions": {},
@@ -218,6 +228,11 @@
     ],
     [
      "2026-07-10",
+     0.0,
+     1.0
+    ],
+    [
+     "2026-07-14",
      0.0,
      1.0
     ]
@@ -225,7 +240,7 @@
   },
   "event_infra_t30": {
    "rung": 0,
-   "days_on_rung": 3,
+   "days_on_rung": 4,
    "equity": 1.0,
    "peak": 1.0,
    "positions": {},
@@ -248,6 +263,11 @@
     ],
     [
      "2026-07-10",
+     0.0,
+     1.0
+    ],
+    [
+     "2026-07-14",
      0.0,
      1.0
     ]
@@ -255,7 +275,7 @@
   },
   "event_infra_t40": {
    "rung": 0,
-   "days_on_rung": 3,
+   "days_on_rung": 4,
    "equity": 1.0,
    "peak": 1.0,
    "positions": {},
@@ -278,6 +298,11 @@
     ],
     [
      "2026-07-10",
+     0.0,
+     1.0
+    ],
+    [
+     "2026-07-14",
      0.0,
      1.0
     ]
@@ -285,7 +310,7 @@
   },
   "event_infra_t50": {
    "rung": 0,
-   "days_on_rung": 3,
+   "days_on_rung": 4,
    "equity": 1.0,
    "peak": 1.0,
    "positions": {},
@@ -308,6 +333,11 @@
     ],
     [
      "2026-07-10",
+     0.0,
+     1.0
+    ],
+    [
+     "2026-07-14",
      0.0,
      1.0
     ]
@@ -315,7 +345,7 @@
   },
   "event_steel_t30": {
    "rung": 0,
-   "days_on_rung": 3,
+   "days_on_rung": 4,
    "equity": 1.0,
    "peak": 1.0,
    "positions": {},
@@ -338,6 +368,11 @@
     ],
     [
      "2026-07-10",
+     0.0,
+     1.0
+    ],
+    [
+     "2026-07-14",
      0.0,
      1.0
     ]
@@ -345,7 +380,7 @@
   },
   "event_steel_t40": {
    "rung": 0,
-   "days_on_rung": 3,
+   "days_on_rung": 4,
    "equity": 1.0,
    "peak": 1.0,
    "positions": {},
@@ -368,6 +403,11 @@
     ],
     [
      "2026-07-10",
+     0.0,
+     1.0
+    ],
+    [
+     "2026-07-14",
      0.0,
      1.0
     ]
@@ -375,7 +415,7 @@
   },
   "event_steel_t50": {
    "rung": 0,
-   "days_on_rung": 3,
+   "days_on_rung": 4,
    "equity": 1.0,
    "peak": 1.0,
    "positions": {},
@@ -400,22 +440,27 @@
      "2026-07-10",
      0.0,
      1.0
+    ],
+    [
+     "2026-07-14",
+     0.0,
+     1.0
     ]
    ]
   },
   "mom_cement_lb40": {
    "rung": 0,
-   "days_on_rung": 3,
-   "equity": 1.0321809709412,
+   "days_on_rung": 4,
+   "equity": 1.024049716842478,
    "peak": 1.0321809709412,
    "positions": {
     "SHREECEM.NS": 0.5,
     "RAMCOCEM.NS": 0.5
    },
    "trades": 1,
-   "days_in_market": 2,
-   "sum_ret": 0.033859236085427735,
-   "sum_sq": 0.0005732239341443659,
+   "days_in_market": 3,
+   "sum_ret": 0.02598149533294386,
+   "sum_sq": 0.0006352827335077111,
    "paper_failures": 0,
    "retired": false,
    "history": [
@@ -433,22 +478,27 @@
      "2026-07-10",
      0.01693,
      1.03218
+    ],
+    [
+     "2026-07-14",
+     -0.007878,
+     1.02405
     ]
    ]
   },
   "mom_cement_lb60": {
    "rung": 0,
-   "days_on_rung": 3,
-   "equity": 1.024793243961522,
+   "days_on_rung": 4,
+   "equity": 1.0159790130250408,
    "peak": 1.024793243961522,
    "positions": {
     "SHREECEM.NS": 0.5,
-    "ULTRACEMCO.NS": 0.5
+    "ACC.NS": 0.5
    },
-   "trades": 2,
-   "days_in_market": 2,
-   "sum_ret": 0.02656842297103469,
-   "sum_sq": 0.0003546116990434548,
+   "trades": 3,
+   "days_in_market": 3,
+   "sum_ret": 0.017967438344703407,
+   "sum_sq": 0.0004285886355858419,
    "paper_failures": 0,
    "retired": false,
    "history": [
@@ -466,22 +516,27 @@
      "2026-07-10",
      0.014198,
      1.02479
+    ],
+    [
+     "2026-07-14",
+     -0.008601,
+     1.01598
     ]
    ]
   },
   "mom_cement_lb90": {
    "rung": 0,
-   "days_on_rung": 3,
-   "equity": 1.0149607243407381,
+   "days_on_rung": 4,
+   "equity": 1.0114141506303904,
    "peak": 1.0149607243407381,
    "positions": {
     "SHREECEM.NS": 0.5,
     "JKCEMENT.NS": 0.5
    },
    "trades": 1,
-   "days_in_market": 2,
-   "sum_ret": 0.0168220751470054,
-   "sum_sq": 0.00014149110612574837,
+   "days_in_market": 3,
+   "sum_ret": 0.013327778643412724,
+   "sum_sq": 0.00015370121418076837,
    "paper_failures": 0,
    "retired": false,
    "history": [
@@ -499,21 +554,26 @@
      "2026-07-10",
      0.008411,
      1.01496
+    ],
+    [
+     "2026-07-14",
+     -0.003494,
+     1.01141
     ]
    ]
   },
   "mom_infra_lb40": {
    "rung": 0,
-   "days_on_rung": 3,
-   "equity": 1.009205538901131,
+   "days_on_rung": 4,
+   "equity": 0.9926070024769437,
    "peak": 1.009205538901131,
    "positions": {
     "PNCINFRA.NS": 1.0
    },
    "trades": 1,
-   "days_in_market": 2,
-   "sum_ret": 0.011095899844019375,
-   "sum_sq": 6.155949667425459e-05,
+   "days_in_market": 3,
+   "sum_ret": -0.005351231869368256,
+   "sum_sq": 0.00033206763827177573,
    "paper_failures": 0,
    "retired": false,
    "history": [
@@ -531,21 +591,26 @@
      "2026-07-10",
      0.005548,
      1.00921
+    ],
+    [
+     "2026-07-14",
+     -0.016447,
+     0.99261
     ]
    ]
   },
   "mom_infra_lb60": {
    "rung": 0,
-   "days_on_rung": 3,
-   "equity": 1.009205538901131,
+   "days_on_rung": 4,
+   "equity": 0.9926070024769437,
    "peak": 1.009205538901131,
    "positions": {
     "PNCINFRA.NS": 1.0
    },
    "trades": 1,
-   "days_in_market": 2,
-   "sum_ret": 0.011095899844019375,
-   "sum_sq": 6.155949667425459e-05,
+   "days_in_market": 3,
+   "sum_ret": -0.005351231869368256,
+   "sum_sq": 0.00033206763827177573,
    "paper_failures": 0,
    "retired": false,
    "history": [
@@ -563,21 +628,26 @@
      "2026-07-10",
      0.005548,
      1.00921
+    ],
+    [
+     "2026-07-14",
+     -0.016447,
+     0.99261
     ]
    ]
   },
   "mom_infra_lb90": {
    "rung": 0,
-   "days_on_rung": 3,
-   "equity": 1.009205538901131,
+   "days_on_rung": 4,
+   "equity": 0.9926070024769437,
    "peak": 1.009205538901131,
    "positions": {
     "PNCINFRA.NS": 1.0
    },
    "trades": 1,
-   "days_in_market": 2,
-   "sum_ret": 0.011095899844019375,
-   "sum_sq": 6.155949667425459e-05,
+   "days_in_market": 3,
+   "sum_ret": -0.005351231869368256,
+   "sum_sq": 0.00033206763827177573,
    "paper_failures": 0,
    "retired": false,
    "history": [
@@ -595,21 +665,26 @@
      "2026-07-10",
      0.005548,
      1.00921
+    ],
+    [
+     "2026-07-14",
+     -0.016447,
+     0.99261
     ]
    ]
   },
   "mom_pipes_tiles_lb40": {
    "rung": 0,
-   "days_on_rung": 3,
-   "equity": 1.0030349739368998,
+   "days_on_rung": 4,
+   "equity": 1.0012501548139927,
    "peak": 1.0030349739368998,
    "positions": {
     "KAJARIACER.NS": 1.0
    },
    "trades": 1,
-   "days_in_market": 2,
-   "sum_ret": 0.004938271604938205,
-   "sum_sq": 1.2193263222069477e-05,
+   "days_in_market": 3,
+   "sum_ret": 0.0031588529712074376,
+   "sum_sq": 1.5359593896137746e-05,
    "paper_failures": 0,
    "retired": false,
    "history": [
@@ -627,21 +702,26 @@
      "2026-07-10",
      0.002469,
      1.00303
+    ],
+    [
+     "2026-07-14",
+     -0.001779,
+     1.00125
     ]
    ]
   },
   "mom_pipes_tiles_lb60": {
    "rung": 0,
-   "days_on_rung": 3,
-   "equity": 1.0052522522978873,
+   "days_on_rung": 4,
+   "equity": 1.002962942573256,
    "peak": 1.0052522522978873,
    "positions": {
     "CERA.NS": 1.0
    },
    "trades": 1,
-   "days_in_market": 2,
-   "sum_ret": 0.007153075822603938,
-   "sum_sq": 2.5583246861960502e-05,
+   "days_in_market": 3,
+   "sum_ret": 0.004875727306947186,
+   "sum_sq": 3.076956312372451e-05,
    "paper_failures": 0,
    "retired": false,
    "history": [
@@ -659,21 +739,26 @@
      "2026-07-10",
      0.003577,
      1.00525
+    ],
+    [
+     "2026-07-14",
+     -0.002277,
+     1.00296
     ]
    ]
   },
   "mom_pipes_tiles_lb90": {
    "rung": 0,
-   "days_on_rung": 3,
-   "equity": 1.0003366560912414,
+   "days_on_rung": 4,
+   "equity": 0.9942572615991883,
    "peak": 1.0003366560912414,
    "positions": {
-    "CERA.NS": 1.0
+    "KAJARIACER.NS": 1.0
    },
-   "trades": 2,
-   "days_in_market": 2,
-   "sum_ret": 0.0022456737137710714,
-   "sum_sq": 1.456282294324981e-05,
+   "trades": 3,
+   "days_in_market": 3,
+   "sum_ret": -0.00383167480188568,
+   "sum_sq": 5.149698792400513e-05,
    "paper_failures": 0,
    "retired": false,
    "history": [
@@ -691,16 +776,29 @@
      "2026-07-10",
      0.003577,
      1.00034
+    ],
+    [
+     "2026-07-14",
+     -0.006077,
+     0.99426
     ]
    ]
   },
   "input_cost_lag": {
    "rung": 0,
-   "days_on_rung": 3,
-   "equity": 1.0,
+   "days_on_rung": 4,
+   "equity": 0.9981,
    "peak": 1.0,
-   "positions": {},
-   "trades": 0,
+   "positions": {
+    "ULTRACEMCO.NS": 0.14285714285714285,
+    "AMBUJACEM.NS": 0.14285714285714285,
+    "ACC.NS": 0.14285714285714285,
+    "SHREECEM.NS": 0.14285714285714285,
+    "JKCEMENT.NS": 0.14285714285714285,
+    "RAMCOCEM.NS": 0.14285714285714285,
+    "DALBHARAT.NS": 0.14285714285714285
+   },
+   "trades": 1,
    "days_in_market": 0,
    "sum_ret": 0.0,
    "sum_sq": 0.0,
@@ -721,12 +819,17 @@
      "2026-07-10",
      0.0,
      1.0
+    ],
+    [
+     "2026-07-14",
+     -0.0019,
+     0.9981
     ]
    ]
   },
   "monsoon_cement": {
    "rung": 0,
-   "days_on_rung": 3,
+   "days_on_rung": 4,
    "equity": 1.0,
    "peak": 1.0,
    "positions": {},
@@ -749,6 +852,11 @@
     ],
     [
      "2026-07-10",
+     0.0,
+     1.0
+    ],
+    [
+     "2026-07-14",
      0.0,
      1.0
     ]
