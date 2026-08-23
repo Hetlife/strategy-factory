@@ -34,6 +34,20 @@ LADDER = [0, 10_000, 25_000, 50_000, 100_000]     # rupees per rung (0 = paper)
 RULES = dict(min_days_on_rung=126, min_trades=10, min_expectancy=0.0005,
              max_drawdown=-0.12, min_sharpe=0.4, max_paper_failures=2)
 
+# ---------------- advisor layer (see advisors.py) -----------------------
+# Historical-parameter advisors may only ever propose a mutated REPLACEMENT
+# registry key for a paper-tier (rung 0) contestant -- never edit an
+# existing entry in place, and never touch anything already on a
+# real-money rung. Those still only evolve via spawn_children() above.
+PARAM_BANK_PATH = os.path.join(STATE_DIR, "parameter_bank.json")
+ADVISOR_STATE_PATH = os.path.join(STATE_DIR, "advisor_state.json")
+EVOLUTION_TOP_N = 10          # only contestants ranked outside the overall
+                               # top N are candidates for advisor-informed evolution
+PARAM_BOUNDS = {               # mechanism-bounded blend ranges, mirrors seed grid
+    "threshold": (0.02, 0.08, 3), "hold": (2, 5, 0),
+    "lookback": (20, 120, 0), "lb": (10, 40, 0), "drop": (-0.08, -0.03, 3),
+}
+
 # ---------------- strategy implementations (parametric) ----------------
 def sig_event_drift(px, p):
     lead = px[p["leader"]].pct_change()
@@ -117,20 +131,40 @@ def spawn_children(name, params, registry):
     return born
 
 # ---------------- state ----------------
-def blank_stats():
+def blank_stats(lineage=None):
     return dict(rung=0, days_on_rung=0, equity=1.0, peak=1.0, positions={},
                 trades=0, days_in_market=0, sum_ret=0.0, sum_sq=0.0,
-                paper_failures=0, retired=False, history=[])
+                paper_failures=0, retired=False, history=[],
+                lineage=lineage, evolved_out=False, trust_scored=False)
 
 def load_state():
     os.makedirs(STATE_DIR, exist_ok=True)
     p = os.path.join(STATE_DIR, "ledger.json")
-    if os.path.exists(p):
-        return json.load(open(p))
-    return {"registry": seed_registry(), "contestants": {}}
+    if not os.path.exists(p):
+        return {"registry": seed_registry(), "contestants": {}}
+    state = json.load(open(p))
+    for s in state["contestants"].values():   # backfill pre-advisor-layer entries
+        s.setdefault("lineage", None)
+        s.setdefault("evolved_out", False)
+        s.setdefault("trust_scored", False)
+    return state
 
 def save_state(s):
     json.dump(s, open(os.path.join(STATE_DIR, "ledger.json"), "w"), indent=1)
+
+def load_json(path, default):
+    return json.load(open(path)) if os.path.exists(path) else default
+
+def save_json(path, obj):
+    os.makedirs(STATE_DIR, exist_ok=True)
+    json.dump(obj, open(path, "w"), indent=1)
+
+def load_parameter_bank():
+    return load_json(PARAM_BANK_PATH, {"bank": {}})
+
+def load_advisor_state():
+    return load_json(ADVISOR_STATE_PATH,
+                      {"trust_weight": 0.25, "history": []})
 
 def fetch_prices():
     import yfinance as yf
@@ -178,6 +212,92 @@ def update():
     print(f"Arena updated {today}: {live} live contestants "
           f"({sum(1 for c in con.values() if c['retired'])} retired).")
 
+# ---------------- advisor-informed evolution (paper tier only) ----------
+def mutate_params(current, advisor_params, weight):
+    """Blend a contestant's current numeric hyperparameters toward the
+    advisor bank's top pick for its (family, sector) bucket, weighted by
+    the tournament's current trust_weight. Categorical fields (fn, sector,
+    leader, proxy) are never changed -- only numeric params inside the
+    same mechanism-bounded range the seed grid already uses."""
+    out = dict(current)
+    for key, (lo, hi, decimals) in PARAM_BOUNDS.items():
+        if key in current and key in advisor_params:
+            blended = (1 - weight) * current[key] + weight * advisor_params[key]
+            blended = min(max(blended, lo), hi)
+            out[key] = round(blended, decimals) if decimals else int(round(blended))
+    return out
+
+def propose_evolutions(rows, reg, con, bank, trust_weight):
+    """Rank all live contestants tournament-wide (same order as the report
+    table); any rung-0 contestant outside the top EVOLUTION_TOP_N, with
+    enough evaluation history, gets retired in favor of ONE new registry
+    key mutated toward the advisor bank's best pick. Never mutates an
+    entry in place (Law 2's mechanical invariant) and never touches a
+    contestant already on a real-money rung."""
+    born = []
+    for rank, r in enumerate(rows, start=1):
+        if rank <= EVOLUTION_TOP_N:
+            continue
+        name = r["strategy"]
+        s = con[name]
+        if (s["rung"] != 0 or s["retired"] or s["evolved_out"]
+                or s["days_on_rung"] < RULES["min_days_on_rung"]
+                or s["trades"] < RULES["min_trades"]):
+            continue
+        params = reg[name]
+        fn, sector = params["fn"], params.get("sector")
+        picks = bank.get(fn, {}).get(sector)
+        if not picks:
+            continue
+        best = picks[0]["params"]
+        new_params = mutate_params(params, best, trust_weight)
+        if new_params == params:
+            continue
+        gen = (s["lineage"] or {}).get("gen", 0) + 1 if s["lineage"] else 1
+        if len(reg) >= MAX_CONTESTANTS:
+            continue
+        child = f"{name}_evo{gen}"
+        suffix = 2
+        while child in reg:
+            child = f"{name}_evo{gen}_{suffix}"; suffix += 1
+        mean = s["sum_ret"] / max(s["days_in_market"], 1)
+        reg[child] = new_params
+        con[child] = blank_stats(lineage=dict(
+            parent=name, gen=gen, advisor_weight_used=trust_weight,
+            parent_mean_ret=round(mean, 6), parent_rank=rank,
+            bank_source=picks[0]))
+        s["retired"] = True
+        s["evolved_out"] = True
+        born.append(child)
+    return born
+
+def update_advisor_trust(con, adv_state):
+    """'How much to listen to the advisor' is decided collectively: every
+    lineage child that has finished its own evaluation window is scored
+    against the parent it replaced. If most of them beat their parent's
+    mean return, nudge trust_weight up; otherwise nudge it down."""
+    beat, total = 0, 0
+    for s in con.values():
+        if (not s["lineage"] or s["trust_scored"]
+                or s["days_on_rung"] < RULES["min_days_on_rung"]):
+            continue
+        child_mean = s["sum_ret"] / max(s["days_in_market"], 1)
+        total += 1
+        if child_mean > s["lineage"]["parent_mean_ret"]:
+            beat += 1
+        s["trust_scored"] = True
+    if total == 0:
+        return adv_state
+    step = 0.05 if beat * 2 > total else -0.05
+    new_weight = min(max(adv_state["trust_weight"] + step, 0.05), 0.9)
+    adv_state["trust_weight"] = round(new_weight, 3)
+    adv_state["history"].append(dict(
+        date=str(pd.Timestamp.now(tz="UTC").date()),
+        children_evaluated=total, children_beat_parent=beat,
+        new_trust_weight=adv_state["trust_weight"]))
+    adv_state["history"] = adv_state["history"][-100:]
+    return adv_state
+
 # ---------------- weekly tournament ----------------
 def report():
     state = load_state()
@@ -208,6 +328,7 @@ def report():
                          dd=f"{dd*100:.1f}%", verdict=verdict))
     df = pd.DataFrame(rows).sort_values(["rung", "sharpe"], ascending=False)
     print(df.to_string(index=False))
+    ranked_rows = df.to_dict("records")   # tournament-wide rank order (1 = best)
 
     # apply verdicts + evolution
     for r in rows:
@@ -232,6 +353,18 @@ def report():
                 s["rung"] -= 1
                 s["days_on_rung"] = 0
                 s["peak"] = s["equity"]
+
+    # advisor layer: evolve paper-tier stragglers, then re-score trust
+    bank = load_parameter_bank().get("bank", {})
+    adv_state = load_advisor_state()
+    evolved = propose_evolutions(ranked_rows, reg, con, bank,
+                                  adv_state["trust_weight"])
+    if evolved:
+        print(f"  advisor-evolved (rank > {EVOLUTION_TOP_N}, paper tier): "
+              f"{evolved}  [trust_weight={adv_state['trust_weight']}]")
+    adv_state = update_advisor_trust(con, adv_state)
+    save_json(ADVISOR_STATE_PATH, adv_state)
+
     save_state(state)
     print("\nRungs: 0=paper, then Rs 10k / 25k / 50k / 1L per strategy. "
           "Real-money rungs mean YOU place/fund those trades deliberately.")
