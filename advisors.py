@@ -75,11 +75,15 @@ def fetch_history():
 def backtest(px, params, warmup=130):
     """Walk the full history exactly like update() does: yesterday's target
     positions realize P&L against today's return, costs charged on turnover.
-    Returns a daily net-return series (post-cost)."""
+    Returns (daily net-return series post-cost, round-trip count) -- a round
+    trip is a day with turnover > 0.01, same convention factory.py's own
+    update() uses for s["trades"]."""
     fn = IMPLS[params["fn"]]
     rets = px.pct_change()
     positions = {}
     daily_net = []
+    n_trades = 0
+    n_errors = 0
     for i in range(warmup, len(px)):
         window = px.iloc[:i + 1]
         today_ret = rets.iloc[i]
@@ -88,12 +92,18 @@ def backtest(px, params, warmup=130):
             targets = fn(window, params)
         except Exception:
             targets = {}
+            n_errors += 1
         tickers = set(positions) | set(targets)
         turn = sum(abs(targets.get(t, 0) - positions.get(t, 0)) for t in tickers)
+        if turn > 0.01:
+            n_trades += 1
         net = day_ret - turn * COST_PER_SIDE
         daily_net.append(net)
         positions = targets
-    return pd.Series(daily_net)
+    if n_errors:
+        print(f"  [warn] {params.get('fn')}/{params.get('sector')} "
+              f"{params}: sig fn raised on {n_errors}/{len(px) - warmup} days")
+    return pd.Series(daily_net), n_trades
 
 def sharpe(returns):
     if len(returns) < 20:
@@ -103,7 +113,7 @@ def sharpe(returns):
         return -99.0
     return float(mean / std * np.sqrt(252))
 
-def score_candidate(net_returns):
+def score_candidate(net_returns, n_trades):
     """Three independent advisor heuristics -> one ensemble score."""
     n = len(net_returns)
     half = n // 2
@@ -111,8 +121,10 @@ def score_candidate(net_returns):
 
     sharpe_advisor = sharpe(net_returns)
     robustness_advisor = min(sharpe(first_half), sharpe(second_half))
-    n_trades = max(int((net_returns.abs() > 1e-6).sum()), 1)
-    cost_efficiency_advisor = float(net_returns.sum() / n_trades) * 1000  # bps/trade
+    # net return per actual round trip (turnover event), not per day --
+    # a low-turnover strategy shouldn't be penalized just for being held
+    # steady over many days in market.
+    cost_efficiency_advisor = float(net_returns.sum() / max(n_trades, 1)) * 1000  # bps/round-trip
 
     return dict(sharpe=round(sharpe_advisor, 3),
                 robustness=round(robustness_advisor, 3),
@@ -138,10 +150,10 @@ def train():
 
     buckets = {}
     for fn, sector, params in grid:
-        net = backtest(px, params)
+        net, n_trades = backtest(px, params)
         if net.empty:
             continue
-        scores = score_candidate(net)
+        scores = score_candidate(net, n_trades)
         buckets.setdefault((fn, sector), []).append({**scores, "params": params})
 
     bank = {}

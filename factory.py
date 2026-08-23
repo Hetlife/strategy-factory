@@ -347,7 +347,7 @@ def report():
                     s["retired"] = True
                     print(f"  retired: {r['strategy']}")
                 else:                                 # fresh paper attempt
-                    con[r["strategy"]] = {**blank_stats(),
+                    con[r["strategy"]] = {**blank_stats(lineage=s["lineage"]),
                                           "paper_failures": s["paper_failures"]}
             else:
                 s["rung"] -= 1
