@@ -169,15 +169,22 @@ if data and "contestants" in data:
         st.markdown("**Parameter bank — top advisor picks per strategy family / sector**")
         st.caption(f"Last trained: {parameter_bank.get('generated_at', 'unknown')} "
                    f"· advisors: {', '.join(parameter_bank.get('advisors', []))}")
+        # Skip fn/sector in the readable string -- they're already their own
+        # columns; leader/proxy rarely vary within a bucket but are kept so
+        # a switched leader ticker is still visible at a glance.
+        skip_keys = {"fn", "sector"}
         bank_rows = []
         for fn, sectors in parameter_bank["bank"].items():
             for sector, picks in sectors.items():
                 for rank, pick in enumerate(picks, start=1):
+                    readable = ", ".join(
+                        f"{k}={v}" for k, v in pick["params"].items()
+                        if k not in skip_keys)
                     bank_rows.append({
                         "Family": fn, "Sector": sector, "Rank": rank,
-                        "Params": pick["params"], "Sharpe": pick["sharpe"],
+                        "Params": readable, "Sharpe": pick["sharpe"],
                         "Robustness": pick["robustness"],
-                        "Cost Efficiency": pick["cost_efficiency"],
+                        "Cost Efficiency (bps/round-trip)": pick["cost_efficiency"],
                     })
         st.dataframe(pd.DataFrame(bank_rows), use_container_width=True, hide_index=True)
     else:
