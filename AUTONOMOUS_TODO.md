@@ -23,6 +23,20 @@ what a commit message already says, don't.
 
 ## Decisions Made (full rationale — the reason this file exists)
 
+- **Operator goals, asked directly (2026-08-24):** Het's definition of
+  success for year 1 is "learning to build and reason about systems like
+  this" — NOT primarily profit, and not primarily code literacy either.
+  He wants to stay hands-off on implementation (doesn't need to read
+  code) while still building real understanding of the system through
+  plain-language explanation of what's happening and why, as decisions
+  get made. Confirmed explicitly comfortable with the 12-month
+  evidence-accumulation timeline and with "no edge found, buy the index"
+  as a legitimate, successful outcome — not something to be talked out
+  of if the data says so. Implication for any session (autonomous or
+  interactive) that reports status to Het: explain WHY, in plain terms,
+  not just WHAT — that's the actual product he's asking for, alongside
+  the code itself. Don't assume he wants deeper technical involvement
+  just because he's engaged and asking questions.
 - **Law 1 override (advisor layer trains on historical price data):**
   explicitly requested and authorized by Het after being shown the
   tradeoff directly (a Q&A comparing "train on own live track record" vs.
