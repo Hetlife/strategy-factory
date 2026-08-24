@@ -1,0 +1,310 @@
+PIVOT DOCUMENT — TURNING A SMALL SUM INTO A LARGE SUM
+=======================================================
+An honest assessment of what actually has to change, with the
+arithmetic shown. Written 2026-08-24.
+
+Premise being tested: "an agent that can convert a small sum of money
+into a large sum based on reliable data and trading," starting from
+about Rs 2,00,000, with the option to change asset class.
+
+I am going to be blunt where the numbers are blunt. That is the most
+useful thing I can do here.
+
+
+==========================================================
+PART 1 — THREE FINDINGS THAT CHANGE THE PLAN
+==========================================================
+
+FINDING 1: THE COST MODEL BREAKS AT SMALL POSITION SIZES
+----------------------------------------------------------
+factory.py charges COST_PER_SIDE = 0.0019 (0.38% round trip),
+proportional to position size. Real Indian equity costs are NOT purely
+proportional. They have a FIXED component.
+
+Actual round-trip cost on an Indian equity delivery trade (discount
+broker, delivery brokerage Rs 0):
+
+  Variable:  STT 0.20% + exchange txn ~0.006% + stamp 0.015%
+             + GST on charges ~0.001%   ==>  ~0.222% of position
+  Fixed:     DP charge on sell          ==>  ~Rs 15.34 per scrip
+
+  True round-trip cost % = 0.222% + (15.34 / position_size) x 100
+
+Worked out:
+
+  Position size      True round-trip cost      Model assumes
+  --------------     ---------------------     -------------
+  Rs   2,000              0.99%                    0.38%
+  Rs  10,000              0.375%                   0.38%   <- only
+  Rs  33,000              0.27%                    0.38%      here
+  Rs  50,000              0.253%                   0.38%
+  Rs 2,00,000             0.230%                   0.38%
+
+The model is only accurate at roughly Rs 10,000 per position. Below
+that it UNDERSTATES costs badly.
+
+Why this matters enormously:
+
+  * LADDER rung 1 = Rs 10,000. An event_drift cement strategy holds 6
+    laggards. Rs 10,000 / 6 = Rs 1,667 per position. True round-trip
+    cost ~1.14% — THREE TIMES what the model charges.
+  * The first real-money rung is, as designed, economically
+    non-viable for a basket strategy. A strategy promoted to rung 1
+    would face triple the friction it was validated against.
+  * If Rs 2 lakh were spread across 20 contestants x ~5 names = 100
+    positions of Rs 2,000, the real cost is ~1% round trip against a
+    modelled 0.38%. The project's own founding research showed that a
+    correctly-specified strategy still LOST money to a 0.38% cost at
+    30 round trips/year. At 1%, nothing survives.
+
+Conclusion: the tournament architecture (many parallel strategies) is
+excellent for GENERATING EVIDENCE and terrible for DEPLOYING CAPITAL at
+Rs 2 lakh. These must be separated. Paper-trade many; deploy few, and
+concentrated.
+
+
+FINDING 2: THE COMPOUNDING MATH ON Rs 2 LAKH
+----------------------------------------------
+Rs 2,00,000 compounded, net of all costs and taxes:
+
+  Net CAGR    After 5 yrs    After 10 yrs    Years to Rs 1 crore
+  --------    -----------    ------------    -------------------
+   12%         Rs  3.52 L     Rs  6.21 L          34.5 years
+   18%         Rs  4.57 L     Rs 10.47 L          23.6 years
+   25%         Rs  6.10 L     Rs 18.63 L          17.5 years
+   35%         Rs  8.97 L     Rs 40.24 L          13.0 years
+   50%         Rs 15.19 L     Rs 115 L             9.6 years
+
+For calibration: Nifty long-run CAGR is ~12-13%. A sustained 25% net is
+excellent-professional territory. A sustained 35%+ over a decade at
+retail scale is essentially unheard of without leverage — and this
+project's own Monte Carlo showed 10x leverage on a genuinely profitable
+18%/yr strategy produces a MEDIAN outcome of losing 80%, with 54.5% of
+accounts wiped out.
+
+Now the contribution lever. Rs 2 lakh initial, at 18% net:
+
+  Annual addition     Value at 10 yrs     Value at 20 yrs
+  ---------------     ---------------     ---------------
+  Rs 0                  Rs 10.5 L           Rs  54.8 L
+  Rs 50,000             Rs 22.2 L           Rs 128 L
+  Rs 1,00,000           Rs 34.0 L           Rs 201 L
+  Rs 2,00,000           Rs 57.5 L           Rs 348 L
+
+Read that table carefully. Adding Rs 50,000/year more than DOUBLES the
+10-year outcome. Adding Rs 2 lakh/year produces a better result at 10
+years than a zero-contribution account achieves in 20.
+
+This is arithmetic, not opinion: AT A SMALL CAPITAL BASE, THE
+CONTRIBUTION RATE DOMINATES THE RETURN RATE. Chasing 35% instead of
+18% is far harder, far riskier, and worth less than simply feeding the
+account from income.
+
+The uncomfortable implication: if the goal is genuinely "small sum to
+large sum," the highest-expectancy lever available is not a better
+algorithm. It is (a) a validated modest edge, plus (b) aggressive
+capital contribution from other income, plus (c) time.
+
+
+FINDING 3: THE INFRASTRUCTURE PLAN IS INVERTED
+------------------------------------------------
+The stated plan is: profits fund cloud computing, then cloud compute
+funds a local machine, and so on. At Rs 2 lakh this runs backwards.
+
+Sensible rule: recurring infrastructure should stay under ~10% of
+expected annual NET profit. At 18% net:
+
+  Capital        Annual profit    Max sane infra spend
+  --------       -------------    --------------------
+  Rs   2 L        Rs  36,000       Rs   300 / month
+  Rs   5 L        Rs  90,000       Rs   750 / month
+  Rs  10 L        Rs 1.80 L        Rs 1,500 / month
+  Rs  25 L        Rs 4.50 L        Rs 3,750 / month
+  Rs  50 L        Rs 9.00 L        Rs 7,500 / month
+  Rs   1 Cr       Rs 18.0 L        Rs 15,000 / month
+
+Reference costs:
+  GitHub Actions (private repo)  : FREE — 2,000 min/month.
+                                   Current usage ~90 min/month.
+                                   Headroom: ~22x.
+  Hetzner CX22 VPS               : ~Rs 380/month
+  DigitalOcean basic droplet     : ~Rs 500/month
+  AWS t4g.small                  : ~Rs 1,000/month
+  Zerodha Kite Connect API       : Rs 2,000/month  (= Rs 24,000/yr,
+                                   which is 12% of the entire Rs 2 L
+                                   capital — absurd at this size)
+  Upstox / Dhan / Fyers APIs     : FREE
+  yfinance / broker historical   : FREE
+
+THE CURRENT STACK ALREADY COSTS Rs 0 AND HAS 22x HEADROOM.
+
+There is no compute problem to solve. This workload is a few minutes of
+pandas per day. You do not need cloud infrastructure until roughly
+Rs 25 lakh of capital, and you do not need your own machine for this
+workload essentially ever — a local machine helps only if you move to
+latency-sensitive or genuinely heavy ML work, neither of which this
+project's own research supports pursuing.
+
+Every rupee spent on infrastructure before ~Rs 25 lakh is a rupee taken
+directly out of compounding at the point where compounding is most
+fragile.
+
+
+==========================================================
+PART 2 — ASSET CLASS: SHOULD WE CHANGE?
+==========================================================
+Evaluated specifically for a Rs 2 lakh, India-resident, systematic,
+low-frequency operator.
+
+A) INDIAN EQUITY DELIVERY  (current)
+   +  Free APIs, free data, pipeline already built and running
+   +  LTCG 12.5% if held >12 months, plus Rs 1.25 L/yr LTCG exemption
+   +  No leverage, no margin calls, no liquidation risk
+   +  Capacity is a non-issue at retail size
+   -  20% STCG on holds under 12 months
+   -  Rs ~15 DP charge per scrip per sell-day punishes small positions
+   -  Market hours only; capital idle 5/7 days
+   VERDICT: Correct choice for the evidence phase. Keep it. But
+   CONCENTRATE — this only works if positions are >= ~Rs 25,000.
+
+B) INDIAN F&O (futures / options)
+   -  Post-Oct-2024 SEBI rules: lot sizes raised to ~Rs 15 lakh
+      notional, weekly expiries cut to one per exchange, upfront
+      premium collection, calendar-spread margin benefit removed on
+      expiry day.
+   -  ONE Nifty lot now requires roughly Rs 1.5-2 lakh margin. At
+      Rs 2 lakh capital you can hold exactly one position, with zero
+      diversification and zero margin buffer. A single gap against you
+      is account-ending.
+   -  Taxed as non-speculative business income at slab (up to ~31.2%).
+   -  SEBI's own study found ~93% of individual F&O traders lost money
+      over FY22-FY24, with average losses around Rs 2 lakh — i.e. the
+      average loser lost this project's entire proposed capital.
+   -  Directly contradicts this project's own leverage Monte Carlo.
+   VERDICT: AVOID. Structurally unsuitable at this capital, and the
+   evidence base is overwhelmingly negative.
+
+C) CRYPTO (as an India resident)
+   +  24/7 markets, fractional sizing completely solves the
+      position-size problem, genuine inefficiencies at small size
+   -  30% flat tax on gains, plus cess
+   -  NO loss set-off — losing trades cannot offset winning trades
+   -  1% TDS on EVERY transfer. This is the killer: a strategy doing
+      30 round trips/year pays ~30% of turnover in TDS. It is
+      creditable against final tax liability, but the cash-flow drag
+      strangles a small account, and credit is capped by actual tax
+      owed.
+   -  No loss offset + 1% per-transaction TDS is mathematically hostile
+      to any systematic strategy with meaningful turnover.
+   -  Offshore exchanges sit in a FEMA grey zone for residents.
+   VERDICT: The tax structure specifically penalises exactly what this
+   system does. Viable only for very low-frequency positional holding.
+   Not a fit for the tournament model.
+
+D) US EQUITIES via LRS  <-- THE ONE GENUINELY WORTH EVALUATING
+   +  FRACTIONAL SHARES ELIMINATE FINDING 1 ENTIRELY. You can hold a
+      Rs 2,000 position with no fixed DP-style charge. The single
+      biggest structural problem with Rs 2 lakh disappears.
+   +  Near-zero commissions at several brokers; deeper liquidity;
+      vastly better free data and research
+   +  Rs 2 lakh is far below the $250,000/yr LRS limit and below the
+      Rs 10 lakh/yr TCS threshold — neither binds at this size
+   +  Historical INR depreciation has been a tailwind for Indian
+      holders of USD assets
+   -  Schedule FA disclosure in the ITR is MANDATORY. Non-disclosure
+      carries Black Money Act penalties that dwarf any trading gain.
+      This is a compliance requirement, not an optional step.
+   -  Taxed as unlisted foreign shares: slab rate under 24 months,
+      12.5% LTCG beyond 24 months — a longer LTCG runway than Indian
+      equity
+   -  Currency conversion spread on the way in and out
+   -  Het's stated domain edge (Indian cement/infra/steel) does NOT
+      transfer. You would be trading without your edge.
+   VERDICT: Structurally superior for small capital. Strategically
+   weaker, because it abandons the only genuine advantage claimed. Do
+   NOT switch during the evidence phase. Reconsider it as the SCALING
+   venue if and only if a real edge is proven.
+
+E) INDIAN INDEX ETF (buy and hold)
+   This is the benchmark, not a strategy. ~12-13% long-run, near-zero
+   effort, near-zero cost, 12.5% LTCG.
+   VERDICT: This is the number to beat. If the tournament cannot beat
+   a Nifty ETF after all costs and taxes, the honest conclusion is to
+   buy the ETF. Building this system is only justified if it clears
+   that bar — and that comparison must be run explicitly.
+
+
+==========================================================
+PART 3 — WHAT THE PIVOT ACTUALLY IS
+==========================================================
+
+The binding constraints are NOT strategy sophistication. They are:
+   1. Fixed transaction costs vs. a small capital base
+   2. An evidence horizon of 35 days — statistically meaningless
+   3. Infrastructure ambition inverted relative to capital
+
+Therefore:
+
+PIVOT 1 — STOP BUILDING MECHANISMS. START ACCUMULATING EVIDENCE.
+  Three breeding mechanisms, an advisor ensemble, and a self-tuning
+  trust weight now sit on top of 35 days of noise. Every additional
+  evolutionary mechanism is another channel through which selection
+  pressure can overfit a short sample — even when no single component
+  "mines" data. The machinery is well ahead of the evidence.
+  Freeze feature development. Let it run. The next genuinely valuable
+  event is the calendar, not a commit.
+
+PIVOT 2 — SEPARATE THE EVIDENCE ENGINE FROM THE CAPITAL ENGINE.
+  Run 20-40 strategies on paper (free, parallel, high information).
+  Deploy real capital to AT MOST 1-3, concentrated, with position
+  sizes >= Rs 25,000. Raise LADDER rung 1 from Rs 10,000 to something
+  economically coherent — OR require that rung-1 strategies hold at
+  most 1-2 names. As designed, rung 1 loses to friction before it
+  begins.
+  (Note: LADDER is a financial risk parameter. Changing it requires
+  Het's explicit, separate instruction. Flagging, not doing.)
+
+PIVOT 3 — FIX THE COST MODEL BEFORE TRUSTING ANY VERDICT.
+  Make COST_PER_SIDE size-aware: variable component plus a fixed
+  per-scrip component. Until then, every promotion verdict is computed
+  against costs that are too low at exactly the sizes being proposed.
+  This is a correctness issue, not an optimisation.
+
+PIVOT 4 — BENCHMARK AGAINST THE ETF, EXPLICITLY AND CONTINUOUSLY.
+  Add Nifty buy-and-hold as a permanent, unkillable contestant in the
+  tournament. If nothing beats it after 12 months of honest paper
+  trading, that is a real and valuable answer — it means the correct
+  action is to buy the index and put the energy elsewhere. A system
+  that cannot produce that answer is not an evidence machine.
+
+PIVOT 5 — TREAT CONTRIBUTION AS THE PRIMARY GROWTH LEVER.
+  Per Finding 2, Rs 50,000/year of contribution beats improving the
+  strategy from 18% to 25% net, and is enormously more achievable and
+  more certain. The trading system's real job at this stage is not to
+  generate wealth — it is to prove that an edge exists, so that larger
+  capital can later be deployed with justified confidence.
+
+PIVOT 6 — SPEND NOTHING ON INFRASTRUCTURE UNTIL ~Rs 25 LAKH.
+  The stack costs Rs 0 today with 22x headroom. Revisit at the capital
+  gates in the Finding 3 table, not before.
+
+
+==========================================================
+PART 4 — WHAT WOULD ACTUALLY FALSIFY THIS PROJECT
+==========================================================
+An evidence machine must be able to return "no." These are the
+conditions under which the honest answer is to stop:
+
+  * After 12 months of live paper trading, no strategy clears the
+    existing RULES bar (126 days, 10 trades, 0.05%/day expectancy,
+    Sharpe 0.4, drawdown better than -12%).
+  * After 12 months, the best contestant does not beat a Nifty ETF
+    net of the corrected (size-aware) cost model and applicable tax.
+  * Promoted strategies systematically underperform their paper
+    results once real costs apply — i.e. paper does not predict live.
+  * The advisor trust weight decays to its floor (0.05), meaning
+    advisor-evolved children consistently fail to beat the parents
+    they replaced.
+
+Write these down now, before the data arrives. That is the whole point
+of Law 1, applied to the project itself rather than to a strategy.

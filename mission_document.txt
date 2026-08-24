@@ -1,0 +1,526 @@
+MISSION DOCUMENT — RELIABLE AUTOMATED INCOME FROM A SMALL CAPITAL BASE
+=======================================================================
+An executional brief. Hand this to an AI model (or a new human
+collaborator) as the standing context for reasoning about this mission.
+
+Version 1.0 — 2026-08-24
+Operator: Het (SevaaConnect Solutions Pvt Ltd, Surat, India)
+Starting capital: Rs 2,00,000
+Companion documents: understanding.txt (what exists), pivot_document.txt
+(the arithmetic behind every constraint below)
+
+
+==========================================================
+0. HOW TO USE THIS DOCUMENT
+==========================================================
+You are being asked to think hard about building a system that reliably
+converts a small capital base into a large one, primarily through
+automated trading, with compute and tooling funded out of realised
+profit rather than out of principal.
+
+Do NOT treat this as a request for optimism. The operator has explicitly
+asked for realism. The most valuable output you can produce is a correct
+"no" or "not yet" where one is warranted.
+
+Rules of engagement for whoever reads this:
+  * Ground every claim in arithmetic. Show the numbers.
+  * Distinguish rigorously between: tested / simulated / assumed /
+    unknown. Never present an untested result as a tested one.
+  * Do not re-derive the settled facts in Section 2. They cost real
+    effort to establish. Build on them.
+  * When you disagree with something in this document, say so
+    explicitly and show why. This document is a starting position, not
+    scripture.
+  * Tax and regulatory figures below carry a knowledge cutoff and MUST
+    be verified with a practising CA before any money moves. Treat them
+    as "approximately right, verify before acting."
+
+
+==========================================================
+1. THE MISSION, STATED PRECISELY
+==========================================================
+Build a closed-loop system in which:
+  (a) a small initial capital base (Rs 2,00,000) is deployed against a
+      systematically validated trading edge;
+  (b) realised profit — never principal — funds progressively better
+      infrastructure (cloud compute, data, eventually local hardware);
+  (c) better infrastructure enables better research, which improves the
+      edge, which increases profit;
+  (d) the loop repeats, with each stage gated on evidence rather than
+      on enthusiasm.
+
+Success is NOT "a profitable month." Success is a system whose live
+results are CONSISTENT WITH what its paper trading predicted, sustained
+long enough that the consistency itself is statistically meaningful.
+That consistency is the actual product. Profit is a consequence of it.
+
+Explicitly in scope: changing asset class, changing market, operating
+from outside India, and monetising the system itself rather than only
+its returns (see Section 7).
+
+
+==========================================================
+2. SETTLED GROUND TRUTHS — DO NOT RE-DERIVE
+==========================================================
+Established by prior research and by direct measurement in this
+project. Re-deriving these wastes effort; contradicting them requires
+new evidence, not new argument.
+
+2.1  Statistical mining fails at retail data volumes. A cross-
+     correlation scan missed a signal deliberately embedded with a true
+     8-day lag (found 0.03-0.07 correlation; horizon-matched detection
+     picked lag 15 vs true 8). Hypotheses must come from a stated
+     real-world mechanism, tested once — not discovered by scanning.
+
+2.2  Costs dominate at high turnover. A correctly-specified strategy
+     trading daily LOST money purely to friction (~5.5%/yr drag at 30
+     round trips/yr against 0.38% round-trip cost). Only strategies
+     under roughly 10-15 round trips/year survive with a modest edge.
+
+2.3  Correlation-only strategies without a fundamental mechanism are
+     fragile. Pairs/stat-arb showed +2.0%/yr, Sharpe 0.53 in training
+     and -7.1%/yr, Sharpe -1.23 after a simulated regime break. Every
+     tuned threshold failed identically.
+
+2.4  Leverage multiplies volatility, not skill. On an identical 18%/yr
+     strategy: 1x -> +91% median over 5 yrs; 3x -> +384%; 10x -> MEDIAN
+     OUTCOME IS LOSING 80%, with 54.5% of simulated accounts wiped out.
+     Leverage must be earned from measured live drawdown, never assumed.
+
+2.5  HFT/latency arbitrage is closed to retail. Co-location and
+     multi-crore infrastructure are table stakes. Do not pursue.
+
+2.6  FIXED transaction costs dominate at small position sizes. Indian
+     equity delivery round-trip cost is approximately
+        0.222% of position  +  Rs 15.34 fixed (DP charge per scrip)
+     which means: Rs 2,000 position -> 0.99% round trip;
+     Rs 10,000 -> 0.375%; Rs 50,000 -> 0.253%.
+     Any model using a flat percentage cost is wrong below ~Rs 25,000
+     per position, and wrong in the dangerous direction.
+
+2.7  At a small capital base, CONTRIBUTION RATE DOMINATES RETURN RATE.
+     Rs 2 L at 18% for 10 years = Rs 10.5 L. The same with Rs 50,000/yr
+     added = Rs 22.2 L. Improving 18% -> 25% is far harder, far riskier,
+     and worth less than feeding the account.
+
+2.8  Compute is not the bottleneck and is not scarce. The existing
+     stack runs on GitHub Actions' free tier at Rs 0/month using ~90 of
+     2,000 available minutes. There is 22x headroom. This workload is a
+     few minutes of pandas per day.
+
+2.9  CURRENT EVIDENCE STATE: 35 days of live paper history, 20
+     contestants, equity range 0.876 to 1.011. Zero promotions. NO EDGE
+     HAS BEEN DEMONSTRATED. At this sample size the spread is
+     indistinguishable from noise. Everything built so far is
+     machinery awaiting evidence.
+
+
+==========================================================
+3. THE CLOSED LOOP, WITH HARD GATES
+==========================================================
+The operator's stated model — profits fund compute, compute funds
+better models, better models fund hardware — is directionally right but
+INVERTED IN SEQUENCE at Rs 2 lakh. Compute is nearly free; evidence is
+the scarce resource. The loop must therefore be gated on capital and on
+proof, not on ambition.
+
+Governing rule: recurring infrastructure spend stays under ~10% of
+EXPECTED ANNUAL NET PROFIT. At 18% net:
+
+  GATE   Capital        Annual profit    Infra budget      Unlocks
+  ----   -----------    -------------    -------------     ----------------
+  G0     Rs 2 L         Rs 36,000        Rs 300/mo         Free tier only.
+                                                           GitHub Actions,
+                                                           free broker API.
+                                                           SPEND NOTHING.
+  G1     Rs 5 L         Rs 90,000        Rs 750/mo         Small VPS if and
+                                                           only if a real
+                                                           need is proven.
+  G2     Rs 10 L        Rs 1.80 L        Rs 1,500/mo       Paid data feed
+                                                           OR VPS, not both.
+  G3     Rs 25 L        Rs 4.50 L        Rs 3,750/mo       Real cloud
+                                                           infrastructure
+                                                           becomes rational.
+  G4     Rs 50 L        Rs 9.00 L        Rs 7,500/mo       Redundancy,
+                                                           managed data,
+                                                           serious research
+                                                           compute.
+  G5     Rs 1 Cr        Rs 18.0 L        Rs 15,000/mo      Dedicated
+                                                           hardware, colo
+                                                           only if latency
+                                                           is provably the
+                                                           binding
+                                                           constraint (per
+                                                           2.5, it is not).
+
+Reference recurring costs (verify current pricing):
+  GitHub Actions, private repo   FREE (2,000 min/mo)
+  Upstox / Dhan / Fyers API      FREE
+  Zerodha Kite Connect           ~Rs 2,000/mo  (= 12% of Rs 2 L capital
+                                 per year — irrational before G3)
+  Hetzner CX22 VPS               ~Rs 380/mo
+  DigitalOcean basic droplet     ~Rs 500/mo
+  AWS t4g.small                  ~Rs 1,000/mo
+  yfinance / broker historical   FREE
+  LLM API for research           Variable — meter it, cap it, and treat
+                                 it as research spend, not infra
+
+DO NOT cross a gate early. Money spent on infrastructure before G3 is
+taken directly out of compounding at the stage where compounding is
+most fragile, to buy capacity that is already free and unused.
+
+
+==========================================================
+4. TRANSACTION COST AND TAX MODEL (INDIA)
+==========================================================
+VERIFY ALL OF THIS WITH A CA. Rates change; this reflects a knowledge
+cutoff and is intended as a modelling starting point, not advice.
+
+4.1 TRANSACTION COSTS — Indian equity delivery, discount broker
+    Brokerage (delivery)     Rs 0 at several brokers
+    STT                      0.10% buy + 0.10% sell
+    Exchange txn charge      ~0.00297% per side (NSE)
+    SEBI turnover fee        Rs 10 per crore
+    Stamp duty               0.015% on buy
+    GST                      18% on (brokerage + txn + SEBI charges)
+    DP charge                ~Rs 15.34 per scrip per sell day  <-- FIXED
+    => round trip ~= 0.222% of position + Rs 15.34
+
+    MODELLING REQUIREMENT: any backtest or promotion rule MUST use a
+    size-aware cost function. A flat percentage is materially wrong
+    below Rs 25,000 per position. This is currently a live defect in
+    factory.py (COST_PER_SIDE is flat 0.0019).
+
+4.2 DIRECT TAX — India
+    Equity delivery, held <= 12 months (STCG)   20%
+    Equity delivery, held  > 12 months (LTCG)   12.5%, with a
+                                                Rs 1.25 lakh/yr
+                                                exemption
+    Intraday equity        Speculative business income -> slab rates
+    F&O                    Non-speculative business income -> slab
+                           rates; business expenses deductible
+    Crypto / VDA           30% flat + cess; 1% TDS on EVERY transfer;
+                           NO loss set-off; no expense deduction
+                           beyond cost of acquisition
+    Foreign shares         Slab rate if held <= 24 months;
+                           12.5% LTCG beyond 24 months
+    Dividends              Taxed at slab
+
+    AFTER-TAX MODELLING REQUIREMENT: the tournament currently compares
+    strategies on PRE-TAX returns. A strategy with a 6-month average
+    hold taxed at 20% and a strategy with a 13-month hold taxed at
+    12.5% are not comparable on gross Sharpe. Post-tax expectancy must
+    become a first-class metric before any promotion decision funds
+    real capital.
+
+4.3 THE HOLDING-PERIOD CLIFF — a genuine, large, legal edge
+    Crossing the 12-month line changes the tax rate from 20% to 12.5%
+    AND unlocks a Rs 1.25 lakh annual exemption. On a Rs 2 lakh account
+    this exemption alone can cover the ENTIRE annual gain, taking the
+    effective tax rate to zero.
+
+    Worked: Rs 2 L growing 20% = Rs 40,000 gain.
+      Held < 12 months:  20% STCG            -> Rs 8,000 tax
+      Held > 12 months:  within Rs 1.25 L    -> Rs 0 tax
+    That is a 20% improvement in net return achieved purely by holding
+    period, with no improvement in the strategy whatsoever.
+
+    STRATEGIC IMPLICATION, and it is a big one: this project's own
+    research (2.2) already says only low-turnover strategies survive
+    costs. Tax law pushes in the SAME direction, hard. A strategy
+    holding positions >12 months is favoured twice over — once by
+    friction, once by tax. The design space should be biased strongly
+    toward long-hold, low-turnover, mechanism-driven positions.
+    Everything the operator has learned independently points the same
+    way. Follow it.
+
+
+==========================================================
+5. LEGITIMATE STRUCTURAL ADVANTAGES — AND THE BRIGHT LINES
+==========================================================
+The operator asked about "loopholes." Here is the honest version.
+
+The genuinely large advantages available are ORDINARY, LEGAL, and
+BORING. They are also worth more than anything clever:
+
+  5.1  Holding-period management (Section 4.3). Largest single lever
+       available. Legal, uncontroversial, enormous at small size.
+  5.2  Harvesting the Rs 1.25 lakh LTCG exemption every financial year.
+       Unused exemption does not carry forward — use it or lose it.
+  5.3  Tax-loss harvesting before 31 March. Realise losses to offset
+       realised gains; STCL can offset both STCG and LTCG.
+  5.4  Carry-forward of losses (8 years) if the ITR is filed on time.
+       Filing late forfeits this — a pure paperwork own-goal.
+  5.5  If trading is treated as business income (F&O, intraday),
+       genuine business expenses are deductible: internet, electricity,
+       hardware depreciation, data subscriptions, advisory fees. Keep
+       clean records from day one.
+  5.6  Choosing delivery over intraday keeps income out of the
+       speculative-business classification and inside the capital-gains
+       regime, which at these sizes is usually far more favourable.
+  5.7  Entity structuring (LLP / private limited) becomes worth
+       modelling only at much larger scale, where the flat corporate
+       rate may beat personal slab rates. Not relevant at Rs 2 lakh;
+       revisit around G4.
+  5.8  GIFT City IFSC offers real tax concessions but is oriented to
+       institutional and NRI participants. Worth understanding, almost
+       certainly not accessible or worthwhile at this scale.
+
+THE BRIGHT LINES — do not cross these, and do not ask an AI to help
+cross them. Each one carries consequences that dwarf any conceivable
+gain on a Rs 2 lakh account:
+
+  X  Non-disclosure of foreign assets (ITR Schedule FA). Black Money
+     Act penalties are severe and are assessed per year of
+     non-disclosure. If you ever hold US equities, disclose. Always.
+  X  Trading offshore forex or binary-options platforms as a resident
+     — FEMA violation, and these platforms are frequently outright
+     fraudulent.
+  X  Structuring remittances to circumvent LRS limits.
+  X  Under-reporting or non-reporting of crypto gains. The 1% TDS
+     regime means the tax department already has the transaction
+     record. There is nothing to hide behind.
+  X  Trading on material non-public information.
+  X  Any form of market manipulation — spoofing, layering, wash
+     trading, circular trading.
+  X  Using another person's PAN, demat, or bank account.
+  X  Misrepresenting a paper track record as a live one to anyone,
+     ever — especially if Section 7 is ever pursued.
+
+The realistic assessment: there is no clever structure that turns a bad
+edge into a good one, and no tax trick worth the tail risk of a Black
+Money Act assessment. The legal levers in 5.1-5.4 are large, immediate,
+and sufficient. Take those. Ignore the rest.
+
+
+==========================================================
+6. PHASES AND DECISION GATES
+==========================================================
+
+PHASE 0 — INSTRUMENT HONESTLY  (immediate, before any capital)
+  Deliverables:
+    * Size-aware cost model replacing flat COST_PER_SIDE (per 2.6/4.1)
+    * Post-tax expectancy as a first-class metric (per 4.2)
+    * Nifty buy-and-hold added as a permanent benchmark contestant
+    * Written falsification criteria, committed BEFORE data arrives
+  Gate to advance: all four exist and are tested.
+  Note: without these, every subsequent verdict is measured against
+  the wrong yardstick. This phase is not optional.
+
+PHASE 1 — ACCUMULATE EVIDENCE  (12 months minimum, Rs 0 at risk)
+  Action: run the paper tournament. Change nothing structural.
+  Resist the urge to add mechanisms — per 2.9, complexity has already
+  outrun evidence, and every added mechanism is another channel for
+  selection to overfit a short sample.
+  Gate to advance: at least one strategy clears the existing RULES bar
+  (126 days on rung, >=10 trades, >=0.05%/day expectancy, Sharpe >=0.4,
+  drawdown better than -12%) AND beats the Nifty benchmark net of the
+  corrected cost model and applicable tax.
+  If nothing clears this in 12 months: see Section 8.
+
+PHASE 2 — FIRST REAL CAPITAL  (small, concentrated)
+  Action: deploy to 1-3 strategies only, never 20. Position sizes must
+  be >= Rs 25,000 or the fixed-cost problem (2.6) reappears.
+  The existing LADDER rung 1 of Rs 10,000 is economically incoherent
+  for a basket strategy — a 6-name basket at that rung faces ~1.14%
+  round-trip friction against a modelled 0.38%. Either raise rung 1, or
+  restrict rung-1 strategies to 1-2 names.
+  (LADDER is a protected financial-risk parameter. Changing it requires
+  the operator's explicit, separate instruction.)
+  Gate to advance: 6 months of live results CONSISTENT with the paper
+  results that preceded them. Consistency is the gate, not profit.
+  A strategy that makes money for reasons its paper model did not
+  predict has NOT passed. It got lucky, and luck does not scale.
+
+PHASE 3 — SCALE CAPITAL, NOT COMPLEXITY
+  Action: increase capital via ladder promotion AND via contribution
+  (per 2.7 — contribution is the dominant lever at this size).
+  Cross infrastructure gates only as Section 3 permits.
+  Gate to advance: G3 (Rs 25 lakh) with a track record intact.
+
+PHASE 4 — RECONSIDER VENUE AND STRUCTURE
+  Only here does it become rational to evaluate: US fractional equities
+  as a scaling venue (solves fixed-cost problems permanently), entity
+  structuring, paid data, serious research compute, and the options in
+  Section 7.
+
+
+==========================================================
+7. THE HONEST ANSWER TO "SMALL SUM -> LARGE SUM"
+==========================================================
+The operator said: "we are not chasing something small." That deserves
+a direct answer rather than a reassuring one.
+
+Pure compounding from Rs 2 lakh:
+    at 18% net -> Rs 1 crore in ~23.6 years
+    at 25% net -> Rs 1 crore in ~17.5 years
+    at 35% net -> Rs 1 crore in ~13.0 years  (sustained 35% at retail
+                                              scale for 13 years is
+                                              essentially unheard of
+                                              without leverage, and
+                                              2.4 forecloses leverage)
+
+So: trading returns alone, on this capital base, do not produce a large
+sum on any timescale the operator will find acceptable. That is the
+arithmetic. Any plan that ignores it is a fantasy.
+
+There are exactly three honest routes to a large sum, and they are
+complementary rather than exclusive:
+
+  ROUTE A — CAPITAL CONTRIBUTION (per 2.7)
+    The dominant lever at small size. Rs 2 L + Rs 2 L/yr at 18% reaches
+    Rs 57 L in 10 years and Rs 3.5 Cr in 20 — versus Rs 10.5 L and
+    Rs 55 L with no contributions. The trading system's job at this
+    stage is to EARN THE RIGHT to receive larger contributions by
+    proving an edge exists.
+
+  ROUTE B — TIME AND SURVIVAL
+    Unglamorous and genuinely powerful. The overwhelming majority of
+    retail algo projects die from a blown account or from abandonment,
+    not from insufficient cleverness. A modest, honest, surviving edge
+    compounding for 20 years beats a spectacular one that ends in
+    year 3. The Three Laws already encode this instinct — they are the
+    project's best feature. Protect them.
+
+  ROUTE C — MONETISE THE SYSTEM, NOT ONLY ITS RETURNS
+    This is the route that actually answers "not chasing something
+    small." A genuinely validated systematic track record is worth far
+    more than the returns it generates on Rs 2 lakh, because it can be
+    applied to capital that is not yours. In India the legitimate,
+    regulated paths include: SEBI-registered Investment Adviser (RIA),
+    SEBI-registered Research Analyst, Portfolio Management Services
+    (PMS — high net-worth and capital requirements), and AIF Category
+    III. Each has real registration thresholds, compliance obligations,
+    and capital or qualification requirements that must be researched
+    properly before being counted on.
+    The prerequisite for ALL of them is identical: an auditable, honest,
+    multi-year track record. Which is precisely what this project is
+    already designed to produce.
+    Note the implication — the evidence machine is the valuable asset.
+    Not the Rs 2 lakh. Build the evidence machine well.
+
+The synthesis: use trading to PROVE an edge at small scale. Use
+contribution and time to grow the base. If and only if the edge proves
+real and durable, use the resulting track record — through properly
+registered channels — to access capital far beyond Rs 2 lakh. That is
+the realistic path from small to large. There is no shortcut, and every
+apparent shortcut is either leverage (2.4), overfitting (2.1/2.3), or
+fraud.
+
+
+==========================================================
+8. KILL CONDITIONS — WHEN TO STOP
+==========================================================
+Written now, before the data arrives, precisely so they cannot be
+rationalised away later. This is Law 1 applied to the project itself.
+
+Stop, or fundamentally restructure, if:
+  * After 12 months of live paper trading, no strategy clears the
+    existing RULES bar.
+  * After 12 months, the best contestant fails to beat a Nifty ETF net
+    of the corrected size-aware cost model and applicable tax. (In this
+    case the correct action is explicit: buy the index, and redirect
+    the effort. This is a SUCCESSFUL outcome for an evidence machine.)
+  * Promoted strategies systematically underperform their paper results
+    once real costs apply — i.e. paper does not predict live. This
+    invalidates the entire promotion methodology, not just one
+    strategy.
+  * The advisor trust weight decays to its floor (0.05), indicating
+    advisor-evolved children consistently fail to beat the parents they
+    replaced.
+  * Real drawdown exceeds the modelled maximum by a wide margin,
+    indicating the risk model is wrong in the dangerous direction.
+  * The operator finds himself wanting to change RULES, LADDER, or
+    COST_PER_SIDE to make results look better. That impulse is the
+    single most reliable signal that the edge is not real.
+
+An evidence machine that cannot return "no" is not an evidence machine.
+It is an expensive way to confirm what you already wanted to believe.
+
+
+==========================================================
+9. QUESTIONS THE NEXT AI SHOULD ANSWER
+==========================================================
+Ranked by value. Answer with arithmetic, not assertion.
+
+  Q1  What is the correct size-aware cost function for Indian equity
+      delivery, and what happens to every existing contestant's
+      historical verdict when it is applied retroactively?
+  Q2  What is post-tax expectancy for each strategy family, given
+      realistic holding periods and the 12-month LTCG cliff? Which
+      families change rank once tax is included?
+  Q3  What minimum position size makes each strategy family
+      economically viable? What does that imply for LADDER rung 1?
+  Q4  Over the tournament's actual live history, does ANY contestant
+      beat Nifty buy-and-hold net of corrected costs and tax? (Expected
+      honest answer today: insufficient data — 35 days. Say so.)
+  Q5  How much statistical power does the current sample actually
+      provide? At what N does the tournament's ranking become
+      meaningfully distinguishable from noise? State it as a date.
+  Q6  Does the three-mechanism evolution system (spawn / advisor /
+      crossover) increase overfitting risk relative to a simpler
+      design, given the sample size? Quantify if possible. Recommend
+      whether to disable any of it during Phase 1.
+  Q7  What is the realistic capacity ceiling of each strategy family
+      before market impact matters? (Likely far above any capital this
+      project will reach — confirm and then stop worrying about it.)
+  Q8  Model the full closed loop over 10 years: contribution schedule,
+      returns, taxes, infrastructure spend at each gate, and the
+      resulting terminal value. Show the sensitivity to each input.
+      Which input matters most? (Prediction, per 2.7: contribution
+      rate. Verify or refute.)
+  Q9  For Route C in Section 7 — what are the CURRENT, verified SEBI
+      registration requirements, capital thresholds, and compliance
+      obligations for RIA, RA, PMS and AIF Cat III? What track record
+      would actually be required?
+  Q10 What is the single highest-value change to make right now, and
+      is it a code change at all? (Consider seriously that the answer
+      is "no — it is to wait and let evidence accumulate.")
+
+
+==========================================================
+10. STANDING CONSTRAINTS
+==========================================================
+Inherited from the project constitution. Binding on any AI or human
+working on this system.
+
+  * The Three Laws: hypotheses before testing; live strategies never
+    mutated, only replaced by children starting at rung 0; capital
+    earned through the ladder, never granted.
+  * Never change RULES, LADDER, or COST_PER_SIDE without the
+    operator's explicit, separate, in-session instruction. These are
+    financial risk parameters, not code-quality knobs.
+    (Note: correcting COST_PER_SIDE to be size-aware is a CORRECTNESS
+    fix, not a risk-appetite change — but it still requires explicit
+    sign-off, because it changes every historical verdict.)
+  * Never add options, futures, margin, or leverage logic.
+  * Never add or modify broker/execution/API-key code without explicit
+    instruction.
+  * Never enable real-money execution autonomously. Funding a rung is
+    always a deliberate human action.
+  * Never merge to main, push to main, or force-push without fresh,
+    explicit, in-session authorisation. A previous session's approval
+    does not carry forward.
+  * Never present synthetic or simulated results as live results.
+  * Never claim a test was run against real market data when it was
+    not.
+
+
+==========================================================
+11. THE ONE-PARAGRAPH VERSION
+==========================================================
+We have built a disciplined evidence machine and it has produced 35
+days of data, which is nothing. The machinery is well ahead of the
+evidence. Before any capital moves, the cost model must be made
+size-aware and the tax treatment must be modelled, because both are
+currently wrong in the direction that flatters results. Then the
+correct action is to wait — twelve months of honest paper trading,
+adding nothing — and see whether anything beats a Nifty ETF after real
+costs and real tax. Infrastructure needs no money until roughly
+Rs 25 lakh of capital, because the current stack is free and 95%
+unused. Meanwhile the dominant growth lever is not a better algorithm;
+it is contribution and time. And if a genuine edge does emerge, the
+valuable asset will not be the returns on Rs 2 lakh — it will be the
+auditable track record, which through properly registered channels can
+be applied to capital far larger than our own. That is the realistic
+path from a small sum to a large one.
