@@ -560,6 +560,17 @@ def report():
     print("\nRungs: 0=paper, then Rs 10k / 25k / 50k / 1L per strategy. "
           "Real-money rungs mean YOU place/fund those trades deliberately.")
 
+    # additive-only advisory layers -- read the already-saved state, never
+    # write ledger.json, never influence a verdict above. See agents/README.md.
+    try:
+        from agents.risk_manager.risk_manager import report as risk_report
+        from agents.reporter.reporter import weekly_digest
+        risk_report(state)
+        weekly_digest(rows, evolved, born, state)
+    except Exception as e:
+        print(f"  [warn] agents/ advisory layer failed (non-fatal, does not "
+              f"affect verdicts above): {e}")
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "update"
     {"update": update, "report": report}[cmd]()
