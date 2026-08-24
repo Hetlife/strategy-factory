@@ -37,6 +37,13 @@ from `AUTONOMOUS_LOG.md`'s terse action-by-action record. Check it before
 assuming something is broken (it may already be a known, fixed issue) and
 add to it whenever you find or fix a real bug in this project's own logic.
 
+**`.autonomous/het_directives.md`** — append-only log of Het's own
+instructions/requests over time (summarized intent, never a verbatim
+conversation transcript — same reasoning as `operator_profile.md`'s "What
+NOT to do"), with a standing "NEEDS HET" section for anything blocked on
+him. Read it alongside `next_session.md`; carry its NEEDS HET section into
+whatever you report back to him.
+
 **`.autonomous/operator_profile.md`** — how Het wants any session
 (autonomous or interactive) to communicate with him: plain language, WHY
 not just WHAT, hands-off on code but wants real understanding, honest

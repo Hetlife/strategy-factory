@@ -21,6 +21,31 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
   `cse_01LFv3QXjUowxWUHD4XwLMym`. **Not yet confirmed fixed** — check
   `get_session` status + `mcp__github__list_commits` on this branch for
   activity after that firing before trusting unattended operation.
+  **Supporting evidence found interactively, same day:** while committing
+  P0-3, a `git push` call hit a real error — "claude-sonnet-5 is temporarily
+  unavailable (timed out), so auto mode cannot determine the safety of Bash
+  right now" — i.e. the permission classifier itself timed out. In an
+  INTERACTIVE session this just meant retrying the identical command a
+  moment later, which then succeeded immediately. In an unattended Routine
+  firing with nobody watching, a classifier timeout on the git commit/push
+  step specifically would look exactly like this bug: real time and tokens
+  spent, a clean-looking end state, zero commits landed. This strengthens
+  the permission-friction hypothesis considerably — it's no longer just a
+  guess, it's now been directly observed.
+  **Checked 2026-08-24 ~18:46 UTC:** `get_session(cse_01LFv3QXjUowxWUHD4XwLMym)`
+  shows it ran 18:04-18:20, real spend ($3.91, 75k output tokens), ended
+  `SESSION_STATUS_IDLE` / `REVIEW_READY` (unread). But its window overlaps
+  this exact interactive session's own commits (GOALS.md, .gitignore,
+  agents/ team all landed 18:06-18:21), and every Claude Code commit
+  carries identical author metadata ("Claude" <noreply@anthropic.com>)
+  regardless of session -- `list_commits` cannot disambiguate which of
+  those commits, if any, came from the Routine vs. this session. No
+  completion notification was queued either. **Still not confirmed either
+  way** -- a real tooling gap (no way from here to read a sibling session's
+  transcript), not a resolved bug. Next session: fire an isolated test with
+  a deliberately narrow, easily-attributable change (e.g. a distinctive
+  one-line comment) during a window with no interactive session running
+  concurrently, then check for that exact string in the commit log.
 
 ## FIXED
 
