@@ -135,6 +135,23 @@ def spawn_children(name, params, registry):
             lb = params["lookback"] + dl
             if 20 <= lb <= 120:
                 add(f"lb{lb}", {**params, "lookback": lb})
+    elif params["fn"] == "input_cost":
+        # Same mechanism-bounded neighbour-variant approach as the other
+        # families above (ranges match PARAM_BOUNDS), just never written
+        # for this family until now -- input_cost/monsoon breeding was an
+        # open question in 03_learnings_and_suggestions.txt. monsoon is
+        # deliberately still excluded: it's a dormant no-op with no CSV
+        # sourced yet (sig_monsoon), so breeding it would produce children
+        # that can never generate a signal either -- revisit once the CSV
+        # exists.
+        for dlb in (-5, +5):
+            lb = params["lb"] + dlb
+            if 10 <= lb <= 40:
+                add(f"lb{lb}", {**params, "lb": lb})
+        for dd in (-0.01, +0.01):
+            drop = round(params["drop"] + dd, 3)
+            if -0.08 <= drop <= -0.03:
+                add(f"d{int(abs(drop)*1000)}", {**params, "drop": drop})
     return born
 
 # ---------------- state ----------------
