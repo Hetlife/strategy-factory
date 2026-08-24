@@ -26,6 +26,15 @@ spoon-fed handoff for whichever session runs next — read it after
 own session so the one after you doesn't need this conversation's
 history.
 
+**`.autonomous/operator_profile.md`** — how Het wants any session
+(autonomous or interactive) to communicate with him: plain language, WHY
+not just WHAT, hands-off on code but wants real understanding, honest
+answers over comfortable ones. Read it before any exchange that will
+reach him directly (this matters far less for the unattended autonomous
+loop, which mostly just does the work — it matters most for interactive
+sessions and for anything written for him to read later, like commit
+messages or a status summary).
+
 ## What this is
 
 An automated, self-evolving tournament of trading strategies for Indian
