@@ -5,6 +5,12 @@ as separate files — this is the canonical, self-contained version).
 Read this first, every session. For live state (queue, decisions, recent
 history) read `.autonomous/state.json` FIRST — it's cheap and structured.
 
+**`GOALS.md`** — the north star: what we're actually trying to prove,
+realistic timeline for when we'll know (not a profit forecast — an
+honest one doesn't exist yet), and scenario math explicitly labeled as
+contingent, not predicted. Read it to stay oriented on the point of the
+work, distinct from `EXECUTION_PLAN.md`'s rules/gates/mechanics.
+
 **As of 2026-08-24 the project also has `EXECUTION_PLAN.md`** — a
 condensed strategic reference (settled facts, phase gates, kill
 conditions, growth-lever priority, guardrails) derived from

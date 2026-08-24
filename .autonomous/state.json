@@ -5,7 +5,7 @@
  "branch": "claude/scheduled-maintenance-template-d7yufr",
  "pr_number": 1,
  "pr_status": "open_unmerged",
- "claude_md_sha1": "5a9476df2c953b559e94fcae0f0b49e3d0987418",
+ "claude_md_sha1": "7d794576861d2ab79b7b8785d75c6c70890aa465",
  "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
  "current_phase": "phase_0",
  "current_phase_note": "Phase 0 (EXECUTION_PLAN.md Section 3) gates everything else. Once P0-1..P0-4 below are all done AND tested: STOP new feature work, move to Phase 1 standing mode (Section 4) -- run the schedule, touch nothing structural, let time accumulate real evidence. Do not start P1/P2/P3 items below until Phase 0 clears, except items already explicitly blocked_on_human (those can't be worked regardless of phase).",
