@@ -88,6 +88,38 @@ BREEDING_TOP_N = 10
 BREEDING_MIN_TRADES = RULES["min_trades"]   # need real evidence, not luck
 BREEDING_MAX_NEW_PER_ROUND = 3              # caps a single report() round's births
 
+# ---------------- post-tax expectancy (P0-2, EXECUTION_PLAN.md Section 3) ---
+# A strategy that trades fast and a strategy that holds >12 months are not
+# comparable on pre-tax Sharpe/expectancy alone -- India taxes them at
+# different rates. This is a DISPLAY/ranking-context metric only: it does
+# NOT feed the PROMOTE/DEMOTE verdict above (RULES/min_expectancy stays
+# pre-tax, untouched -- see CLAUDE.md hard rule against changing RULES).
+# The Rs 1.25L/yr LTCG exemption is annual and ACCOUNT-WIDE (shared across
+# every strategy someone actually funds), not a per-strategy allowance --
+# crediting it separately to every contestant here would double- or
+# N-times-count the same exemption, so it is deliberately NOT netted into
+# this per-contestant number. It is noted once, in report()'s printed
+# output, as a portfolio-level reminder instead.
+STCG_RATE = 0.20     # holding <= 12 months
+LTCG_RATE = 0.125    # holding  > 12 months (before the annual exemption)
+LTCG_EXEMPTION_PER_YEAR = 125_000   # Rs, account-wide/annual -- NOT applied
+                                     # per-strategy here, see note above
+TRADING_DAYS_PER_YEAR = 252         # same convention as the Sharpe annualization
+
+def post_tax_expectancy(mean_daily_return, days_in_market, trades):
+    """Rough, ranking-purpose approximation, not a lot-level tax computation
+    (this engine tracks aggregate portfolio weights, not discrete buy/sell
+    lots with individual acquisition dates -- a true FIFO lot-level
+    computation would need that data and isn't what this engine models).
+    Classifies a contestant's typical holding period as its average days
+    in market between trades (days_in_market / trades) against the 12-month
+    (in trading days) STCG/LTCG boundary, and applies the corresponding
+    flat rate to mean daily return. Returns (post_tax_mean, basis_label)."""
+    avg_holding_days = days_in_market / max(trades, 1)
+    if avg_holding_days > TRADING_DAYS_PER_YEAR:
+        return mean_daily_return * (1 - LTCG_RATE), "LTCG"
+    return mean_daily_return * (1 - STCG_RATE), "STCG"
+
 # ---------------- strategy implementations (parametric) ----------------
 def sig_event_drift(px, p):
     lead = px[p["leader"]].pct_change()
@@ -500,15 +532,24 @@ def report():
               and sharpe >= R["min_sharpe"]):   # NaN >= anything is False
             verdict = "PROMOTE"
         paper_pnl = s["equity"] * PAPER_STARTING_CAPITAL - PAPER_STARTING_CAPITAL
+        pt_mean, tax_basis = post_tax_expectancy(mean, s["days_in_market"],
+                                                  s["trades"])
         rows.append(dict(strategy=name, rung=s["rung"],
                          capital=f"Rs {LADDER[s['rung']]:,}",
                          days=s["days_on_rung"], trades=s["trades"],
                          equity=round(s["equity"], 3),
                          sharpe=round(sharpe, 2),
                          dd=f"{dd*100:.1f}%", verdict=verdict,
-                         paper_pnl=f"Rs {paper_pnl:+,.0f}"))
+                         paper_pnl=f"Rs {paper_pnl:+,.0f}",
+                         post_tax_expectancy=round(pt_mean, 6),
+                         tax_basis=tax_basis))
     df = pd.DataFrame(rows).sort_values(["rung", "sharpe"], ascending=False)
     print(df.to_string(index=False))
+    print("\nNote: post_tax_expectancy/tax_basis are ranking context only, "
+          "NOT part of the PROMOTE/DEMOTE verdict above (verdict stays "
+          "pre-tax per RULES). The Rs 1.25L/yr LTCG exemption is annual and "
+          "account-wide, not credited per-strategy here -- see "
+          "post_tax_expectancy()'s docstring.")
     ranked_rows = df.to_dict("records")   # tournament-wide rank order (1 = best)
 
     # apply verdicts + evolution
