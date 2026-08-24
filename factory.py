@@ -33,6 +33,13 @@ ALL_TICKERS = sorted({t for v in UNIVERSE.values() for t in v} | {BENCHMARK})
 LADDER = [0, 10_000, 25_000, 50_000, 100_000]     # rupees per rung (0 = paper)
 RULES = dict(min_days_on_rung=126, min_trades=10, min_expectancy=0.0005,
              max_drawdown=-0.12, min_sharpe=0.4, max_paper_failures=2)
+MIN_SHARPE_SAMPLE_DAYS = 20   # below this, the variance estimate behind Sharpe
+                               # is unreliable (a few near-identical returns can
+                               # floor variance near zero and blow Sharpe up to
+                               # an absurd value) -- same guard advisors.py's own
+                               # sharpe() uses. This does not loosen or tighten
+                               # RULES["min_sharpe"]; it only stops an
+                               # under-sampled Sharpe from ever satisfying it.
 
 # ---------------- advisor layer (see advisors.py) -----------------------
 # Historical-parameter advisors may only ever propose a mutated REPLACEMENT
@@ -309,8 +316,11 @@ def report():
             continue
         n = max(s["days_in_market"], 1)
         mean = s["sum_ret"] / n
-        var = max(s["sum_sq"] / n - mean ** 2, 1e-12)
-        sharpe = mean / np.sqrt(var) * np.sqrt(252)
+        if s["days_in_market"] < MIN_SHARPE_SAMPLE_DAYS:
+            sharpe = float("nan")   # not enough data for a reliable estimate
+        else:
+            var = max(s["sum_sq"] / n - mean ** 2, 1e-12)
+            sharpe = mean / np.sqrt(var) * np.sqrt(252)
         dd = s["equity"] / s["peak"] - 1
         verdict = "hold"
         if dd < R["max_drawdown"]:
@@ -318,7 +328,7 @@ def report():
         elif (s["days_on_rung"] >= R["min_days_on_rung"]
               and s["trades"] >= R["min_trades"]
               and mean >= R["min_expectancy"]
-              and sharpe >= R["min_sharpe"]):
+              and sharpe >= R["min_sharpe"]):   # NaN >= anything is False
             verdict = "PROMOTE"
         rows.append(dict(strategy=name, rung=s["rung"],
                          capital=f"Rs {LADDER[s['rung']]:,}",
