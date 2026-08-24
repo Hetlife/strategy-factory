@@ -18,3 +18,4 @@ counterpart.
 2026-08-24 | 4a69110 | P2-spawn-children-input-cost | done | resolves open question, tested incl. edge case
 2026-08-24 | 85cd1a5 | P2-train-brain-removal | done | superseded by advisors.py, reversible
 2026-08-24 | 26f37db | infra-efficiency-pass | done | CLAUDE.md (committed, was upload-only before) + .autonomous/state.json + this log; AUTONOMOUS_TODO.md 382->98 lines; Routine prompt updated to match
+2026-08-24 | 1b7d29e | feat-paper-pnl-and-crossover-breeding | done | Law1 override #2 (crossover), flagged explicitly; paper-tier only; children start at breakeven not gifted capital; unit-tested (bounds, cross-family rejection, parent-immutability, pop cap); fixed unbounded name-chaining + missing lineage on promotion-bred children found along the way

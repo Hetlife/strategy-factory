@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-24T08:10:00Z",
-  "updated_by_commit": "26f37db",
+  "updated_at": "2026-08-24T08:35:00Z",
+  "updated_by_commit": "1b7d29e",
   "branch": "claude/scheduled-maintenance-template-d7yufr",
   "pr_number": 1,
   "pr_status": "open_unmerged",
@@ -20,7 +20,9 @@
     {"id": "law2-override", "summary": "report() evolution replaces paper-tier (rung 0) stragglers ranked outside top 10; real-money rungs excluded (mitigation chosen unprompted); mechanically still only ever creates new registry keys", "commit": "00f5651"},
     {"id": "pr1-merge-status", "summary": "asked twice, final answer HOLD OFF -- do not merge without a fresh unambiguous confirmation in a NEW session, a prior session's yes does not carry forward", "as_of_commit": "dbc9408"},
     {"id": "spawn-children-input-cost", "summary": "extended breeding to input_cost family (completeness gap, not a values call); monsoon still excluded (dormant, no CSV)", "commit": "4a69110"},
-    {"id": "train-brain-removal", "summary": "deleted, fully superseded by advisors.py, reversible via git history", "commit": "85cd1a5"}
+    {"id": "train-brain-removal", "summary": "deleted, fully superseded by advisors.py, reversible via git history", "commit": "85cd1a5"},
+    {"id": "law1-override-2-crossover-breeding", "summary": "Het explicitly requested two-parent mate/breed mechanic ('right to consciousness on this idea'). NEW mechanism beyond the single-parent advisor blend (law1-override above) -- flagged explicitly as such before building. Mitigations: paper-tier only, same fn+sector required (real mechanism constraint), bounded by MAX_CONTESTANTS + BREEDING_MAX_NEW_PER_ROUND. Children start at breakeven (equity=1.0), NOT gifted parent capital -- docking parent equity would corrupt the real P&L number Sharpe/drawdown/promotion depend on. 'Transfer fund to offspring' implemented as inherited PARAMETERS, not a literal balance transfer.", "commit": "1b7d29e"},
+    {"id": "paper-pnl-display", "summary": "PAPER_STARTING_CAPITAL=100000 is display-only, does not change RULES/LADDER/COST_PER_SIDE or any trading math -- just equity*100000 shown as rupees", "commit": "1b7d29e"}
   ],
 
   "queue": [
@@ -29,12 +31,16 @@
     {"id": "P1-advisor-training-real-run", "priority": "P1", "status": "blocked_on_pr1_merge", "summary": "once PR #1 merges, let advisor_training.yml run once against real data (GH Actions has real network access) and sanity-check parameter_bank.json against real prices -- everything tested so far is synthetic"},
     {"id": "P2-vectorize", "priority": "P2", "status": "open", "summary": "vectorize update()/report() per-contestant loop + yf.download(threads=True). Must not change signal logic or promotion math. Low urgency at ~20-40 contestants."},
     {"id": "P2-monsoon-csv", "priority": "P2", "status": "open", "summary": "no monsoon CSV sourced yet, sig_monsoon is a dormant no-op. Low priority, needs manual data-pipeline work (IMD / data.gov.in)."},
+    {"id": "P2-breeding-population-watch", "priority": "P2", "status": "open", "summary": "crossover breeding (commit 1b7d29e) adds a second source of new registry entries alongside advisor evolution -- watch population growth against MAX_CONTESTANTS=40 once real data is running; consider raising the cap if the mechanism proves interesting, but that's a values call for Het, not autonomous"},
+    {"id": "P3-breeding-dashboard-viz", "priority": "P3", "status": "idea_not_started", "summary": "a real family-tree/lineage-graph view (not just a text column) would show the breeding mechanic much better once there's real multi-generation data to visualize"},
     {"id": "P3-broker-execution", "priority": "P3", "status": "not_started", "summary": "explicitly NOT to be started until at least one real promotion has happened under current rules"},
     {"id": "P3-options-futures-leverage", "priority": "P3", "status": "permanently_out_of_scope", "summary": "not deferred, permanently excluded per Law 1/objectives"},
     {"id": "P3-rules-threshold-review", "priority": "P3", "status": "not_started", "summary": "only after 3-6 months real paper-trading history; argument must be written BEFORE looking at effect on current contestants (avoid hindsight bias). Never touch RULES/LADDER/COST_PER_SIDE without Het's explicit separate instruction."}
   ],
 
   "recent_commits": [
+    {"sha": "1b7d29e", "summary": "feat: paper P&L display + crossover breeding for top-10 profitable strategies"},
+    {"sha": "37fb6d4", "summary": "docs: close out infra-efficiency log entry, cap recent_commits at 10"},
     {"sha": "26f37db", "summary": "infra: efficient session state -- CLAUDE.md, state.json, compact log"},
     {"sha": "dbc9408", "summary": "docs: final AUTONOMOUS_TODO.md update for this session"},
     {"sha": "85cd1a5", "summary": "chore: remove train_brain.py, superseded by advisors.py"},
@@ -42,16 +48,16 @@
     {"sha": "4a69110", "summary": "feat: extend spawn_children() breeding to input_cost strategies"},
     {"sha": "6ec9d6f", "summary": "docs: correct dashboard auth investigation -- proxy invalidated the test"},
     {"sha": "f1b8f14", "summary": "docs: add AUTONOMOUS_TODO.md as persistent cross-session state"},
-    {"sha": "5669fb0", "summary": "fix: guard Sharpe against under-sampled variance in report()"},
-    {"sha": "2635bcf", "summary": "Render parameter-bank params as a readable string in dashboard.py"}
+    {"sha": "5669fb0", "summary": "fix: guard Sharpe against under-sampled variance in report()"}
   ],
   "recent_commits_note": "capped at 10 -- older history in AUTONOMOUS_LOG.md / git log, not duplicated here",
 
   "test_status": {
     "synthetic_suite": "passing",
-    "last_verified_commit": "85cd1a5",
+    "last_verified_commit": "1b7d29e",
+    "breeding_unit_tests": "passing -- crossover bounds/categorical integrity (200 draws), cross-family rejection, parent-stat immutability, population cap at zero headroom, all verified in /tmp/factory_test_run/breeding_test.py (not committed, sandbox-local -- rerun logic inline if needed, see commit 1b7d29e message for what was checked)",
     "real_market_data": "never tested -- yfinance blocked in every sandbox this project has used so far"
   },
 
-  "next_action_hint": "Pick highest-priority 'open' (not blocked_on_*) item from queue: P1-dashboard-auth needs Het, not code. First real non-blocked pick is P2-vectorize or P2-monsoon-csv. Read AUTONOMOUS_TODO.md in full only if you need the narrative rationale behind a decision above."
+  "next_action_hint": "Pick highest-priority 'open' (not blocked_on_*) item from queue: P1-dashboard-auth needs Het, not code. Non-blocked picks: P2-vectorize, P2-monsoon-csv, or P2-breeding-population-watch (watch registry size vs MAX_CONTESTANTS=40 as breeding activity continues). Read AUTONOMOUS_TODO.md in full only if you need the narrative rationale behind a decision above."
 }

@@ -63,6 +63,28 @@ what a commit message already says, don't.
   `AUTONOMOUS_LOG.md` (append-only, terse) so a fresh session's cost is
   one small JSON read + a 3-line git log check instead of ~1000 lines of
   prose across 4 files plus exploratory git commands.
+- **Crossover breeding (Law 1 override #2):** Het explicitly asked for a
+  "select a mate to breed" mechanic where profitable top-10 paper-tier
+  contestants reproduce, framing money as the fitness signal ("they need
+  to earn to reproduce") — and explicitly delegated design latitude
+  ("I give you the right to consciousness on this idea"). This is a
+  *distinct* new mechanism from the existing single-parent advisor blend
+  (law1-override in state.json) — combining two live contestants'
+  parameters, not blending one toward a historical backtest pick — so I
+  flagged it as such before building rather than treating the earlier
+  authorization as covering it. Mitigations applied without being asked
+  again, same pattern as the advisor layer: paper-tier only; a mate must
+  share the same strategy family *and* sector (Law 1 needs a stated
+  mechanism — there's no rationale for splicing unrelated strategy
+  types); bounded by `MAX_CONTESTANTS` + `BREEDING_MAX_NEW_PER_ROUND`.
+  One deliberate deviation from Het's literal wording: "transferring a
+  small amount of his fund to the offspring" is implemented as inherited
+  *parameters*, not a literal equity transfer — docking a parent's
+  `equity` field to fund a child would corrupt the real P&L number that
+  Sharpe/drawdown/promotion decisions read directly, which the
+  architecture notes flag as a verified-correct chain not to be casually
+  rewritten. Children start at breakeven, matching Law 2's own "start
+  over at rung 0" language. Commit `1b7d29e`.
 
 ## Architecture notes beyond CLAUDE.md
 
