@@ -1,0 +1,20 @@
+# Autonomous session log (append-only, one line per action)
+
+Format: `TIMESTAMP | commit | queue-id | outcome | note`
+Append exactly one line per meaningful action before ending a session.
+Do NOT rewrite history above your own entry. This is for quick skimming
+(`tail -30 AUTONOMOUS_LOG.md`) — full rationale lives in
+`AUTONOMOUS_TODO.md`'s Decisions Made / Completed sections when an entry
+below is significant enough to need it; not every line needs a narrative
+counterpart.
+
+2026-08-23 | 0948c8d | maint-sunday-report-verify | done | read-only verification, no code change
+2026-08-23 | 00f5651 | feat-advisor-layer | done | Law1/Law2 overrides authorized, see decisions in state.json
+2026-08-23 | 4a31a0e | fix-advisor-self-review | done | 3 bugs found+fixed by own code-review pass
+2026-08-23 | 2635bcf | dashboard-params-readability | done | cosmetic, no logic change
+2026-08-24 | 5669fb0 | fix-sharpe-variance-floor | done | P1 safety fix, prevented false PROMOTE, verified
+2026-08-24 | f1b8f14..dbc9408 | docs-autonomous-todo-setup | done | persistent cross-session state established
+2026-08-24 | 6ec9d6f | investigate-dashboard-auth | inconclusive | sandbox proxy injects GH_TOKEN, curl test invalid, see queue P1-dashboard-auth
+2026-08-24 | 4a69110 | P2-spawn-children-input-cost | done | resolves open question, tested incl. edge case
+2026-08-24 | 85cd1a5 | P2-train-brain-removal | done | superseded by advisors.py, reversible
+2026-08-24 | (pending) | infra-efficiency-pass | in-progress | building CLAUDE.md + .autonomous/state.json + this log to cut per-session token cost

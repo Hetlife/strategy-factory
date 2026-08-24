@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-08-24T08:00:00Z",
+  "updated_by_commit": "dbc9408",
+  "branch": "claude/scheduled-maintenance-template-d7yufr",
+  "pr_number": 1,
+  "pr_status": "open_unmerged",
+  "claude_md_sha1": "6d7c2a75adcc91e7278b51aa642c34bf828a5961",
+
+  "hard_rules_ack": "See CLAUDE.md for full text -- do not duplicate/re-derive here. Summary tags only: no-hand-edit-ledger, no-touch-RULES-LADDER-COST, no-mutate-registry-entries, no-datamined-strategies-outside-advisor-layer, no-options-futures-leverage, no-broker-execution-code, no-real-money-execution, no-merge-no-main-push-without-fresh-confirmation, no-public-repo.",
+
+  "standing_env_facts": [
+    "yfinance unreachable from this sandbox network -- test with synthetic/monkeypatched data, say so explicitly",
+    "GitHub raw/API requests from this sandbox are proxy-authenticated (GH_TOKEN=proxy-injected) -- a curl/requests 200 from inside a session does NOT prove an anonymous visitor sees the same thing",
+    "GitHub Actions runners DO have real network access -- real data validation happens there, not interactively"
+  ],
+
+  "decisions": [
+    {"id": "law1-override", "summary": "advisors.py trains on historical price data -- authorized by Het after explicit tradeoff Q&A", "commit": "00f5651"},
+    {"id": "law2-override", "summary": "report() evolution replaces paper-tier (rung 0) stragglers ranked outside top 10; real-money rungs excluded (mitigation chosen unprompted); mechanically still only ever creates new registry keys", "commit": "00f5651"},
+    {"id": "pr1-merge-status", "summary": "asked twice, final answer HOLD OFF -- do not merge without a fresh unambiguous confirmation in a NEW session, a prior session's yes does not carry forward", "as_of_commit": "dbc9408"},
+    {"id": "spawn-children-input-cost", "summary": "extended breeding to input_cost family (completeness gap, not a values call); monsoon still excluded (dormant, no CSV)", "commit": "4a69110"},
+    {"id": "train-brain-removal", "summary": "deleted, fully superseded by advisors.py, reversible via git history", "commit": "85cd1a5"}
+  ],
+
+  "queue": [
+    {"id": "P1-pr1-decision", "priority": "P1", "status": "blocked_on_human", "summary": "get Het's fresh decision on PR #1 (merge/hold/close) -- do not attempt to infer or reuse a prior answer"},
+    {"id": "P1-dashboard-auth", "priority": "P1", "status": "open", "summary": "confirm dashboard.py's raw-GitHub-URL auth works for a REAL anonymous visitor, not from inside this sandbox (proxy invalidates that test -- see standing_env_facts). Needs Het to check the raw ledger URL in a plain incognito browser, or a probe method that doesn't route through this proxy."},
+    {"id": "P1-advisor-training-real-run", "priority": "P1", "status": "blocked_on_pr1_merge", "summary": "once PR #1 merges, let advisor_training.yml run once against real data (GH Actions has real network access) and sanity-check parameter_bank.json against real prices -- everything tested so far is synthetic"},
+    {"id": "P2-vectorize", "priority": "P2", "status": "open", "summary": "vectorize update()/report() per-contestant loop + yf.download(threads=True). Must not change signal logic or promotion math. Low urgency at ~20-40 contestants."},
+    {"id": "P2-monsoon-csv", "priority": "P2", "status": "open", "summary": "no monsoon CSV sourced yet, sig_monsoon is a dormant no-op. Low priority, needs manual data-pipeline work (IMD / data.gov.in)."},
+    {"id": "P3-broker-execution", "priority": "P3", "status": "not_started", "summary": "explicitly NOT to be started until at least one real promotion has happened under current rules"},
+    {"id": "P3-options-futures-leverage", "priority": "P3", "status": "permanently_out_of_scope", "summary": "not deferred, permanently excluded per Law 1/objectives"},
+    {"id": "P3-rules-threshold-review", "priority": "P3", "status": "not_started", "summary": "only after 3-6 months real paper-trading history; argument must be written BEFORE looking at effect on current contestants (avoid hindsight bias). Never touch RULES/LADDER/COST_PER_SIDE without Het's explicit separate instruction."}
+  ],
+
+  "recent_commits": [
+    {"sha": "dbc9408", "summary": "docs: final AUTONOMOUS_TODO.md update for this session"},
+    {"sha": "85cd1a5", "summary": "chore: remove train_brain.py, superseded by advisors.py"},
+    {"sha": "ebf1eec", "summary": "docs: update AUTONOMOUS_TODO.md for spawn_children input_cost work"},
+    {"sha": "4a69110", "summary": "feat: extend spawn_children() breeding to input_cost strategies"},
+    {"sha": "6ec9d6f", "summary": "docs: correct dashboard auth investigation -- proxy invalidated the test"},
+    {"sha": "f1b8f14", "summary": "docs: add AUTONOMOUS_TODO.md as persistent cross-session state"},
+    {"sha": "5669fb0", "summary": "fix: guard Sharpe against under-sampled variance in report()"},
+    {"sha": "2635bcf", "summary": "Render parameter-bank params as a readable string in dashboard.py"},
+    {"sha": "4a31a0e", "summary": "Fix advisor-layer bugs found in self-review"},
+    {"sha": "00f5651", "summary": "Add advisor-informed evolution layer for paper-tier stragglers"},
+    {"sha": "0948c8d", "summary": "Verify Sunday weekly report step fires correctly (item 1)"}
+  ],
+
+  "test_status": {
+    "synthetic_suite": "passing",
+    "last_verified_commit": "85cd1a5",
+    "real_market_data": "never tested -- yfinance blocked in every sandbox this project has used so far"
+  },
+
+  "next_action_hint": "Pick highest-priority 'open' (not blocked_on_*) item from queue: P1-dashboard-auth needs Het, not code. First real non-blocked pick is P2-vectorize or P2-monsoon-csv. Read AUTONOMOUS_TODO.md in full only if you need the narrative rationale behind a decision above."
+}
