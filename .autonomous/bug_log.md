@@ -32,20 +32,26 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
   spent, a clean-looking end state, zero commits landed. This strengthens
   the permission-friction hypothesis considerably — it's no longer just a
   guess, it's now been directly observed.
-  **Checked 2026-08-24 ~18:46 UTC:** `get_session(cse_01LFv3QXjUowxWUHD4XwLMym)`
-  shows it ran 18:04-18:20, real spend ($3.91, 75k output tokens), ended
-  `SESSION_STATUS_IDLE` / `REVIEW_READY` (unread). But its window overlaps
-  this exact interactive session's own commits (GOALS.md, .gitignore,
-  agents/ team all landed 18:06-18:21), and every Claude Code commit
-  carries identical author metadata ("Claude" <noreply@anthropic.com>)
-  regardless of session -- `list_commits` cannot disambiguate which of
-  those commits, if any, came from the Routine vs. this session. No
-  completion notification was queued either. **Still not confirmed either
-  way** -- a real tooling gap (no way from here to read a sibling session's
-  transcript), not a resolved bug. Next session: fire an isolated test with
-  a deliberately narrow, easily-attributable change (e.g. a distinctive
-  one-line comment) during a window with no interactive session running
-  concurrently, then check for that exact string in the commit log.
+  **CONFIRMED 2026-08-24 ~19:00 UTC, definitive negative result:**
+  re-checked `get_session(cse_01LFv3QXjUowxWUHD4XwLMym)` (ran 18:04:05-
+  18:20:29, $3.91, 75k output tokens, ended IDLE/REVIEW_READY -- not
+  crashed) against `list_commits` for that exact window. Only two commits
+  landed in 18:04-18:20 (`850607a` GOALS.md, `f5c0acd` .gitignore), and
+  BOTH carry an explicit `Claude-Session: https://claude.ai/code/
+  session_01Xi9RuUYcgbdgDMPdh32DnD` trailer -- a direct attribution to the
+  INTERACTIVE session, not the Routine. This resolves the earlier
+  ambiguity conclusively: **the Routine session ran for 16 real minutes
+  and produced ZERO commits of its own.** The "don't give up silently,
+  commit what you have" prompt fix added earlier today DID NOT WORK.
+  Reported to Het directly: the unattended dev-loop Routine cannot yet be
+  trusted to make progress while he's away, even though it runs cleanly
+  and doesn't crash. Root cause still unknown -- the permission-classifier
+  timeout observed interactively during this same session is a plausible
+  cause but NOT yet proven to be what happens inside the Routine's own
+  container. Next session: this needs actual root-causing, not another
+  blind re-fire-and-hope. If a way exists to inspect the Routine session's
+  own transcript/tool-call log (not just get_session's metadata), that's
+  the highest-value thing to check next.
 
 ## FIXED
 
