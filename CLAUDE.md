@@ -32,6 +32,11 @@ spoon-fed handoff for whichever session runs next — read it after
 own session so the one after you doesn't need this conversation's
 history.
 
+**`.autonomous/bug_log.md`** — append-only defect log (OPEN/FIXED), distinct
+from `AUTONOMOUS_LOG.md`'s terse action-by-action record. Check it before
+assuming something is broken (it may already be a known, fixed issue) and
+add to it whenever you find or fix a real bug in this project's own logic.
+
 **`.autonomous/operator_profile.md`** — how Het wants any session
 (autonomous or interactive) to communicate with him: plain language, WHY
 not just WHAT, hands-off on code but wants real understanding, honest
