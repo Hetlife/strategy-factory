@@ -156,8 +156,15 @@ def sig_monsoon(px, p):
         return {t: 1.0 / len(names) for t in names}
     return {}
 
+def sig_benchmark(px, p):
+    """P0-3 (EXECUTION_PLAN.md Section 3): plain buy-and-hold Nifty. Not a
+    hypothesis to be tested -- the bar every other contestant has to clear.
+    Always fully invested in BENCHMARK once it appears in the price panel."""
+    return {BENCHMARK: 1.0} if BENCHMARK in px.columns else {}
+
 IMPLS = {"event_drift": sig_event_drift, "momentum": sig_momentum,
-         "input_cost": sig_input_cost, "monsoon": sig_monsoon}
+         "input_cost": sig_input_cost, "monsoon": sig_monsoon,
+         "benchmark": sig_benchmark}
 
 def seed_registry():
     """Starting population: a small grid of variants per hypothesis."""
@@ -176,6 +183,12 @@ def seed_registry():
                                  proxy="TATASTEEL.NS", lb=20, drop=-0.05)
     reg["monsoon_cement"] = dict(fn="monsoon", csv="imd_rainfall_departure.csv",
                                  lag=10, sector="cement", thresh=10.0)
+    # P0-3 (EXECUTION_PLAN.md Section 3): permanent Nifty buy-and-hold
+    # contestant -- the bar every real hypothesis has to clear, not a
+    # hypothesis itself. `permanent=True` is checked everywhere a
+    # contestant could otherwise be demoted/retired/evolved/bred away --
+    # see report(), propose_evolutions(), attempt_breeding().
+    reg["nifty_benchmark"] = dict(fn="benchmark", permanent=True)
     return reg
 
 def spawn_children(name, params, registry):
@@ -363,7 +376,8 @@ def propose_evolutions(rows, reg, con, bank, trust_weight):
             continue
         name = r["strategy"]
         s = con[name]
-        if (s["rung"] != 0 or s["retired"] or s["evolved_out"]
+        if (reg.get(name, {}).get("permanent")
+                or s["rung"] != 0 or s["retired"] or s["evolved_out"]
                 or s["days_on_rung"] < RULES["min_days_on_rung"]
                 or s["trades"] < RULES["min_trades"]):
             continue
@@ -436,7 +450,8 @@ def attempt_breeding(reg, con):
     by MAX_CONTESTANTS and BREEDING_MAX_NEW_PER_ROUND so a lucky week
     can't explode the population."""
     paper_live = [(n, s) for n, s in con.items()
-                  if s["rung"] == 0 and not s["retired"] and not s["evolved_out"]]
+                  if s["rung"] == 0 and not s["retired"] and not s["evolved_out"]
+                  and not reg.get(n, {}).get("permanent")]
     paper_live.sort(key=lambda ns: ns[1]["equity"], reverse=True)
     eligible = [n for n, s in paper_live[:BREEDING_TOP_N]
                 if s["equity"] > 1.0 and s["trades"] >= BREEDING_MIN_TRADES]
@@ -523,8 +538,13 @@ def report():
             var = max(s["sum_sq"] / n - mean ** 2, 1e-12)
             sharpe = mean / np.sqrt(var) * np.sqrt(252)
         dd = s["equity"] / s["peak"] - 1
+        is_benchmark = reg.get(name, {}).get("permanent", False)
         verdict = "hold"
-        if dd < R["max_drawdown"]:
+        if is_benchmark:
+            # P0-3: the bar to clear, never itself subject to promotion/
+            # demotion/retirement/evolution/breeding -- see seed_registry().
+            verdict = "BENCHMARK"
+        elif dd < R["max_drawdown"]:
             verdict = "DEMOTE"
         elif (s["days_on_rung"] >= R["min_days_on_rung"]
               and s["trades"] >= R["min_trades"]
