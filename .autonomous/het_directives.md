@@ -21,6 +21,8 @@ Format: `DATE | directive (summarized) | status`
 - 2026-08-24 | "Give you every permission, work on your own" | **ACKNOWLEDGED, GUARDRAILS UNCHANGED** — CLAUDE.md's hard rules (never merge/push main, never touch RULES/LADDER/COST_PER_SIDE, never real capital/broker code, never make the repo public) still require Het's fresh, explicit, in-session confirmation each time, regardless of a general permission grant. Stated this back to Het directly rather than silently expanding scope.
 - 2026-08-24 | Store this session's ongoing instructions in a file to reference later, even while Het is away and sending updates | **DONE** — this file. Append new directives here as they arrive; update status as they're acted on.
 
+- 2026-08-24 | "Report to me once a day, keep working if I don't reply" | **DONE** — daily Routine `trig_01Y9q1Dn98ghLMD4KX7xZfxp` created, fires 13:00 UTC daily into a fresh session, reads state.json/bug_log.md/het_directives.md and reports plain-language status + anything needing Het's decision. Push notification enabled.
+
 ## NEEDS HET (carry this section into the next daily report / next_session.md)
 
 - PR #1 merge decision — hold, needs fresh confirmation, not inferred from any prior "yes."
