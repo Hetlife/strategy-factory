@@ -4,8 +4,27 @@ Condensed from the project's founding docs (never committed to this repo
 as separate files — this is the canonical, self-contained version).
 Read this first, every session. For live state (queue, decisions, recent
 history) read `.autonomous/state.json` FIRST — it's cheap and structured.
-Only read `AUTONOMOUS_TODO.md` in full when doing substantive work; it's
-prose and costs more tokens per read.
+
+**As of 2026-08-24 the project also has `EXECUTION_PLAN.md`** — a
+condensed strategic reference (settled facts, phase gates, kill
+conditions, growth-lever priority, guardrails) derived from
+`mission_document.txt`/`pivot_document.txt`/`understanding.txt`. Read it
+before doing any substantive work — `state.json.current_phase` tells you
+which phase applies, and `EXECUTION_PLAN.md` tells you what that phase
+means. The project is currently in **Phase 0**: four gating deliverables
+(size-aware cost model, post-tax expectancy metric, Nifty benchmark
+contestant, committed falsification criteria) must ship before any other
+feature work resumes. Only read `AUTONOMOUS_TODO.md` in full when doing
+substantive work; it's prose and costs more tokens per read.
+
+**`AUTONOMOUS_OPERATING_SYSTEM.txt`** is the full session-protocol spec
+(source-of-truth hierarchy, task sizing, code-change protocol, session
+log/state formats, kill-switch discipline). This file (CLAUDE.md) is the
+fast-path summary of it. `.autonomous/next_session.md` is the literal,
+spoon-fed handoff for whichever session runs next — read it after
+`state.json`, before doing any work, and rewrite it before ending your
+own session so the one after you doesn't need this conversation's
+history.
 
 ## What this is
 
