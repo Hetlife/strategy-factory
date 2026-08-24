@@ -12,7 +12,7 @@ USAGE:  python factory.py update   (daily, after market close - cron/Actions)
         python factory.py report   (weekly scoreboard + auto promotions)
 State lives in ./factory_state/ledger.json
 """
-import json, sys, os
+import json, sys, os, random
 import numpy as np
 import pandas as pd
 
@@ -54,6 +54,26 @@ PARAM_BOUNDS = {               # mechanism-bounded blend ranges, mirrors seed gr
     "threshold": (0.02, 0.08, 3), "hold": (2, 5, 0),
     "lookback": (20, 120, 0), "lb": (10, 40, 0), "drop": (-0.08, -0.03, 3),
 }
+
+# ---------------- paper P&L display + breeding (paper tier only) --------
+# PAPER_STARTING_CAPITAL is a DISPLAY convenience, not a financial risk
+# parameter -- it does not change any trading math, promotion threshold,
+# or real capital. paper_capital = equity * PAPER_STARTING_CAPITAL just
+# turns the existing equity multiplier into a human-readable rupee P&L for
+# rung-0 (paper, Rs 0 real risk) contestants. Real-money rungs still use
+# LADDER for actual capital.
+PAPER_STARTING_CAPITAL = 100_000
+
+# Reproduction, not replacement: a profitable top-BREEDING_TOP_N paper-tier
+# contestant can mate with another (same family + sector -- a real
+# mechanism constraint, see crossover_breed()) and produce an ADDITIONAL
+# child without losing its own slot. Distinct from propose_evolutions()'s
+# bottom-of-tournament replacement mechanism. Paper tier only -- real-money
+# rungs never breed this way, only via the pre-existing spawn_children()
+# on promotion.
+BREEDING_TOP_N = 10
+BREEDING_MIN_TRADES = RULES["min_trades"]   # need real evidence, not luck
+BREEDING_MAX_NEW_PER_ROUND = 3              # caps a single report() round's births
 
 # ---------------- strategy implementations (parametric) ----------------
 def sig_event_drift(px, p):
@@ -287,7 +307,8 @@ def propose_evolutions(rows, reg, con, bank, trust_weight):
         mean = s["sum_ret"] / max(s["days_in_market"], 1)
         reg[child] = new_params
         con[child] = blank_stats(lineage=dict(
-            parent=name, gen=gen, advisor_weight_used=trust_weight,
+            parents=[name], mechanism="advisor_evolve", gen=gen,
+            advisor_weight_used=trust_weight,
             parent_mean_ret=round(mean, 6), parent_rank=rank,
             bank_source=picks[0]))
         s["retired"] = True
@@ -295,14 +316,98 @@ def propose_evolutions(rows, reg, con, bank, trust_weight):
         born.append(child)
     return born
 
+def crossover_breed(parent_a, parent_b):
+    """Combine two same-family, same-sector parents' calibrated numeric
+    parameters into a child's. Uniform per-gene inheritance -- each
+    numeric parameter independently inherited from a or b with equal
+    probability, mirroring biological crossover rather than just
+    averaging. Categorical fields (fn, sector, leader/proxy) must already
+    match between parents (enforced by the caller) and carry over as-is.
+
+    Mechanism (Law 1 requires one): when two independently-conceived
+    hypotheses in the same family and sector have both proven profitable
+    in live paper trading, recombining their calibrated parameters is a
+    reasonable bet the child inherits calibration quality from both --
+    the trading-strategy equivalent of ensembling two independently
+    validated parameter fits. This is not data-mining a new mechanism;
+    both inputs already cleared the same live-evidence bar as everything
+    else in the tournament.
+
+    Never mutates either parent -- returns a fresh params dict only."""
+    assert parent_a["fn"] == parent_b["fn"]
+    assert parent_a.get("sector") == parent_b.get("sector")
+    child = dict(parent_a)
+    gene_map = {}
+    for key in PARAM_BOUNDS:
+        if key in parent_a and key in parent_b:
+            source = random.choice(("a", "b"))
+            child[key] = parent_a[key] if source == "a" else parent_b[key]
+            gene_map[key] = source
+    return child, gene_map
+
+def attempt_breeding(reg, con):
+    """Top-BREEDING_TOP_N profitable paper-tier contestants may mate and
+    produce an additional child -- 'they need to earn to reproduce'.
+    Ranked among paper-tier (rung 0) contestants only, by equity; a
+    real-money-rung contestant is never part of this ranking or pool.
+    Eligibility: profitable (equity > 1.0) with real evidence (enough
+    trades), not already retired/evolved-out this round. Within each
+    (family, sector) bucket the two fittest eligible parents mate --
+    crossover requires a shared mechanism, see crossover_breed(). Bounded
+    by MAX_CONTESTANTS and BREEDING_MAX_NEW_PER_ROUND so a lucky week
+    can't explode the population."""
+    paper_live = [(n, s) for n, s in con.items()
+                  if s["rung"] == 0 and not s["retired"] and not s["evolved_out"]]
+    paper_live.sort(key=lambda ns: ns[1]["equity"], reverse=True)
+    eligible = [n for n, s in paper_live[:BREEDING_TOP_N]
+                if s["equity"] > 1.0 and s["trades"] >= BREEDING_MIN_TRADES]
+
+    buckets = {}
+    for name in eligible:
+        p = reg[name]
+        buckets.setdefault((p["fn"], p.get("sector")), []).append(name)
+    bucket_keys = list(buckets.keys())
+    random.shuffle(bucket_keys)
+
+    born = []
+    for key in bucket_keys:
+        if len(born) >= BREEDING_MAX_NEW_PER_ROUND or len(reg) >= MAX_CONTESTANTS:
+            break
+        members = buckets[key]
+        if len(members) < 2:
+            continue
+        members.sort(key=lambda n: con[n]["equity"], reverse=True)
+        a, b = members[0], members[1]        # the two fittest in this bucket mate
+        child_params, gene_map = crossover_breed(reg[a], reg[b])
+        gen = max((con[a]["lineage"] or {}).get("gen", 0),
+                  (con[b]["lineage"] or {}).get("gen", 0)) + 1
+        # Truncate parent names in the child's name -- without this, names
+        # concatenate across generations and grow unbounded (seen in
+        # testing: chains like "x_x_x_..." after several breeding rounds).
+        # Full ancestry is still preserved exactly in lineage["parents"].
+        short_a, short_b = a[:18], b[:18]
+        child = f"{short_a}_x_{short_b}_g{gen}"
+        base, suffix = child, 2
+        while child in reg:
+            child = f"{base}_{suffix}"; suffix += 1
+        reg[child] = child_params
+        con[child] = blank_stats(lineage=dict(
+            parents=[a, b], mechanism="crossover", gen=gen, gene_map=gene_map))
+        born.append(child)
+    return born
+
 def update_advisor_trust(con, adv_state):
     """'How much to listen to the advisor' is decided collectively: every
-    lineage child that has finished its own evaluation window is scored
-    against the parent it replaced. If most of them beat their parent's
-    mean return, nudge trust_weight up; otherwise nudge it down."""
+    advisor-evolved lineage child that has finished its own evaluation
+    window is scored against the parent it replaced. If most of them beat
+    their parent's mean return, nudge trust_weight up; otherwise nudge it
+    down. Only scores mechanism="advisor_evolve" lineage -- crossover and
+    spawn_neighbor children don't have a single "parent replaced" to
+    compare against, so they're not part of this vote."""
     beat, total = 0, 0
     for s in con.values():
-        if (not s["lineage"] or s["trust_scored"]
+        if (not s["lineage"] or s["lineage"].get("mechanism") != "advisor_evolve"
+                or s["trust_scored"]
                 or s["days_on_rung"] < RULES["min_days_on_rung"]):
             continue
         child_mean = s["sum_ret"] / max(s["days_in_market"], 1)
@@ -347,12 +452,14 @@ def report():
               and mean >= R["min_expectancy"]
               and sharpe >= R["min_sharpe"]):   # NaN >= anything is False
             verdict = "PROMOTE"
+        paper_pnl = s["equity"] * PAPER_STARTING_CAPITAL - PAPER_STARTING_CAPITAL
         rows.append(dict(strategy=name, rung=s["rung"],
                          capital=f"Rs {LADDER[s['rung']]:,}",
                          days=s["days_on_rung"], trades=s["trades"],
                          equity=round(s["equity"], 3),
                          sharpe=round(sharpe, 2),
-                         dd=f"{dd*100:.1f}%", verdict=verdict))
+                         dd=f"{dd*100:.1f}%", verdict=verdict,
+                         paper_pnl=f"Rs {paper_pnl:+,.0f}"))
     df = pd.DataFrame(rows).sort_values(["rung", "sharpe"], ascending=False)
     print(df.to_string(index=False))
     ranked_rows = df.to_dict("records")   # tournament-wide rank order (1 = best)
@@ -366,6 +473,11 @@ def report():
             if s["rung"] >= 2:                       # proven with real money
                 kids = spawn_children(r["strategy"], reg[r["strategy"]], reg)
                 if kids:
+                    parent_gen = (s["lineage"] or {}).get("gen", 0)
+                    for k in kids:
+                        con[k] = blank_stats(lineage=dict(
+                            parents=[r["strategy"]], mechanism="spawn_neighbor",
+                            gen=parent_gen + 1))
                     print(f"  spawned children of {r['strategy']}: {kids}")
         elif r["verdict"] == "DEMOTE":
             if s["rung"] == 0:
@@ -391,6 +503,11 @@ def report():
               f"{evolved}  [trust_weight={adv_state['trust_weight']}]")
     adv_state = update_advisor_trust(con, adv_state)
     save_json(ADVISOR_STATE_PATH, adv_state)
+
+    # breeding: profitable top-BREEDING_TOP_N paper-tier contestants mate
+    born = attempt_breeding(reg, con)
+    if born:
+        print(f"  bred (top {BREEDING_TOP_N} profitable, paper tier): {born}")
 
     save_state(state)
     print("\nRungs: 0=paper, then Rs 10k / 25k / 50k / 1L per strategy. "

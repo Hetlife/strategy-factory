@@ -11,6 +11,7 @@ BRANCH = "main"
 FILE_PATH = "factory_state/ledger.json"
 ADVISOR_STATE_PATH = "factory_state/advisor_state.json"
 PARAM_BANK_PATH = "factory_state/parameter_bank.json"
+PAPER_STARTING_CAPITAL = 100_000   # must match factory.py's constant -- display only
 
 st.set_page_config(page_title="Strategy Factory Arena", layout="wide", page_icon="🤖")
 
@@ -77,26 +78,45 @@ if data and "contestants" in data:
             all_series[name] = df
             
             lineage = config.get("lineage")
+            equity = config.get("equity", 1.0)
+            paper_pnl = equity * PAPER_STARTING_CAPITAL - PAPER_STARTING_CAPITAL
+
+            if lineage:
+                parents = lineage.get("parents") or [lineage.get("parent")]
+                mechanism = lineage.get("mechanism", "advisor_evolve")
+                gen = lineage.get("gen", "?")
+                icon = {"crossover": "🧬💞", "spawn_neighbor": "🌱",
+                        "advisor_evolve": "🧬"}.get(mechanism, "🧬")
+                verb = {"crossover": "bred from", "spawn_neighbor": "spawned from",
+                        "advisor_evolve": "evolved from"}.get(mechanism, "from")
+                lineage_str = f"{icon} {verb} {' × '.join(parents)} (gen {gen})"
+            else:
+                lineage_str = "seed"
+
             metric_cards_data.append({
                 "Strategy": name,
-                "Current Equity": config.get("equity", 1.0),
+                "Current Equity": equity,
                 "Peak Equity": config.get("peak", 1.0),
+                "Paper P&L (Rs)": round(paper_pnl),
                 "Trades Executed": config.get("trades", 0),
                 "Days in Market": config.get("days_in_market", 0),
                 "Status": ("Evolved out" if config.get("evolved_out")
                            else "Retired" if config.get("retired", False)
                            else "Active"),
-                "Lineage": (f"🧬 advisor-evolved from {lineage['parent']} "
-                            f"(gen {lineage['gen']})" if lineage else "seed"),
+                "Lineage": lineage_str,
             })
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total Contestants", total_strategies)
     col2.metric("Active Strategies", active_strategies)
-    
+    col3.metric("Paper Bankroll / Contestant", f"Rs {PAPER_STARTING_CAPITAL:,}",
+                help="Every contestant starts here on paper (rung 0 = Rs 0 real "
+                     "money at risk). Paper P&L below is this times the equity "
+                     "factor -- a bookkeeping display, not a real balance.")
+
     if metric_cards_data:
         avg_equity = pd.DataFrame(metric_cards_data)["Current Equity"].mean()
-        col3.metric("Average Arena Equity Factor", f"{avg_equity:.2f}x")
+        col4.metric("Average Arena Equity Factor", f"{avg_equity:.2f}x")
 
     st.markdown("---")
     st.subheader("📈 Arena Equity Growth Comparison")
