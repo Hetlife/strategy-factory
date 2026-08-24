@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-24T08:00:00Z",
-  "updated_by_commit": "dbc9408",
+  "updated_at": "2026-08-24T08:10:00Z",
+  "updated_by_commit": "26f37db",
   "branch": "claude/scheduled-maintenance-template-d7yufr",
   "pr_number": 1,
   "pr_status": "open_unmerged",
@@ -35,6 +35,7 @@
   ],
 
   "recent_commits": [
+    {"sha": "26f37db", "summary": "infra: efficient session state -- CLAUDE.md, state.json, compact log"},
     {"sha": "dbc9408", "summary": "docs: final AUTONOMOUS_TODO.md update for this session"},
     {"sha": "85cd1a5", "summary": "chore: remove train_brain.py, superseded by advisors.py"},
     {"sha": "ebf1eec", "summary": "docs: update AUTONOMOUS_TODO.md for spawn_children input_cost work"},
@@ -42,11 +43,9 @@
     {"sha": "6ec9d6f", "summary": "docs: correct dashboard auth investigation -- proxy invalidated the test"},
     {"sha": "f1b8f14", "summary": "docs: add AUTONOMOUS_TODO.md as persistent cross-session state"},
     {"sha": "5669fb0", "summary": "fix: guard Sharpe against under-sampled variance in report()"},
-    {"sha": "2635bcf", "summary": "Render parameter-bank params as a readable string in dashboard.py"},
-    {"sha": "4a31a0e", "summary": "Fix advisor-layer bugs found in self-review"},
-    {"sha": "00f5651", "summary": "Add advisor-informed evolution layer for paper-tier stragglers"},
-    {"sha": "0948c8d", "summary": "Verify Sunday weekly report step fires correctly (item 1)"}
+    {"sha": "2635bcf", "summary": "Render parameter-bank params as a readable string in dashboard.py"}
   ],
+  "recent_commits_note": "capped at 10 -- older history in AUTONOMOUS_LOG.md / git log, not duplicated here",
 
   "test_status": {
     "synthetic_suite": "passing",

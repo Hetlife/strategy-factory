@@ -17,4 +17,4 @@ counterpart.
 2026-08-24 | 6ec9d6f | investigate-dashboard-auth | inconclusive | sandbox proxy injects GH_TOKEN, curl test invalid, see queue P1-dashboard-auth
 2026-08-24 | 4a69110 | P2-spawn-children-input-cost | done | resolves open question, tested incl. edge case
 2026-08-24 | 85cd1a5 | P2-train-brain-removal | done | superseded by advisors.py, reversible
-2026-08-24 | (pending) | infra-efficiency-pass | in-progress | building CLAUDE.md + .autonomous/state.json + this log to cut per-session token cost
+2026-08-24 | 26f37db | infra-efficiency-pass | done | CLAUDE.md (committed, was upload-only before) + .autonomous/state.json + this log; AUTONOMOUS_TODO.md 382->98 lines; Routine prompt updated to match
