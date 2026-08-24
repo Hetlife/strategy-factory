@@ -90,10 +90,14 @@ queue below.
       (everything tested so far is synthetic).
 
 ### P2 — Medium
-- [ ] Decide the `spawn_children()` coverage gap (item 4 from
-      `03_learnings_and_suggestions.txt`): `input_cost`/`monsoon`
-      strategies never breed on promotion, only `event_drift`/`momentum`
-      do. Not yet decided whether this was intentional.
+- [x] ~~Decide the `spawn_children()` coverage gap~~ — **done, commit
+      `4a69110`**. Treated as a completeness gap (the seed grid only ever
+      had one `input_cost` instance, so no breeding rule had been written
+      for it) rather than a values decision: extended `spawn_children()`
+      with the same mechanism-bounded neighbour-variant pattern the other
+      families use. `monsoon` deliberately still excluded — dormant no-op
+      with no CSV, breeding it would be pointless until real rainfall
+      data exists (tracked below).
 - [ ] Small, safe performance work (item 3): vectorize the per-contestant
       loop in `update()`/`report()`, `yf.download(..., threads=True)`.
       Must not change any strategy's signal logic or promotion math.
@@ -160,6 +164,11 @@ queue below.
   trading-terminal styling, inline-SVG charts, no external deps) so the
   new dashboard sections could be inspected before any push — still live
   at the URL Het was given; not part of the repo.
+- **2026-08-24, commit `4a69110`** — Extended `spawn_children()` to breed
+  `input_cost` strategies (neighbour-variant `lb`/`drop`, same
+  mechanism-bounded pattern as the other families). `monsoon` still
+  deliberately excluded. Resolves the P2 coverage-gap question from
+  `03_learnings_and_suggestions.txt`.
 
 ## Deferred
 
@@ -292,13 +301,16 @@ Created this file. Fixed the Sharpe variance-floor correctness bug in
 PROMOTE verdicts it was causing. Investigated `dashboard.py`'s raw-URL
 auth question (P1) and found the investigation itself was flawed — see
 Problems Encountered — so it's still open, just better understood now.
+Extended `spawn_children()` to breed `input_cost` (commit `4a69110`),
+resolving the P2 coverage-gap question.
 
 ### What was not completed
 `dashboard.py`'s private-repo-auth question is still genuinely open —
 see the P1 queue item for exactly what test is still needed and why this
 sandbox can't perform it. The P1 queue item "get PR #1 reviewed and
 merged" is explicitly NOT something to do autonomously — it needs Het's
-decision, not more code.
+decision, not more code. Remaining P2 items (vectorization,
+train_brain.py disposition, monsoon CSV) are untouched.
 
 ### Exact point to continue from
 Pick the next item from the Priority Queue above. The private-repo-auth
@@ -306,15 +318,20 @@ question needs either Het to run one manual browser check, or a future
 session to find a way to probe it that doesn't route through this
 sandbox's GitHub-authenticating proxy — don't re-attempt it with a plain
 `curl`/`requests` call from inside this environment, that exact mistake
-is documented below. Otherwise, P2 items (spawn_children coverage gap,
-train_brain.py disposition) are unstarted and non-decision-gated.
+is documented below. Otherwise, remaining P2 items (vectorization,
+train_brain.py disposition) are unstarted and non-decision-gated — good
+next picks for a future autonomous session.
 
 ### Files changed this session
-`AUTONOMOUS_TODO.md` (new), `factory.py` (Sharpe guard fix).
+`AUTONOMOUS_TODO.md` (new), `factory.py` (Sharpe guard fix +
+spawn_children input_cost breeding).
 
 ### Tests run
-See "Tests Performed" above — synthetic-data suite re-run after the fix,
-all passing, false-promotion scenario confirmed fixed.
+See "Tests Performed" above — synthetic-data suite re-run after each
+fix, all passing; direct unit-style calls to `spawn_children()` with
+input_cost params confirmed correct bounded children and a correctly
+excluded out-of-range edge case; false-promotion scenario confirmed
+fixed.
 
 ### Problems encountered
 Same standing limitation as before: no real-market-data testing possible
