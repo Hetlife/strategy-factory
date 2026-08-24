@@ -17,7 +17,20 @@ import numpy as np
 import pandas as pd
 
 STATE_DIR = "factory_state"
-COST_PER_SIDE = 0.0019            # STT + charges + slippage per side
+COST_PER_SIDE = 0.0019            # legacy flat-rate constant, kept for reference/
+                                   # display only -- update() no longer charges
+                                   # against this directly, see round_trip_cost().
+                                   # See EXECUTION_PLAN.md P0-1: a flat percentage
+                                   # understates real Indian equity delivery costs
+                                   # by up to ~3x at the position sizes LADDER
+                                   # rung 1 actually implies, because real costs
+                                   # have a FIXED component (the DP charge) that
+                                   # a flat rate can't represent.
+VARIABLE_COST_PER_SIDE = 0.00111  # STT+exchange txn+stamp+GST, ~0.222% round
+                                   # trip / 2, charged per side on traded notional
+DP_CHARGE_PER_SCRIP = 15.34       # Rs, FIXED, once per scrip per sell-day --
+                                   # this is the fixed component a flat-percentage
+                                   # model misses entirely
 BENCHMARK = "^NSEI"
 MAX_CONTESTANTS = 40              # cap so the arena stays readable
 
@@ -216,6 +229,37 @@ def fetch_prices():
                      progress=False)["Close"]
     return px.dropna(how="all").ffill()
 
+def round_trip_cost(turn, tickers_sold, effective_capital):
+    """Size-aware transaction cost for one day's rebalance, as a fraction
+    of NAV. EXECUTION_PLAN.md P0-1: real Indian equity delivery cost is
+    ~0.222% of position (variable: STT+exchange txn+stamp+GST) PLUS a
+    FIXED Rs 15.34 DP charge per scrip per sell-day. A flat percentage
+    (the old COST_PER_SIDE) can only be right at one position size and
+    is wrong -- too low -- everywhere below it, which is exactly the
+    size range LADDER's early rungs imply.
+
+    turn: existing turnover measure, sum of abs(weight change) across
+      all tickers (both the sell leg and buy leg of a full rebalance
+      each contribute, so turn=2.0 for a full close-and-reopen).
+    tickers_sold: count of tickers whose weight DECREASED today (a
+      full close or a partial trim) -- each triggers one DP charge
+      regardless of position size, which is precisely where a flat
+      percentage model breaks down at small sizes.
+    effective_capital: rupees the contestant's weight=1.0 represents.
+      For a real-money rung (>=1) this is that rung's own LADDER
+      capital. For paper tier (rung 0, LADDER=Rs 0 -- costing against
+      that would divide by zero and is meaningless anyway) this is
+      LADDER[1]: paper contestants are costed as if already funded at
+      the first real rung, because that's the capital level whose
+      economics actually determines whether promoting them makes
+      sense. This does not change LADDER itself, only which rung's
+      capital a paper contestant's cost is benchmarked against.
+    """
+    variable = turn * VARIABLE_COST_PER_SIDE
+    fixed = (tickers_sold * DP_CHARGE_PER_SCRIP / effective_capital
+             if effective_capital > 0 else 0.0)
+    return variable + fixed
+
 # ---------------- daily arena ----------------
 def update():
     px = fetch_prices()
@@ -239,7 +283,10 @@ def update():
         tickers = set(s["positions"]) | set(targets)
         turn = sum(abs(targets.get(t, 0) - s["positions"].get(t, 0))
                    for t in tickers)
-        net = day_ret - turn * COST_PER_SIDE
+        tickers_sold = sum(1 for t in tickers
+                            if targets.get(t, 0) < s["positions"].get(t, 0) - 1e-9)
+        effective_capital = LADDER[max(s["rung"], 1)]
+        net = day_ret - round_trip_cost(turn, tickers_sold, effective_capital)
         s["equity"] *= (1 + net)
         s["peak"] = max(s["peak"], s["equity"])
         s["days_on_rung"] += 1

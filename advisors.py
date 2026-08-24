@@ -34,8 +34,8 @@ from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
 
-from factory import (STATE_DIR, UNIVERSE, ALL_TICKERS, COST_PER_SIDE,
-                      IMPLS, seed_registry)
+from factory import (STATE_DIR, UNIVERSE, ALL_TICKERS, LADDER,
+                      IMPLS, seed_registry, round_trip_cost)
 
 BANK_PATH = os.path.join(STATE_DIR, "parameter_bank.json")
 TRAIN_PERIOD = "5y"          # depth of history used for advisor training
@@ -97,7 +97,12 @@ def backtest(px, params, warmup=130):
         turn = sum(abs(targets.get(t, 0) - positions.get(t, 0)) for t in tickers)
         if turn > 0.01:
             n_trades += 1
-        net = day_ret - turn * COST_PER_SIDE
+        tickers_sold = sum(1 for t in tickers
+                            if targets.get(t, 0) < positions.get(t, 0) - 1e-9)
+        # advisor candidates are all paper-tier hypotheses -- same LADDER[1]
+        # cost basis factory.py's update() uses for rung-0 contestants, see
+        # round_trip_cost()'s docstring and EXECUTION_PLAN.md P0-1.
+        net = day_ret - round_trip_cost(turn, tickers_sold, LADDER[1])
         daily_net.append(net)
         positions = targets
     if n_errors:
