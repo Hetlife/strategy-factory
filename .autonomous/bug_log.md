@@ -52,6 +52,18 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
   blind re-fire-and-hope. If a way exists to inspect the Routine session's
   own transcript/tool-call log (not just get_session's metadata), that's
   the highest-value thing to check next.
+  **2026-08-24 ~19:23 UTC: targeted fix attempt #2, this time with a
+  specific mechanism, not a vague instruction.** Updated the Routine's
+  prompt (trig_013GUxs9AwHaRvb1o4eGJRGx) to name the EXACT error text
+  observed interactively ("temporarily unavailable... auto mode cannot
+  determine the safety... try this action again") and give an explicit
+  retry protocol: wait 5-10s, retry the identical call, up to 5 times,
+  before treating it as blocked. Also gave it a specific, easily-verified
+  test task (append one dated self-test line to AUTONOMOUS_LOG.md) instead
+  of open-ended P0 work, so success/failure is unambiguous this time. Fired
+  immediately via fire_trigger rather than waiting for the next scheduled
+  slot -- session `cse_01RJf6KJXJSv3YveSfSHuLxj`, started 19:23:07 UTC.
+  **Result: TBD, check get_session + list_commits after it completes.**
 
 ## FIXED
 
