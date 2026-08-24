@@ -107,8 +107,9 @@ queue below.
       backtest-and-rank idea, but `advisors.py` is actually wired into
       `report()`, uses 3 independent heuristics instead of one grid-search
       winner, and doesn't have the known typo). Decide: delete
-      `train_brain.py`, or leave it as disconnected research. Currently
-      untouched either way.
+      `train_brain.py`, or leave it as disconnected research. **Done,
+      commit `85cd1a5` — removed.** Fully reversible via git history if
+      the offline-research angle is wanted back later.
 - [ ] No monsoon CSV has been sourced yet — `sig_monsoon` is a dormant
       no-op. Low priority per the original suggestions list.
 
@@ -169,6 +170,11 @@ queue below.
   mechanism-bounded pattern as the other families). `monsoon` still
   deliberately excluded. Resolves the P2 coverage-gap question from
   `03_learnings_and_suggestions.txt`.
+- **2026-08-24, commit `85cd1a5`** — Removed `train_brain.py`, fully
+  superseded by `advisors.py`. Resolves the other P2 open question from
+  `03_learnings_and_suggestions.txt` (its own suggested resolution was
+  "fix it... or remove it"). No references anywhere else in the repo;
+  reversible via git history.
 
 ## Deferred
 
@@ -301,16 +307,17 @@ Created this file. Fixed the Sharpe variance-floor correctness bug in
 PROMOTE verdicts it was causing. Investigated `dashboard.py`'s raw-URL
 auth question (P1) and found the investigation itself was flawed — see
 Problems Encountered — so it's still open, just better understood now.
-Extended `spawn_children()` to breed `input_cost` (commit `4a69110`),
-resolving the P2 coverage-gap question.
+Extended `spawn_children()` to breed `input_cost` (commit `4a69110`) and
+removed the now-superseded `train_brain.py` (commit `85cd1a5`), resolving
+both P2 open questions from `03_learnings_and_suggestions.txt`.
 
 ### What was not completed
 `dashboard.py`'s private-repo-auth question is still genuinely open —
 see the P1 queue item for exactly what test is still needed and why this
 sandbox can't perform it. The P1 queue item "get PR #1 reviewed and
 merged" is explicitly NOT something to do autonomously — it needs Het's
-decision, not more code. Remaining P2 items (vectorization,
-train_brain.py disposition, monsoon CSV) are untouched.
+decision, not more code. Remaining P2 items (vectorization, monsoon CSV
+sourcing) are untouched.
 
 ### Exact point to continue from
 Pick the next item from the Priority Queue above. The private-repo-auth
@@ -318,13 +325,14 @@ question needs either Het to run one manual browser check, or a future
 session to find a way to probe it that doesn't route through this
 sandbox's GitHub-authenticating proxy — don't re-attempt it with a plain
 `curl`/`requests` call from inside this environment, that exact mistake
-is documented below. Otherwise, remaining P2 items (vectorization,
-train_brain.py disposition) are unstarted and non-decision-gated — good
-next picks for a future autonomous session.
+is documented below. Otherwise, the vectorization item (P2) is the last
+unstarted, non-decision-gated item on the queue — low urgency at current
+contestant counts, a reasonable pick only once everything above it is
+exhausted.
 
 ### Files changed this session
 `AUTONOMOUS_TODO.md` (new), `factory.py` (Sharpe guard fix +
-spawn_children input_cost breeding).
+spawn_children input_cost breeding), `train_brain.py` (deleted).
 
 ### Tests run
 See "Tests Performed" above — synthetic-data suite re-run after each
