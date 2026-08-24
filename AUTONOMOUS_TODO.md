@@ -60,12 +60,30 @@ queue below.
       branch. This is a decision-gate item, not something to do
       autonomously (merging main requires explicit authorization — see
       Git Safety Rules).
-- [ ] Confirm `dashboard.py`'s raw-GitHub-URL auth actually works against
-      the private repo (item 2 from `03_learnings_and_suggestions.txt`,
-      still open) before any Streamlit Cloud deployment. Untested this
-      session — all dashboard verification so far used a local file
-      server or the already-public `main` branch's raw ledger, not a
-      private-repo auth path.
+- [ ] Confirm `dashboard.py`'s raw-GitHub-URL auth actually works for a
+      real, non-Claude-environment visitor (item 2 from
+      `03_learnings_and_suggestions.txt`, still open) before any
+      Streamlit Cloud deployment. **Investigated this session, but
+      INCONCLUSIVE from this sandbox — do not treat as resolved.** A
+      direct `curl` (unauthenticated) to the raw ledger URL returned
+      HTTP 200 with real content, which looked like a resolution — but
+      the response headers plus `env | grep -i proxy` showed
+      `GH_TOKEN=proxy-injected`: every session in this environment has
+      its outbound GitHub requests transparently authenticated by the
+      sandbox's own proxy, Claude-Code-on-the-web session or not. That
+      means this sandbox categorically cannot distinguish "the repo is
+      public" from "the repo is private but I'm silently authenticated."
+      The only real test is external to this environment: open the raw
+      ledger URL (`https://raw.githubusercontent.com/Hetlife/strategy-
+      factory/refs/heads/main/factory_state/ledger.json`) in a plain
+      browser private/incognito window with no GitHub login. A future
+      session should ask Het to do this once, or find another way to
+      probe repo visibility that isn't routed through this proxy (e.g.
+      GitHub's own API might expose `private:` on the repo object if a
+      session's token scope allows reading it — worth trying
+      `get_file_contents`/repo-metadata tools before assuming another
+      curl will help, since any such tool call goes through the same
+      proxy).
 - [ ] Once PR #1 merges: let `.github/workflows/advisor_training.yml` run
       at least once against real data (scheduled or manual dispatch), and
       verify `parameter_bank.json` looks sane against real market data
@@ -258,24 +276,38 @@ this sandbox's network policy, which would block the *unmodified*
 - This session's Sharpe-guard fix: confirmed the same forced-evolution
   scenario that previously produced absurd Sharpe values and false
   PROMOTE verdicts now correctly shows `NaN`/`hold` instead.
+- **INVESTIGATED, INCONCLUSIVE** (not a pass): `dashboard.py`'s raw-URL
+  auth. A direct `curl` from this sandbox to the raw ledger URL returned
+  200 unauthenticated, which looked like a clean pass — until checking
+  `env | grep -i proxy` showed `GH_TOKEN=proxy-injected`, meaning this
+  sandbox transparently authenticates all outbound GitHub requests.
+  The 200 proves nothing about what a real anonymous visitor would see.
+  See the P1 queue item above for the actual test needed.
 
 ## Last Session Handoff
 
 ### What was completed
 Created this file. Fixed the Sharpe variance-floor correctness bug in
 `report()` (commit `5669fb0`) — verified it actually prevents the false
-PROMOTE verdicts it was causing.
+PROMOTE verdicts it was causing. Investigated `dashboard.py`'s raw-URL
+auth question (P1) and found the investigation itself was flawed — see
+Problems Encountered — so it's still open, just better understood now.
 
 ### What was not completed
-Nothing was left mid-implementation. The P1 queue item "get PR #1
-reviewed and merged" is explicitly NOT something to do autonomously — it
-needs Het's decision, not more code.
+`dashboard.py`'s private-repo-auth question is still genuinely open —
+see the P1 queue item for exactly what test is still needed and why this
+sandbox can't perform it. The P1 queue item "get PR #1 reviewed and
+merged" is explicitly NOT something to do autonomously — it needs Het's
+decision, not more code.
 
 ### Exact point to continue from
-Pick the next item from the Priority Queue above (P1 items first, in
-order). `dashboard.py`'s private-repo auth (P1, second item) is the next
-concrete piece of unstarted, non-decision-gated work — it's directly
-testable and doesn't require Het's input the way the merge decision does.
+Pick the next item from the Priority Queue above. The private-repo-auth
+question needs either Het to run one manual browser check, or a future
+session to find a way to probe it that doesn't route through this
+sandbox's GitHub-authenticating proxy — don't re-attempt it with a plain
+`curl`/`requests` call from inside this environment, that exact mistake
+is documented below. Otherwise, P2 items (spawn_children coverage gap,
+train_brain.py disposition) are unstarted and non-decision-gated.
 
 ### Files changed this session
 `AUTONOMOUS_TODO.md` (new), `factory.py` (Sharpe guard fix).
@@ -285,8 +317,16 @@ See "Tests Performed" above — synthetic-data suite re-run after the fix,
 all passing, false-promotion scenario confirmed fixed.
 
 ### Problems encountered
-None new. Same standing limitation as before: no real-market-data testing
-possible in this sandbox (network policy blocks Yahoo Finance).
+Same standing limitation as before: no real-market-data testing possible
+in this sandbox (network policy blocks Yahoo Finance). New this session:
+attempted to settle the private-repo-auth question with a direct `curl`
+to the raw ledger URL from this sandbox; it returned 200 and looked
+conclusive, but turned out to be a false positive — this sandbox's
+outbound proxy injects a GitHub token (`GH_TOKEN=proxy-injected`) into
+every GitHub request regardless of the target repo's real visibility, so
+the test proved nothing. Caught this before writing it up as resolved.
+Any future attempt to test this from inside a Claude Code session in
+this kind of environment will hit the same wall.
 
 ### Recommended next action
 Either: (a) get Het's explicit decision on PR #1 (merge / keep open /
