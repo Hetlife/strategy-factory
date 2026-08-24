@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
- "updated_at": "2026-08-24T18:10:00Z",
- "updated_by_commit": "38dee23",
+ "updated_at": "2026-08-24T18:30:00Z",
+ "updated_by_commit": "a06e392",
  "branch": "claude/scheduled-maintenance-template-d7yufr",
  "pr_number": 1,
  "pr_status": "open_unmerged",
@@ -50,6 +50,11 @@
    "id": "paper-pnl-display",
    "summary": "PAPER_STARTING_CAPITAL=100000 is display-only, does not change RULES/LADDER/COST_PER_SIDE or any trading math -- just equity*100000 shown as rupees",
    "commit": "1b7d29e"
+  },
+  {
+   "id": "agents-team-override",
+   "summary": "Het explicitly requested a subfolder-based 'team of agents' (judge/researcher/breeder/risk_manager/reporter) despite being warned this isn't Phase 0/1 priority per EXECUTION_PLAN.md; confirmed via AskUserQuestion 'build it anyway, I want the new agents now'. Scoped narrowly: judge/researcher/breeder are read-only wrappers around existing factory.py/advisors.py logic (no duplicated computation, no new write path). risk_manager and reporter are new logic but strictly advisory/printed-only, wired additively into factory.report() after save_state() with a try/except so a bug there can't break the core report. No verdict, RULES/LADDER/COST_PER_SIDE, or ledger-write behavior changed. See agents/README.md.",
+   "commit": "a06e392"
   }
  ],
  "queue": [
@@ -147,6 +152,14 @@
  ],
  "recent_commits": [
   {
+   "sha": "a06e392",
+   "summary": "feat: agents/ team architecture (judge, researcher, breeder, risk_manager, reporter) -- deliberate override, see decisions.agents-team-override"
+  },
+  {
+   "sha": "38dee23",
+   "summary": "feat: P0-1 size-aware cost model (round_trip_cost) replaces flat COST_PER_SIDE"
+  },
+  {
    "sha": "1b7d29e",
    "summary": "feat: paper P&L display + crossover breeding for top-10 profitable strategies"
   },
@@ -179,10 +192,6 @@
    "summary": "docs: correct dashboard auth investigation -- proxy invalidated the test"
   },
   {
-   "sha": "f1b8f14",
-   "summary": "docs: add AUTONOMOUS_TODO.md as persistent cross-session state"
-  },
-  {
    "sha": "5669fb0",
    "summary": "fix: guard Sharpe against under-sampled variance in report()"
   }
@@ -194,5 +203,5 @@
   "breeding_unit_tests": "passing -- crossover bounds/categorical integrity (200 draws), cross-family rejection, parent-stat immutability, population cap at zero headroom, all verified in /tmp/factory_test_run/breeding_test.py (not committed, sandbox-local -- rerun logic inline if needed, see commit 1b7d29e message for what was checked)",
   "real_market_data": "never tested -- yfinance blocked in every sandbox this project has used so far"
  },
- "next_action_hint": "P0-1 done (commit 38dee23). Next open P0 item: P0-2 (post-tax expectancy metric) or P0-3 (Nifty benchmark contestant) -- pick either, both are independent of each other and of P0-1. P0-4 (falsification criteria) is likely already substantively satisfied by EXECUTION_PLAN.md Section 5 existing -- verify that claim rather than assuming, then mark done if so."
+ "next_action_hint": "P0-1 done (38dee23). agents/ team built as a deliberate scoped override (a06e392), does not affect Phase 0 gating. Next: P0-2 (post-tax expectancy metric) or P0-3 (Nifty benchmark contestant) -- pick either, both independent. P0-4 (falsification criteria) is likely already substantively satisfied by EXECUTION_PLAN.md Section 5 existing -- verify rather than assume, then mark done if so. Het is stepping away and asked for one report per day, working autonomously in the meantime -- keep pushing P0-2/P0-3/P0-4 to completion, still never merge/push main without fresh in-session confirmation."
 }
