@@ -93,6 +93,41 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
   ~02:02 UTC -- do not re-enable it without an actual root cause, not
   another prompt-wording guess. The daily-report Routine
   (trig_01Y9q1Dn98ghLMD4KX7xZfxp) is unaffected and stays enabled.
+  **2026-08-25 ~02:16 UTC: diagnostic-first fix attempt #3 (4th firing
+  overall) -- STILL zero commits, even for a trivially small pwd/git-status
+  test file.** Session cse_01Ux9dNfUj9rgiNHyaoWErEh ran 02:10:28-02:14:46
+  (4 min, $0.48), ended cleanly, committed nothing at all -- ruling out
+  "the real task is too big/complex" as an explanation, since the ONLY
+  instructed first action was a one-file diagnostic commit.
+  **LIKELY ROOT CAUSE FOUND, 2026-08-25 ~02:16 UTC:** ran a controlled
+  comparison -- fired an equivalent trivial diagnostic task via
+  `create_session` (session_016SJaSRnEjJxpFtWeP6BCSM) with EXPLICIT
+  `source_url`/`source_revision`/`outcome_branch` parameters, instead of
+  `create_trigger`/`fire_trigger`. Checked its `session_context` before it
+  even ran: it carried real `sources`/`outcomes` git-repository binding.
+  Every `create_trigger`-fired session checked across all 4 failed
+  attempts NEVER carried any such binding -- only
+  `{autofix_on_pr_create, permission_mode}`. The create_session diagnostic
+  completed in under a minute and its commit (03850e3, "docs: create-session
+  diagnostic test log entry") was independently verified via list_commits,
+  landing 40s after session creation. **This is the strongest evidence yet:
+  create_trigger sessions are not given a bound git repository/branch the
+  way create_session sessions are** -- the tool schema for create_trigger
+  has no source_url/outcome_branch parameter at all, unlike create_session.
+  The Routine's prompt has always assumed the repo already exists at a
+  known path (reading CLAUDE.md etc. as step 1) rather than explicitly
+  cloning it -- if there's no bound checkout, that assumption is simply
+  false for every one of these firings.
+  **PROPOSED FIX (not yet tested -- needs one more paid firing, on hold
+  pending Het's ok per his cost-pause request):** rewrite the Routine's
+  prompt to explicitly `git clone https://github.com/Hetlife/strategy-factory.git`
+  (using the proxy-injected GH_TOKEN auth) and `git checkout` the target
+  branch as its literal first action, rather than assuming a checkout
+  exists, then operate entirely inside that freshly-cloned directory for
+  every subsequent step including the final commit/push. This is a
+  structurally different fix from the previous 2 attempts (which both
+  assumed the repo existed and only addressed retry behavior) -- worth
+  testing once confirmed affordable.
 
 ## FIXED
 
