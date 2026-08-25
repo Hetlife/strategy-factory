@@ -89,8 +89,8 @@
   {
    "id": "P0-5-diagnose-routine-zero-commits",
    "priority": "P0",
-   "status": "open_routine_disabled",
-   "summary": "Not phase-gating (Phase 0 is cleared regardless) but high priority: the 5-hourly autonomous dev-loop Routine (trig_013GUxs9AwHaRvb1o4eGJRGx) has now failed 3 confirmed times in a row -- ran for real minutes/tokens, ended cleanly, committed nothing -- including two targeted fixes (generic anti-give-up instruction, then a specific named-error retry protocol with an unambiguous test task). Disabled 2026-08-25 rather than keep guessing. Needs actual internal visibility into what the session does (not available via get_session's metadata-only view) to root-cause properly. Do not re-enable without a real diagnosis. See bug_log.md for full trail.",
+   "status": "likely_root_cause_found_fix_untested",
+   "summary": "The 5-hourly autonomous dev-loop Routine (trig_013GUxs9AwHaRvb1o4eGJRGx, DISABLED) failed 4 confirmed times in a row. 2026-08-25: controlled comparison found the likely cause -- create_trigger-fired sessions carry NO git repo binding in session_context (no sources/outcomes fields, unlike create_session which has explicit source_url/outcome_branch and successfully committed+pushed in an equivalent trivial test, verified independently via list_commits). The Routine's prompt has always assumed a checkout already exists rather than cloning one. PROPOSED FIX: rewrite the prompt to explicitly `git clone` + `git checkout` the target branch as its literal first action. NOT YET TESTED -- holding on the next paid firing pending Het's go-ahead (he asked to confirm before any further cost, 2026-08-25). See bug_log.md for the full comparison and evidence.",
    "commit": "n/a-ops-only"
   },
   {
