@@ -100,6 +100,12 @@
    "summary": "All four Phase 0 deliverables (P0-1..P0-4) done and tested as of 2026-08-24. current_phase flipped to phase_1 below. Standing mode now (EXECUTION_PLAN.md Section 4): run the schedule, touch nothing structural, let time accumulate real evidence. P1/P2/P3 queue items below are now unfrozen except those still blocked_on_human."
   },
   {
+   "id": "P1-ladder-rung1-raise",
+   "priority": "P1",
+   "status": "direction_confirmed_number_pending",
+   "summary": "2026-08-25: Het answered the standing rung-1-sizing question with 'raise the rung-1 rupee amount' (not the cap-names-held alternative). This authorizes the DIRECTION, not yet a specific number -- LADDER is currently [0, 10_000, 25_000, 50_000, 100_000], and rung 1 can't exceed rung 2 without rethinking the whole ladder, not just one value. PROPOSED (not yet implemented): [0, 25_000, 50_000, 100_000, 200_000] -- roughly doubles/2.5x each rung, and at 25,000 capital the same 6-name-basket fixed DP cost (6*15.34=92.04) drops from ~1.14% RT to roughly ~0.6% RT, a meaningful improvement without eliminating the fixed-cost signal entirely. STILL NEEDS a fresh explicit confirmation on the exact numbers before editing factory.py's LADDER constant -- this remains a hard-guarded financial risk parameter per CLAUDE.md, a direction answer is not the same as sign-off on specific figures."
+  },
+  {
    "id": "P1-pr1-decision",
    "priority": "P1",
    "status": "blocked_on_human",
