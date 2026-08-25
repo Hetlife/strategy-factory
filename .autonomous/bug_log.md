@@ -63,7 +63,36 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
   of open-ended P0 work, so success/failure is unambiguous this time. Fired
   immediately via fire_trigger rather than waiting for the next scheduled
   slot -- session `cse_01RJf6KJXJSv3YveSfSHuLxj`, started 19:23:07 UTC.
-  **Result: TBD, check get_session + list_commits after it completes.**
+  **Result, checked 19:33 UTC: FAILED AGAIN, unambiguously this time.**
+  Session ran 19:23:07-19:31:02 (8 real minutes, $1.73, 25.5k output
+  tokens), ended cleanly (IDLE/REVIEW_READY). Zero commits landed after
+  19:23:34 (this interactive session's own last commit) through the test
+  session's end -- no overlapping-attribution ambiguity this time, since no
+  other commit happened in that window from any source. The specific,
+  named retry instruction for the classifier-timeout error did NOT produce
+  a commit, even against a deliberately trivial, unambiguous test task.
+  **This rules out (or at least shows insufficient) the classifier-timeout
+  hypothesis as the full explanation** -- two different targeted fixes have
+  now failed the same way. Decision: PAUSED this Routine
+  (trig_013GUxs9AwHaRvb1o4eGJRGx, disabled via update_trigger) rather than
+  keep re-firing blind guesses at real cost with no diagnostic gain. Real
+  root-causing needs actual visibility into what the session did internally
+  (its own transcript/tool calls), which isn't available through
+  get_session's metadata-only view -- that's the actual blocker on
+  progress here, not another prompt tweak.
+  **2026-08-25 ~02:02 UTC: third failure, confirmed via git log.** Before
+  the disable above landed, the Routine's normal 5-hourly schedule fired
+  again on its own at 2026-08-25T00:49:16Z (`last_fired_at` per
+  list_triggers). Checked git log on the branch spanning this interactive
+  session's own last commit (30b9e18, 19:23:34Z) through now (02:02Z) --
+  zero commits in that entire window, from any source. That's three
+  consecutive failures now (the original 3 pre-session firings, this
+  session's own targeted retry-fix test, and this unattended 00:49 firing
+  on the SAME updated prompt). **Routine trig_013GUxs9AwHaRvb1o4eGJRGx is
+  now DISABLED** via update_trigger (enabled=false) as of 2026-08-25
+  ~02:02 UTC -- do not re-enable it without an actual root cause, not
+  another prompt-wording guess. The daily-report Routine
+  (trig_01Y9q1Dn98ghLMD4KX7xZfxp) is unaffected and stays enabled.
 
 ## FIXED
 

@@ -87,6 +87,13 @@
    "commit": "n/a-docs-verification-only"
   },
   {
+   "id": "P0-5-diagnose-routine-zero-commits",
+   "priority": "P0",
+   "status": "open_routine_disabled",
+   "summary": "Not phase-gating (Phase 0 is cleared regardless) but high priority: the 5-hourly autonomous dev-loop Routine (trig_013GUxs9AwHaRvb1o4eGJRGx) has now failed 3 confirmed times in a row -- ran for real minutes/tokens, ended cleanly, committed nothing -- including two targeted fixes (generic anti-give-up instruction, then a specific named-error retry protocol with an unambiguous test task). Disabled 2026-08-25 rather than keep guessing. Needs actual internal visibility into what the session does (not available via get_session's metadata-only view) to root-cause properly. Do not re-enable without a real diagnosis. See bug_log.md for full trail.",
+   "commit": "n/a-ops-only"
+  },
+  {
    "id": "P0-GATE",
    "priority": "P0",
    "status": "cleared",
@@ -206,5 +213,5 @@
   "breeding_unit_tests": "passing -- crossover bounds/categorical integrity (200 draws), cross-family rejection, parent-stat immutability, population cap at zero headroom, all verified in /tmp/factory_test_run/breeding_test.py (not committed, sandbox-local -- rerun logic inline if needed, see commit 1b7d29e message for what was checked)",
   "real_market_data": "never tested -- yfinance blocked in every sandbox this project has used so far"
  },
- "next_action_hint": "PHASE 0 CLEARED 2026-08-24: P0-1 (38dee23), P0-2 (ba3a0ce), P0-3 (ea5ac0c), P0-4 (verified, no code) all done. current_phase is now phase_1 -- STANDING MODE, don't start new structural work. agents/ team (a06e392) built as a deliberate scoped override, doesn't affect phase gating. Read .autonomous/het_directives.md's NEEDS HET section before reporting to Het. Open items for a session picking this up: (1) confirm the autonomous-routine-zero-commits bug (bug_log.md) with an isolated attributable test, (2) get Het's fresh PR #1 merge decision when he's back, (3) run standing daily update()/weekly report() cycle, watch for any real PROMOTE (would be the first-ever, treat as significant), (4) never merge/push main without fresh in-session confirmation, never a real fund/pooled-capital structure without a separate explicit conversation (SEBI PMS/AIF registration territory, well beyond this repo)."
+ "next_action_hint": "PHASE 0 CLEARED 2026-08-24: P0-1 (38dee23), P0-2 (ba3a0ce), P0-3 (ea5ac0c), P0-4 (verified, no code) all done. current_phase is now phase_1 -- STANDING MODE, don't start new structural work. agents/ team (a06e392) built as a deliberate scoped override, doesn't affect phase gating. Read .autonomous/het_directives.md's NEEDS HET section before reporting to Het. Open items for a session picking this up: (1) the autonomous dev-loop Routine (trig_013GUxs9AwHaRvb1o4eGJRGx) is DISABLED after 3 confirmed zero-commit failures including two targeted fixes -- see queue P0-5 and bug_log.md, needs real root-causing (internal visibility into what the session does, not another prompt tweak) before re-enabling, (2) get Het's fresh PR #1 merge decision when he's back, (3) run standing daily update()/weekly report() cycle, watch for any real PROMOTE (would be the first-ever, treat as significant), (4) never merge/push main without fresh in-session confirmation, never a real fund/pooled-capital structure without a separate explicit conversation (SEBI PMS/AIF registration territory, well beyond this repo)."
 }
