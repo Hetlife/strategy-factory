@@ -43,7 +43,13 @@ UNIVERSE = {
 }
 ALL_TICKERS = sorted({t for v in UNIVERSE.values() for t in v} | {BENCHMARK})
 
-LADDER = [0, 10_000, 25_000, 50_000, 100_000]     # rupees per rung (0 = paper)
+LADDER = [0, 25_000, 50_000, 100_000, 200_000]    # rupees per rung (0 = paper)
+                                   # Raised 2026-08-25 (Het, fresh explicit
+                                   # confirmation): rung-1 was Rs 10,000, where
+                                   # the fixed DP_CHARGE_PER_SCRIP component
+                                   # (see round_trip_cost()) ate ~1.14% RT on a
+                                   # 6-name basket. At Rs 25,000 the same fixed
+                                   # cost drag drops to roughly ~0.6% RT.
 RULES = dict(min_days_on_rung=126, min_trades=10, min_expectancy=0.0005,
              max_drawdown=-0.12, min_sharpe=0.4, max_paper_failures=2)
 MIN_SHARPE_SAMPLE_DAYS = 20   # below this, the variance estimate behind Sharpe
@@ -618,7 +624,8 @@ def report():
         print(f"  bred (top {BREEDING_TOP_N} profitable, paper tier): {born}")
 
     save_state(state)
-    print("\nRungs: 0=paper, then Rs 10k / 25k / 50k / 1L per strategy. "
+    print("\nRungs: 0=paper, then " +
+          " / ".join(f"Rs {r:,}" for r in LADDER[1:]) + " per strategy. "
           "Real-money rungs mean YOU place/fund those trades deliberately.")
 
     # additive-only advisory layers -- read the already-saved state, never
