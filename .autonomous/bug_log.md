@@ -118,16 +118,33 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
   known path (reading CLAUDE.md etc. as step 1) rather than explicitly
   cloning it -- if there's no bound checkout, that assumption is simply
   false for every one of these firings.
-  **PROPOSED FIX (not yet tested -- needs one more paid firing, on hold
-  pending Het's ok per his cost-pause request):** rewrite the Routine's
-  prompt to explicitly `git clone https://github.com/Hetlife/strategy-factory.git`
-  (using the proxy-injected GH_TOKEN auth) and `git checkout` the target
-  branch as its literal first action, rather than assuming a checkout
-  exists, then operate entirely inside that freshly-cloned directory for
-  every subsequent step including the final commit/push. This is a
-  structurally different fix from the previous 2 attempts (which both
-  assumed the repo existed and only addressed retry behavior) -- worth
-  testing once confirmed affordable.
+  **PROPOSED FIX** (was: not yet tested, on hold pending Het's ok):
+  rewrite the Routine's prompt to explicitly
+  `git clone https://github.com/Hetlife/strategy-factory.git` (using the
+  proxy-injected GH_TOKEN auth) and `git checkout` the target branch as
+  its literal first action, rather than assuming a checkout exists.
+  **2026-08-25 ~11:03 UTC: FIX WAS TESTED, AND FAILED.** The primary
+  interactive session updated the Routine's prompt to this explicit
+  clone-first protocol and fired it (`trig_013GUxs9AwHaRvb1o4eGJRGx`,
+  `last_fired_at: 2026-08-25T11:03:48Z`). Checked independently from a
+  separate session: `git fetch origin --prune` (picked up `main` as a new
+  remote branch from the PR #1 merge) and
+  `git log --all --grep="clone-fix" -i` and `--grep="routine-clone-fix"`
+  across every local+remote ref found **zero matching commits anywhere**.
+  The Routine's own STEP 4 instruction was to append a specific,
+  distinctively-named log line and push it -- that never landed, on any
+  branch. **This rules out repo-binding-alone as the full explanation.**
+  Even with a session that explicitly clones and checks out the correct
+  branch as literally its first instructed action, it still produced zero
+  commits. Two independent, structurally different fixes (retry-tuning,
+  then explicit-clone) have now both failed the same way. The actual
+  blocker remains what it was flagged as after the 2nd failed attempt:
+  no available tool exposes what a Routine-fired session's transcript
+  actually does step by step, so root-causing past this point needs
+  either a fundamentally different diagnostic (not another prompt
+  variant) or accepting the unattended loop isn't fixable with tools
+  currently available and relying on interactive sessions instead.
+  **Do not fire this Routine again without one of those two.**
 
 ## FIXED
 
