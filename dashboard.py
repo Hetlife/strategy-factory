@@ -9,6 +9,9 @@ GITHUB_USER = "Hetlife"
 REPO_NAME = "strategy-factory"
 BRANCH = "main"
 FILE_PATH = "factory_state/ledger.json"
+ADVISOR_STATE_PATH = "factory_state/advisor_state.json"
+PARAM_BANK_PATH = "factory_state/parameter_bank.json"
+PAPER_STARTING_CAPITAL = 100_000   # must match factory.py's constant -- display only
 
 st.set_page_config(page_title="Strategy Factory Arena", layout="wide", page_icon="🤖")
 
@@ -21,25 +24,38 @@ if st.sidebar.button("Refresh Data Now"):
     time.sleep(1)
     st.rerun()
 
-# --- CACHED DATA LOADER ---
-@st.cache_data(ttl=60)
-def load_ledger_data(ts):
-    # Fixed complete raw URL path structure
-    url = f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/refs/heads/{BRANCH}/{FILE_PATH}?t={ts}"
+# --- CACHED DATA LOADERS ---
+def _fetch_json(path, ts):
+    url = f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/refs/heads/{BRANCH}/{path}?t={ts}"
     try:
         response = requests.get(url)
         if response.status_code == 200:
             return response.json()
-        else:
-            st.error(f"Failed to fetch data from GitHub. Status code: {response.status_code}")
-            return None
-    except Exception as e:
-        st.error(f"Error loading data: {e}")
         return None
+    except Exception:
+        return None
+
+@st.cache_data(ttl=60)
+def load_ledger_data(ts):
+    data = _fetch_json(FILE_PATH, ts)
+    if data is None:
+        st.error("Failed to fetch ledger data from GitHub.")
+    return data
+
+@st.cache_data(ttl=60)
+def load_advisor_state(ts):
+    # Optional: absent until the first monthly advisor-training run lands.
+    return _fetch_json(ADVISOR_STATE_PATH, ts)
+
+@st.cache_data(ttl=60)
+def load_parameter_bank(ts):
+    return _fetch_json(PARAM_BANK_PATH, ts)
 
 # --- LOAD DATA ---
 current_timestamp = int(time.time())
 data = load_ledger_data(current_timestamp)
+advisor_state = load_advisor_state(current_timestamp)
+parameter_bank = load_parameter_bank(current_timestamp)
 
 if data and "contestants" in data:
     st.title("🤖 Strategy Factory Trading Arena")
@@ -61,22 +77,46 @@ if data and "contestants" in data:
             df = df.sort_values("Date")
             all_series[name] = df
             
+            lineage = config.get("lineage")
+            equity = config.get("equity", 1.0)
+            paper_pnl = equity * PAPER_STARTING_CAPITAL - PAPER_STARTING_CAPITAL
+
+            if lineage:
+                parents = lineage.get("parents") or [lineage.get("parent")]
+                mechanism = lineage.get("mechanism", "advisor_evolve")
+                gen = lineage.get("gen", "?")
+                icon = {"crossover": "🧬💞", "spawn_neighbor": "🌱",
+                        "advisor_evolve": "🧬"}.get(mechanism, "🧬")
+                verb = {"crossover": "bred from", "spawn_neighbor": "spawned from",
+                        "advisor_evolve": "evolved from"}.get(mechanism, "from")
+                lineage_str = f"{icon} {verb} {' × '.join(parents)} (gen {gen})"
+            else:
+                lineage_str = "seed"
+
             metric_cards_data.append({
                 "Strategy": name,
-                "Current Equity": config.get("equity", 1.0),
+                "Current Equity": equity,
                 "Peak Equity": config.get("peak", 1.0),
+                "Paper P&L (Rs)": round(paper_pnl),
                 "Trades Executed": config.get("trades", 0),
                 "Days in Market": config.get("days_in_market", 0),
-                "Status": "Retired" if config.get("retired", False) else "Active"
+                "Status": ("Evolved out" if config.get("evolved_out")
+                           else "Retired" if config.get("retired", False)
+                           else "Active"),
+                "Lineage": lineage_str,
             })
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total Contestants", total_strategies)
     col2.metric("Active Strategies", active_strategies)
-    
+    col3.metric("Paper Bankroll / Contestant", f"Rs {PAPER_STARTING_CAPITAL:,}",
+                help="Every contestant starts here on paper (rung 0 = Rs 0 real "
+                     "money at risk). Paper P&L below is this times the equity "
+                     "factor -- a bookkeeping display, not a real balance.")
+
     if metric_cards_data:
         avg_equity = pd.DataFrame(metric_cards_data)["Current Equity"].mean()
-        col3.metric("Average Arena Equity Factor", f"{avg_equity:.2f}x")
+        col4.metric("Average Arena Equity Factor", f"{avg_equity:.2f}x")
 
     st.markdown("---")
     st.subheader("📈 Arena Equity Growth Comparison")
@@ -104,9 +144,71 @@ if data and "contestants" in data:
     if metric_cards_data:
         summary_df = pd.DataFrame(metric_cards_data)
         st.dataframe(
-            summary_df.sort_values(by="Current Equity", ascending=False), 
+            summary_df.sort_values(by="Current Equity", ascending=False),
             use_container_width=True,
             hide_index=True
         )
+
+    st.markdown("---")
+    st.subheader("🧭 Advisor Layer")
+    st.caption(
+        "Historical-parameter advisors trained monthly on price data (advisors.py). "
+        "They only ever propose a mutated REPLACEMENT for a paper-tier (rung 0) "
+        "contestant ranked outside the tournament's top 10 — never a real-money "
+        "rung, and never an edit in place."
+    )
+
+    if advisor_state:
+        trust = advisor_state.get("trust_weight", 0.0)
+        adv_col1, adv_col2 = st.columns([1, 2])
+        adv_col1.metric("Advisor Trust Weight", f"{trust:.2f}",
+                         help="How much the tournament currently blends advisor-"
+                              "recommended parameters into evolved contestants "
+                              "(0 = ignore advisor, 1 = fully adopt its pick). "
+                              "Self-tunes each week based on whether prior "
+                              "advisor-evolved children beat the parent they replaced.")
+        history = advisor_state.get("history", [])
+        if history:
+            hist_df = pd.DataFrame(history)
+            trust_fig = go.Figure()
+            trust_fig.add_trace(go.Scatter(
+                x=hist_df["date"], y=hist_df["new_trust_weight"],
+                mode="lines+markers", name="trust_weight"))
+            trust_fig.update_layout(
+                template="plotly_dark", height=260,
+                yaxis_title="trust_weight", xaxis_title="Date")
+            adv_col2.plotly_chart(trust_fig, use_container_width=True)
+        else:
+            adv_col2.info("No lineage children have finished their evaluation "
+                           "window yet — trust weight hasn't been re-scored.")
+    else:
+        st.info("No advisor_state.json yet — trust weight starts at its default "
+                "(0.25) until the first evolution round runs.")
+
+    if parameter_bank and parameter_bank.get("bank"):
+        st.markdown("**Parameter bank — top advisor picks per strategy family / sector**")
+        st.caption(f"Last trained: {parameter_bank.get('generated_at', 'unknown')} "
+                   f"· advisors: {', '.join(parameter_bank.get('advisors', []))}")
+        # Skip fn/sector in the readable string -- they're already their own
+        # columns; leader/proxy rarely vary within a bucket but are kept so
+        # a switched leader ticker is still visible at a glance.
+        skip_keys = {"fn", "sector"}
+        bank_rows = []
+        for fn, sectors in parameter_bank["bank"].items():
+            for sector, picks in sectors.items():
+                for rank, pick in enumerate(picks, start=1):
+                    readable = ", ".join(
+                        f"{k}={v}" for k, v in pick["params"].items()
+                        if k not in skip_keys)
+                    bank_rows.append({
+                        "Family": fn, "Sector": sector, "Rank": rank,
+                        "Params": readable, "Sharpe": pick["sharpe"],
+                        "Robustness": pick["robustness"],
+                        "Cost Efficiency (bps/round-trip)": pick["cost_efficiency"],
+                    })
+        st.dataframe(pd.DataFrame(bank_rows), use_container_width=True, hide_index=True)
+    else:
+        st.info("No parameter_bank.json yet — waiting for the first monthly "
+                "advisor-training run (advisor_training.yml).")
 else:
     st.warning("Waiting for data stream structure. Make sure your repository has executed a successful update.")

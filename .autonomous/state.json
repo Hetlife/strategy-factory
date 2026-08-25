@@ -1,0 +1,223 @@
+{
+ "schema_version": 1,
+ "updated_at": "2026-08-24T18:55:00Z",
+ "updated_by_commit": "ea5ac0c",
+ "branch": "claude/scheduled-maintenance-template-d7yufr",
+ "pr_number": 1,
+ "pr_status": "open_unmerged",
+ "claude_md_sha1": "0249acb68911066c84ce711dfaa72d51867fe6f0",
+ "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
+ "current_phase": "phase_1",
+ "current_phase_note": "Phase 0 cleared 2026-08-24 (all 4 deliverables done+tested, see queue P0-1..P0-4 and P0-GATE). Now in Phase 1 (EXECUTION_PLAN.md Section 4): STANDING MODE. Run the daily update()/weekly report() schedule, accumulate real evidence, do NOT start new structural/feature work beyond what's already unfrozen below. The 12-month Phase 1 evidence clock (EXECUTION_PLAN.md Section 5a/5b/6) starts counting meaningfully from here -- don't treat Phase-0-era paper history as part of that clock, the cost/tax model underneath it just changed.",
+ "hard_rules_ack": "See CLAUDE.md for full text -- do not duplicate/re-derive here. Summary tags only: no-hand-edit-ledger, no-touch-RULES-LADDER-COST, no-mutate-registry-entries, no-datamined-strategies-outside-advisor-layer, no-options-futures-leverage, no-broker-execution-code, no-real-money-execution, no-merge-no-main-push-without-fresh-confirmation, no-public-repo.",
+ "standing_env_facts": [
+  "yfinance unreachable from this sandbox network -- test with synthetic/monkeypatched data, say so explicitly",
+  "GitHub raw/API requests from this sandbox are proxy-authenticated (GH_TOKEN=proxy-injected) -- a curl/requests 200 from inside a session does NOT prove an anonymous visitor sees the same thing",
+  "GitHub Actions runners DO have real network access -- real data validation happens there, not interactively"
+ ],
+ "decisions": [
+  {
+   "id": "law1-override",
+   "summary": "advisors.py trains on historical price data -- authorized by Het after explicit tradeoff Q&A",
+   "commit": "00f5651"
+  },
+  {
+   "id": "law2-override",
+   "summary": "report() evolution replaces paper-tier (rung 0) stragglers ranked outside top 10; real-money rungs excluded (mitigation chosen unprompted); mechanically still only ever creates new registry keys",
+   "commit": "00f5651"
+  },
+  {
+   "id": "pr1-merge-status",
+   "summary": "asked twice, final answer HOLD OFF -- do not merge without a fresh unambiguous confirmation in a NEW session, a prior session's yes does not carry forward",
+   "as_of_commit": "dbc9408"
+  },
+  {
+   "id": "spawn-children-input-cost",
+   "summary": "extended breeding to input_cost family (completeness gap, not a values call); monsoon still excluded (dormant, no CSV)",
+   "commit": "4a69110"
+  },
+  {
+   "id": "train-brain-removal",
+   "summary": "deleted, fully superseded by advisors.py, reversible via git history",
+   "commit": "85cd1a5"
+  },
+  {
+   "id": "law1-override-2-crossover-breeding",
+   "summary": "Het explicitly requested two-parent mate/breed mechanic ('right to consciousness on this idea'). NEW mechanism beyond the single-parent advisor blend (law1-override above) -- flagged explicitly as such before building. Mitigations: paper-tier only, same fn+sector required (real mechanism constraint), bounded by MAX_CONTESTANTS + BREEDING_MAX_NEW_PER_ROUND. Children start at breakeven (equity=1.0), NOT gifted parent capital -- docking parent equity would corrupt the real P&L number Sharpe/drawdown/promotion depend on. 'Transfer fund to offspring' implemented as inherited PARAMETERS, not a literal balance transfer.",
+   "commit": "1b7d29e"
+  },
+  {
+   "id": "paper-pnl-display",
+   "summary": "PAPER_STARTING_CAPITAL=100000 is display-only, does not change RULES/LADDER/COST_PER_SIDE or any trading math -- just equity*100000 shown as rupees",
+   "commit": "1b7d29e"
+  },
+  {
+   "id": "agents-team-override",
+   "summary": "Het explicitly requested a subfolder-based 'team of agents' (judge/researcher/breeder/risk_manager/reporter) despite being warned this isn't Phase 0/1 priority per EXECUTION_PLAN.md; confirmed via AskUserQuestion 'build it anyway, I want the new agents now'. Scoped narrowly: judge/researcher/breeder are read-only wrappers around existing factory.py/advisors.py logic (no duplicated computation, no new write path). risk_manager and reporter are new logic but strictly advisory/printed-only, wired additively into factory.report() after save_state() with a try/except so a bug there can't break the core report. No verdict, RULES/LADDER/COST_PER_SIDE, or ledger-write behavior changed. See agents/README.md.",
+   "commit": "a06e392"
+  }
+ ],
+ "queue": [
+  {
+   "id": "P0-1-size-aware-cost-model",
+   "priority": "P0",
+   "status": "done",
+   "summary": "EXECUTION_PLAN.md Section 3. Replace flat COST_PER_SIDE with round_trip_cost_pct(position_size) = 0.222% + (Rs15.34/position_size). May be drafted/implemented/tested on this branch autonomously per the plan's own explicit authorization -- COST_PER_SIDE is still protected from being MERGED to main without Het's fresh confirmation, same as always. Acceptance: a 6-name rung-1 basket (~Rs1,667/name) must price at ~1.1-1.15% RT. Then re-run every existing verdict against the corrected model and record what changes.",
+   "commit": "38dee23"
+  },
+  {
+   "id": "P0-2-post-tax-expectancy",
+   "priority": "P0",
+   "status": "done",
+   "summary": "post_tax_expectancy() added, wired into report() as two additive columns (post_tax_expectancy, tax_basis). Classifies holding period as days_in_market/trades vs 252-trading-day STCG/LTCG boundary. Does NOT feed the verdict (RULES stays pre-tax, untouched). Rs1.25L/yr exemption deliberately NOT credited per-contestant (annual+account-wide, would double-count) -- noted once in printed output instead.",
+   "commit": "ba3a0ce"
+  },
+  {
+   "id": "P0-3-nifty-benchmark",
+   "priority": "P0",
+   "status": "done",
+   "summary": "sig_benchmark() (always fully invested in BENCHMARK=^NSEI) + permanent nifty_benchmark registry entry (permanent=True). Excluded from PROMOTE/DEMOTE (new BENCHMARK verdict), propose_evolutions(), and attempt_breeding() eligible pools -- verified with a targeted test giving it an artificially high equity that would otherwise qualify it for breeding/evolution.",
+   "commit": "ea5ac0c"
+  },
+  {
+   "id": "P0-4-falsification-criteria-committed",
+   "priority": "P0",
+   "status": "done",
+   "summary": "Verified: EXECUTION_PLAN.md Section 5 (kill conditions a-f, dated, specific RULES/LADDER thresholds referenced) already committed before this round of live data accrues. Satisfies P0-4's intent as-is -- no new file needed. No code change.",
+   "commit": "n/a-docs-verification-only"
+  },
+  {
+   "id": "P0-5-diagnose-routine-zero-commits",
+   "priority": "P0",
+   "status": "likely_root_cause_found_fix_untested",
+   "summary": "The 5-hourly autonomous dev-loop Routine (trig_013GUxs9AwHaRvb1o4eGJRGx, DISABLED) failed 4 confirmed times in a row. 2026-08-25: controlled comparison found the likely cause -- create_trigger-fired sessions carry NO git repo binding in session_context (no sources/outcomes fields, unlike create_session which has explicit source_url/outcome_branch and successfully committed+pushed in an equivalent trivial test, verified independently via list_commits). The Routine's prompt has always assumed a checkout already exists rather than cloning one. PROPOSED FIX: rewrite the prompt to explicitly `git clone` + `git checkout` the target branch as its literal first action. NOT YET TESTED -- holding on the next paid firing pending Het's go-ahead (he asked to confirm before any further cost, 2026-08-25). See bug_log.md for the full comparison and evidence.",
+   "commit": "n/a-ops-only"
+  },
+  {
+   "id": "P0-GATE",
+   "priority": "P0",
+   "status": "cleared",
+   "summary": "All four Phase 0 deliverables (P0-1..P0-4) done and tested as of 2026-08-24. current_phase flipped to phase_1 below. Standing mode now (EXECUTION_PLAN.md Section 4): run the schedule, touch nothing structural, let time accumulate real evidence. P1/P2/P3 queue items below are now unfrozen except those still blocked_on_human."
+  },
+  {
+   "id": "P1-ladder-rung1-raise",
+   "priority": "P1",
+   "status": "direction_confirmed_number_pending",
+   "summary": "2026-08-25: Het answered the standing rung-1-sizing question with 'raise the rung-1 rupee amount' (not the cap-names-held alternative). This authorizes the DIRECTION, not yet a specific number -- LADDER is currently [0, 10_000, 25_000, 50_000, 100_000], and rung 1 can't exceed rung 2 without rethinking the whole ladder, not just one value. PROPOSED (not yet implemented): [0, 25_000, 50_000, 100_000, 200_000] -- roughly doubles/2.5x each rung, and at 25,000 capital the same 6-name-basket fixed DP cost (6*15.34=92.04) drops from ~1.14% RT to roughly ~0.6% RT, a meaningful improvement without eliminating the fixed-cost signal entirely. STILL NEEDS a fresh explicit confirmation on the exact numbers before editing factory.py's LADDER constant -- this remains a hard-guarded financial risk parameter per CLAUDE.md, a direction answer is not the same as sign-off on specific figures."
+  },
+  {
+   "id": "P1-pr1-decision",
+   "priority": "P1",
+   "status": "blocked_on_human",
+   "summary": "get Het's fresh decision on PR #1 (merge/hold/close) -- do not attempt to infer or reuse a prior answer. Not phase-gated (a human decision, not feature work) but still requires Het."
+  },
+  {
+   "id": "P1-dashboard-auth",
+   "priority": "P1",
+   "status": "blocked_on_human",
+   "summary": "confirm dashboard.py's raw-GitHub-URL auth works for a REAL anonymous visitor, not from inside this sandbox (proxy invalidates that test -- see standing_env_facts). Needs Het to check the raw ledger URL in a plain incognito browser, or a probe method that doesn't route through this proxy."
+  },
+  {
+   "id": "P1-advisor-training-real-run",
+   "priority": "P1",
+   "status": "blocked_on_pr1_merge",
+   "summary": "once PR #1 merges, let advisor_training.yml run once against real data and sanity-check parameter_bank.json -- everything tested so far is synthetic"
+  },
+  {
+   "id": "P2-vectorize",
+   "priority": "P2",
+   "status": "open_low_priority_standing_mode",
+   "summary": "vectorize update()/report() per-contestant loop + yf.download(threads=True). Must not change signal logic or promotion math. Low urgency at ~20-40 contestants. Phase 1 standing mode says don't add machinery beyond what's needed -- only pick this up if contestant count growth actually makes it necessary."
+  },
+  {
+   "id": "P2-monsoon-csv",
+   "priority": "P2",
+   "status": "open_low_priority_standing_mode",
+   "summary": "no monsoon CSV sourced yet, sig_monsoon is a dormant no-op. Needs manual data-pipeline work (IMD / data.gov.in)."
+  },
+  {
+   "id": "P2-breeding-population-watch",
+   "priority": "P2",
+   "status": "ongoing_watch",
+   "summary": "crossover breeding adds a second source of new registry entries alongside advisor evolution -- watch population growth against MAX_CONTESTANTS=40. This is a passive watch, not active work; note if it becomes a problem even during Phase 0."
+  },
+  {
+   "id": "P3-breeding-dashboard-viz",
+   "priority": "P3",
+   "status": "idea_not_started_frozen",
+   "summary": "a real family-tree/lineage-graph view would show the breeding mechanic better once there's real multi-generation data. Explicitly the kind of feature-idea EXECUTION_PLAN.md Phase 1 says not to build -- park it."
+  },
+  {
+   "id": "P3-broker-execution",
+   "priority": "P3",
+   "status": "not_started_permanently_gated",
+   "summary": "explicitly NOT to be started until at least one real promotion has happened under current rules (EXECUTION_PLAN.md gate 1->2)"
+  },
+  {
+   "id": "P3-options-futures-leverage",
+   "priority": "P3",
+   "status": "permanently_out_of_scope",
+   "summary": "not deferred, permanently excluded per Law 1/objectives and EXECUTION_PLAN.md Section 7"
+  },
+  {
+   "id": "P3-rules-threshold-review",
+   "priority": "P3",
+   "status": "not_started_permanently_gated",
+   "summary": "only after 3-6 months real paper-trading history; argument must be written BEFORE looking at effect on current contestants (avoid hindsight bias). Never touch RULES/LADDER/COST_PER_SIDE without Het's explicit separate instruction."
+  }
+ ],
+ "recent_commits": [
+  {
+   "sha": "ea5ac0c",
+   "summary": "feat: P0-3 permanent Nifty buy-and-hold benchmark contestant -- PHASE 0 GATE CLEARED"
+  },
+  {
+   "sha": "ba3a0ce",
+   "summary": "feat: P0-2 post-tax expectancy metric (STCG/LTCG-aware ranking context, display-only)"
+  },
+  {
+   "sha": "a06e392",
+   "summary": "feat: agents/ team architecture (judge, researcher, breeder, risk_manager, reporter) -- deliberate override, see decisions.agents-team-override"
+  },
+  {
+   "sha": "38dee23",
+   "summary": "feat: P0-1 size-aware cost model (round_trip_cost) replaces flat COST_PER_SIDE"
+  },
+  {
+   "sha": "1b7d29e",
+   "summary": "feat: paper P&L display + crossover breeding for top-10 profitable strategies"
+  },
+  {
+   "sha": "37fb6d4",
+   "summary": "docs: close out infra-efficiency log entry, cap recent_commits at 10"
+  },
+  {
+   "sha": "26f37db",
+   "summary": "infra: efficient session state -- CLAUDE.md, state.json, compact log"
+  },
+  {
+   "sha": "dbc9408",
+   "summary": "docs: final AUTONOMOUS_TODO.md update for this session"
+  },
+  {
+   "sha": "85cd1a5",
+   "summary": "chore: remove train_brain.py, superseded by advisors.py"
+  },
+  {
+   "sha": "6ec9d6f",
+   "summary": "docs: correct dashboard auth investigation -- proxy invalidated the test"
+  },
+  {
+   "sha": "5669fb0",
+   "summary": "fix: guard Sharpe against under-sampled variance in report()"
+  }
+ ],
+ "recent_commits_note": "capped at 10 -- older history in AUTONOMOUS_LOG.md / git log, not duplicated here",
+ "test_status": {
+  "synthetic_suite": "passing",
+  "last_verified_commit": "ea5ac0c",
+  "breeding_unit_tests": "passing -- crossover bounds/categorical integrity (200 draws), cross-family rejection, parent-stat immutability, population cap at zero headroom, all verified in /tmp/factory_test_run/breeding_test.py (not committed, sandbox-local -- rerun logic inline if needed, see commit 1b7d29e message for what was checked)",
+  "real_market_data": "never tested -- yfinance blocked in every sandbox this project has used so far"
+ },
+ "next_action_hint": "PHASE 0 CLEARED 2026-08-24: P0-1 (38dee23), P0-2 (ba3a0ce), P0-3 (ea5ac0c), P0-4 (verified, no code) all done. current_phase is now phase_1 -- STANDING MODE, don't start new structural work. agents/ team (a06e392) built as a deliberate scoped override, doesn't affect phase gating. Read .autonomous/het_directives.md's NEEDS HET section before reporting to Het. Open items for a session picking this up: (1) the autonomous dev-loop Routine (trig_013GUxs9AwHaRvb1o4eGJRGx) is DISABLED after 3 confirmed zero-commit failures including two targeted fixes -- see queue P0-5 and bug_log.md, needs real root-causing (internal visibility into what the session does, not another prompt tweak) before re-enabling, (2) get Het's fresh PR #1 merge decision when he's back, (3) run standing daily update()/weekly report() cycle, watch for any real PROMOTE (would be the first-ever, treat as significant), (4) never merge/push main without fresh in-session confirmation, never a real fund/pooled-capital structure without a separate explicit conversation (SEBI PMS/AIF registration territory, well beyond this repo)."
+}

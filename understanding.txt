@@ -1,0 +1,260 @@
+UNDERSTANDING — STRATEGY FACTORY, AS OF 2026-08-24
+====================================================
+What this project actually is, what has been built, what has been
+decided, and — importantly — what has and has NOT been proven.
+
+Written for: Het, and for any future AI session that needs the honest
+picture rather than the optimistic one.
+
+
+1. WHAT THIS PROJECT IS
+------------------------
+An automated tournament of paper-traded trading strategies for Indian
+equities (NSE), built by Het (SevaaConnect Solutions Pvt Ltd, Surat).
+
+Stated purpose, from the founding docs: prove whether a real trading
+edge exists, at near-zero cost, BEFORE risking capital. "An evidence
+machine, not a money machine."
+
+The core thesis: real edge comes from domain knowledge applied to
+slow-moving, under-watched signals — not from speed, leverage, or
+scanning everything. Het's claimed edge is a construction/architecture/
+real-estate background, applied to cement, infra, steel, and building
+materials.
+
+
+2. WHAT WAS PROVEN BEFORE ANY CODE WAS WRITTEN
+-----------------------------------------------
+These came from simulation work done before the repo existed. They are
+the intellectual foundation and they are unusually good discipline:
+
+- Data-mined lag detection FAILS even when a real signal exists. A
+  cross-correlation scan found near-zero correlation (0.03-0.07) for a
+  signal deliberately embedded with a true 8-day lag. Horizon-matched
+  detection still picked the wrong lag (15 vs true 8). Conclusion:
+  statistical mining is unreliable at retail data volumes.
+
+- Costs dominate at high turnover. A correctly-specified signal
+  strategy trading daily LOST money purely to transaction costs
+  (~5.5%/yr drag at 30 round-trips/year against ~0.38% round-trip
+  cost). Only strategies with <10-15 round-trips/year survive.
+
+- Pairs/stat-arb looked profitable in training (+2.0%/yr, Sharpe 0.53)
+  and COLLAPSED out-of-sample after a simulated regime break
+  (-7.1%/yr, Sharpe -1.23). Every tuned threshold failed the same way.
+
+- Event-lag drift was the ONLY strategy profitable in both training and
+  the regime-break holdout (+3.3%/+3.4% net, Sharpe ~0.6/0.5). This is
+  why it dominates the seed registry.
+
+- Leverage multiplies volatility, not skill. Monte Carlo on an
+  identical 18%/yr strategy: 1x -> +91% median over 5 years; 3x ->
+  +384%; 10x -> median outcome is LOSING 80%, with 54.5% of simulated
+  accounts wiped out entirely.
+
+- HFT/microsecond trading is closed to retail (co-location, crores of
+  infrastructure).
+
+These findings are the most valuable asset in this project. They are
+worth more than the code.
+
+
+3. THE THREE LAWS (the project's constitution)
+-----------------------------------------------
+1. Hypotheses are written before testing — never mined from data.
+2. Live strategies are never mutated — only replaced via bred children
+   that start over at rung 0.
+3. Capital is earned through the ladder, never granted.
+
+Two explicit, Het-authorized deviations now exist (see section 6).
+
+
+4. WHAT HAS BEEN BUILT (the code)
+----------------------------------
+factory.py — the engine.
+  * update()  : runs daily. Realizes P&L from YESTERDAY's positions
+                against TODAY's returns (no lookahead — this ordering
+                is verified correct and must be preserved in any
+                refactor). Charges COST_PER_SIDE=0.0019 on turnover.
+                Updates equity, peak, running mean/variance, history.
+  * report()  : runs weekly (Sunday). Computes Sharpe + drawdown,
+                issues PROMOTE / DEMOTE / hold verdicts, applies the
+                capital ladder, triggers breeding and evolution.
+  * Strategy families (the sig_* functions):
+      - event_drift : sector leader moves > threshold -> hold laggard
+                      basket same direction for `hold` days
+      - momentum    : own top third of a sector by trailing return
+      - input_cost  : input-cost proxy falls > X% -> long downstream
+                      sector (margin expansion hypothesis)
+      - monsoon     : DORMANT no-op. Needs an IMD rainfall CSV that
+                      has never been sourced.
+
+advisors.py — monthly training layer. Backtests a mechanism-bounded
+  parameter grid through the SAME sig_* functions that run live (not a
+  separate divergent backtest), scores each candidate with three
+  independent heuristics — sharpe, regime-robustness (min of first-half
+  and second-half Sharpe), and cost-efficiency (net return per round
+  trip) — then rank-averages them into an ensemble. Writes
+  factory_state/parameter_bank.json.
+
+dashboard.py — Streamlit read-only view. Fetches state from GitHub raw
+  URLs. Never a write path. Shows leaderboard, equity curves, lineage,
+  advisor trust weight, parameter bank, paper P&L.
+
+State files (factory_state/):
+  ledger.json         — registry (strategy definitions) + contestants
+                        (performance state). Never hand-edited.
+  parameter_bank.json — advisor output. DOES NOT EXIST YET (no real
+                        training run has happened).
+  advisor_state.json  — self-tuning trust_weight.
+
+Automation:
+  .github/workflows/factory.yml          — weekday update + Sunday report
+  .github/workflows/advisor_training.yml — monthly advisor training
+  Both commit state back to main. Cost: Rs 0 (GitHub Actions free tier,
+  pure Python, no LLM calls).
+
+Persistent AI-session infrastructure:
+  CLAUDE.md              — binding rules + architecture, auto-loaded
+  .autonomous/state.json — structured machine state (queue, decisions)
+  AUTONOMOUS_LOG.md      — append-only terse session log
+  AUTONOMOUS_TODO.md     — narrative rationale only
+  A scheduled Routine fires a fresh Claude session every 5 hours to
+  continue development autonomously from these files.
+
+
+5. THE EVOLUTION MECHANICS (three distinct mechanisms)
+-------------------------------------------------------
+a) spawn_neighbor (spawn_children) — original. When a strategy reaches
+   rung >= 2 (proven with real money twice), it breeds neighbour-
+   parameter variants. Children start at rung 0. Parent never edited.
+
+b) advisor_evolve (propose_evolutions) — a paper-tier (rung 0)
+   contestant ranked OUTSIDE the top 10 with enough evaluation history
+   gets retired and replaced by a new registry key whose numeric
+   parameters are blended toward the advisor bank's best pick. Blend
+   strength = trust_weight, which self-tunes: each report() run, evolved
+   children that finished their evaluation window are scored against the
+   parent they replaced; if most beat it, trust rises 0.05, else falls.
+
+c) crossover (attempt_breeding) — newest. The top 10 PROFITABLE
+   paper-tier contestants may mate with a peer sharing the same strategy
+   family AND sector. Numeric parameters inherited via uniform per-gene
+   crossover. Additive: parents keep their slot and can breed again.
+   Bounded by MAX_CONTESTANTS=40 and BREEDING_MAX_NEW_PER_ROUND=3.
+
+All three are paper-tier only in effect. Real-money-rung contestants are
+never mutated or replaced — they only ever breed via (a) on promotion.
+
+Paper P&L: PAPER_STARTING_CAPITAL = Rs 100,000 per contestant. This is
+a DISPLAY convenience only — it changes no trading math, no threshold,
+no real capital. Paper P&L = equity_multiplier * 100,000 - 100,000.
+
+
+6. DECISIONS MADE (and why)
+----------------------------
+- LAW 1 OVERRIDE (advisor layer trains on historical price data).
+  Authorized by Het after being shown the explicit tradeoff. Mitigated
+  by keeping grids inside mechanism-bounded ranges and by scoring
+  regime-robustness specifically.
+
+- LAW 2 OVERRIDE (evolution replaces underperformers). Authorized by
+  Het. Mitigation chosen unprompted: paper tier only; mechanically
+  still only ever creates NEW registry keys, never edits one in place;
+  real-money rungs excluded entirely.
+
+- LAW 1 OVERRIDE #2 (two-parent crossover breeding). Requested by Het
+  with explicit design latitude. Flagged as a genuinely new mechanism
+  rather than treated as covered by the earlier authorization.
+  Mitigations: paper tier only, same family + sector required (a real
+  mechanism constraint), population-capped.
+
+- CHILDREN DO NOT INHERIT CAPITAL. Het asked for parents to transfer
+  funds to offspring. Implemented instead as inherited PARAMETERS.
+  Reason: docking a parent's `equity` field would corrupt the exact
+  P&L number that Sharpe, drawdown and promotion decisions read. An
+  artificial deduction would register as a fake trading loss and
+  contaminate the evidence. Children start at breakeven, which also
+  matches Law 2's own "start over at rung 0" language.
+
+- PR #1 NOT MERGED. Asked twice; final standing answer is hold off.
+  All work lives on branch claude/scheduled-maintenance-template-d7yufr.
+
+
+7. BUGS FOUND AND FIXED
+------------------------
+- Sunday report never fired (cron `if:` referenced a schedule string
+  that didn't exist). Fixed before this session; verified working
+  across three real Sunday runs by diffing ledger history.
+- Sharpe variance floored at 1e-12 produced absurd values (~106,512)
+  on thin samples, which could satisfy min_sharpe and trigger a FALSE
+  PROMOTION on essentially no evidence. Now returns NaN below 20
+  days_in_market.
+- cost_efficiency_advisor counted any nonzero-return day as a "trade",
+  collapsing it into a near-duplicate of the Sharpe advisor. Now uses
+  actual round-trip count.
+- backtest() silently swallowed all strategy-function exceptions.
+- Paper-tier contestants reset on non-terminal demote lost their
+  lineage before it could be trust-scored.
+- Promotion-bred children had NO lineage recorded at all.
+- Crossover child names chained unboundedly across generations.
+
+
+8. WHAT HAS *NOT* BEEN PROVEN — READ THIS TWICE
+------------------------------------------------
+This is the honest state of the evidence:
+
+- ONLY 35 DAYS OF LIVE HISTORY EXIST. Twenty contestants, one retired.
+- Equity range across all contestants: 0.876 to 1.011. The best
+  strategy is up 1.1%. The worst is down 12.4%.
+- ZERO promotions have occurred. Nothing has cleared the 126-day
+  minimum, so no strategy has earned a single rupee of real capital.
+- NO STRATEGY HAS DEMONSTRATED AN EDGE. Thirty-five days is
+  statistically meaningless. At this sample size the spread is
+  indistinguishable from noise.
+- NOTHING has ever been tested against real market data by any AI
+  session — Yahoo Finance is unreachable from every Claude sandbox
+  used. All testing is synthetic/monkeypatched. The GitHub Actions
+  runners DO fetch real data, which is where the 35 days came from.
+- advisors.py has NEVER run against real prices. parameter_bank.json
+  does not exist. The entire advisor layer is untested in production.
+- The crossover breeding layer has never seen real data either.
+- dashboard.py's private-repo auth is UNVERIFIED. A curl from inside
+  the sandbox returns 200, but the sandbox proxy injects a GitHub
+  token, so that proves nothing about a real anonymous visitor.
+
+In plain terms: a sophisticated evolutionary tournament has been built
+on top of a hypothesis that has not yet been tested for long enough to
+say anything at all. The machinery is ahead of the evidence.
+
+That is not necessarily wrong — the machinery had to exist to generate
+the evidence — but it must not be mistaken for validation.
+
+
+9. THE HONEST ASSESSMENT
+-------------------------
+Strengths:
+  - Genuinely disciplined epistemics. The Three Laws, the no-lookahead
+    ordering, the paper-first ladder, the refusal to grid-search — this
+    is better methodology than most retail algo projects.
+  - Costs are real and modelled, not ignored.
+  - Zero real capital at risk so far. Downside is currently Rs 0.
+  - Evidence accumulates in parallel (strategy-years per year).
+
+Weaknesses:
+  - Complexity has outrun evidence. Three breeding mechanisms, an
+    advisor ensemble and a trust-weight feedback loop now sit on top of
+    35 days of noise.
+  - Every additional evolutionary mechanism is another way to overfit
+    to a short, noisy sample. The selection pressure is real even if no
+    single component "mines" data.
+  - COST_PER_SIDE = 0.0019 is size-independent. Real Indian costs have
+    FIXED components (DP charges ~Rs 15/scrip/sell-day, per-order
+    brokerage) that dominate at small position sizes. See the pivot
+    document — this materially breaks the model at Rs 2 lakh.
+  - The capital plan has never been stress-tested against real
+    transaction economics.
+
+The single most important next event is not more code. It is TIME —
+accumulating enough live paper history that the tournament's verdicts
+mean something.

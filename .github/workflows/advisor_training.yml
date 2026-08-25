@@ -1,0 +1,68 @@
+name: Strategy Factory - Advisor Training
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    # Runs monthly, 1st of the month at 7:00 AM IST
+    - cron: "30 1 1 * *"
+
+concurrency:
+  group: strategy-factory-advisor-training
+  cancel-in-progress: false
+
+jobs:
+  advisor-training:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install yfinance pandas numpy
+
+      - name: Train advisors (backtest parameter grid, rank ensemble)
+        run: |
+          python advisors.py train
+
+      - name: Commit updated parameter bank
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add factory_state/parameter_bank.json
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Advisor training $(date -u +'%Y-%m-%d')" || true
+
+          for i in 1 2 3; do
+            git fetch origin
+            git rebase origin/main
+
+            if git push origin HEAD:main; then
+              echo "Push successful."
+              exit 0
+            fi
+
+            echo "Push conflict detected. Retrying..."
+            sleep 5
+          done
+
+          echo "Failed after 3 attempts."
+          exit 1
