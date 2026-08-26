@@ -40,8 +40,10 @@ Format: `DATE | directive (summarized) | status`
 
 - 2026-08-26 | "Keep performing a maintenance check throughout the software every night after 2am (when I'm sleeping)" | **DONE.** Created `trig_01KoWHtWkQnLaW9WhHo3kumu`, fires 21:00 UTC (~2:30 AM IST) daily, push-notified. Deliberately DETECTION-ONLY, same reliable pattern as the working daily report Routine -- does NOT attempt to fix and commit anything itself, since scheduled sessions already proved unreliable at that specific step (see bug_log.md, the disabled dev-loop Routine). Runs health_check.py/healer.py, checks GitHub Actions status, checks for a first-ever PROMOTE, surfaces NEEDS HET items -- ready to read each morning.
 
+- 2026-08-26 | "Yes merge" (shared graveyard anti-repeat guard) | **DONE.** Merged via PR #5 (ea877a1). Ran health_check.py against real live data first -- only the known, self-healing nifty_benchmark finding, nothing else. All 5 PRs from this session now merged; branch and main in sync.
+
 ## NEEDS HET (carry this section into the next daily report / next_session.md)
 
 - dashboard.py private-repo auth — needs Het to check the raw ledger URL in a plain incognito browser (sandbox network can't test this validly, see standing_env_facts).
-- **Merge decision needed**: the shared-graveyard anti-repeat guard (commit d1e4db4) -- changes live evolution behavior (skips an otherwise-valid evolution round in the rare case of an exact graveyard match), needs the same explicit sign-off pattern as the LADDER raise and holding-cost decay before it goes to main.
 - Any future request that implies pooling outside money / running a fund — needs its own dedicated conversation (SEBI registration territory), not something to build incrementally by default.
+- No other open merge decisions as of this update — main and the working branch are fully in sync.
