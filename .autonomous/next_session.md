@@ -19,11 +19,43 @@
 10. agents/README.md — the agents/ team, hiring protocol, "code over
     tokens" pattern
 
-## CURRENT STATE (as of 2026-08-26 ~12:50 UTC, commit `9feb4fc`)
+## CURRENT STATE (as of 2026-08-26 ~12:28 UTC, commit `d06880a`)
 
 **Het is away for a few days as of this writing (his own message).**
 Branch and main are fully in sync — no open merge backlog. Everything
-built this session is live on `main`.
+built this session is live on `main`, and was re-verified working AFTER
+that last message (see "REAL BUG FOUND AND FIXED" below — don't assume
+"merged" means "actually works," check).
+
+**Since the "away for days" handoff was first written, also shipped**:
+- Fixed a real bug in `supervisor.yml` — it never installed
+  `pandas`/`numpy`, so every run crashed before checking anything
+  (caught by actually triggering it via `workflow_dispatch`, not by
+  trusting the earlier local-only test, which had those pre-installed).
+  Verified fixed via a second real run — conclusion `success`.
+- `tools/build_trading_floor_state.py` — auto-generates the Trading
+  Floor artifact's data snapshot from real repo state (agents
+  auto-discovered from `agents/*/*.py`, leaderboard from real
+  `ledger.json`, activity from `AUTONOMOUS_LOG.md`, open questions from
+  `het_directives.md`'s NEEDS HET section) instead of hand-typing it
+  into an inline script each time. **Use this, don't hand-write the
+  state JSON again** — see its docstring for usage.
+- `dashboard.py`'s Arena tab: static "Paper Bankroll / Rs 100,000"
+  metric replaced with a live "Top Performer" metric (name + % return).
+- CLAUDE.md: "Outsource to free tooling first" rule (formalizes the
+  pattern already running — prefer a free script/workflow over paid
+  reasoning for mechanical work) and a note that Het now calls the
+  project "the company" in conversation — explicitly NOT a scope change.
+- Het also asked for a "75%-confidence" rule (act autonomously above
+  75% confidence on a judgment call, otherwise queue it for him) and a
+  two-way "notebook" he can reply into. Written into CLAUDE.md as its
+  own section ("Confidence threshold for judgment calls") — a THIRD
+  axis alongside cost and risk, scoped to already-delegated,
+  non-hard-rule territory only (does NOT relax the Hard Rules section).
+  The "notebook" is the Trading Floor Artifact's note bowl +
+  `het_directives.md`'s NEEDS HET section — explicitly not a new thing
+  to build; `dashboard.py`'s local notes box was flagged as NOT the
+  right channel (it's local-only, doesn't reach a session elsewhere).
 
 **What's live on main**: Phase 0 complete, the `agents/` team (now
 SEVEN: judge, researcher, breeder, risk_manager, reporter, healer, hr),
@@ -150,6 +182,12 @@ instead of being guessed at.
 - A "news" data source for the input_cost family — still not found
   (nothing free/simple/reliable enough yet). Keep flagging rather than
   force a low-quality one in.
+- `supervisor.yml`'s cron (`*/15 * * * *`) hadn't fired on its own yet
+  as of this file's last edit (only ~10 min since the fix was merged —
+  too early to tell anything from that). The code itself is confirmed
+  working (manual `workflow_dispatch` succeeded twice). If a future
+  session checks and it's STILL never fired on schedule after a few
+  hours, that's worth actually investigating, not just noting again.
 
 ## EXACT NEXT TASK
 1. `git fetch` + check `state.json`/`het_directives.md`'s NEEDS HET
