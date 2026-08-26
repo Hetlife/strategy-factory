@@ -154,6 +154,19 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
   capability becomes available (e.g. real transcript visibility into a
   Routine-fired session), not on a hunch.
 
+- **FIXED (branch only, not yet on main) | 2026-08-25 | nifty-benchmark-missing-from-live-ledger** — while
+  checking whether the agents were actually trading (real question from
+  Het), read the actual production `factory_state/ledger.json` on `main`
+  and found `nifty_benchmark` absent from the registry, despite P0-3
+  merging in PR #1. Root cause: `load_state()` only calls
+  `seed_registry()` when a ledger doesn't exist yet -- an existing ledger
+  never picks up new seed entries added afterward. Fixed `load_state()` to
+  backfill any missing seed_registry() key additively (new contestant,
+  existing ones untouched). Tested against the exact real scenario.
+  Commit `c449bff` on the feature branch -- **needs a merge to main to
+  actually take effect in production**, since the real daily/weekly runs
+  execute against main's ledger.json via GitHub Actions.
+
 ## FIXED
 
 - **FIXED | 2026-08-24 | cost-model-understated-3x** — flat `COST_PER_SIDE`
