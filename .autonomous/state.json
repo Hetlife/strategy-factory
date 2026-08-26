@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
- "updated_at": "2026-08-25T11:15:00Z",
- "updated_by_commit": "6caf01c",
+ "updated_at": "2026-08-25T11:45:00Z",
+ "updated_by_commit": "b55b562",
  "branch": "claude/scheduled-maintenance-template-d7yufr",
- "pr_number": 1,
- "pr_status": "MERGED (aa55914, 2026-08-25) -- branch still exists and is still where all further work happens per this repo's git-development-branch requirement; main now has everything through the LADDER raise",
+ "pr_number": 2,
+ "pr_status": "PR #1 merged (aa55914, 2026-08-25). PR #2 merged (b55b562, 2026-08-25) -- nifty_benchmark ledger-backfill fix, discovered by checking whether the tournament was actually trading. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement; main now has everything through the backfill fix.",
  "claude_md_sha1": "0249acb68911066c84ce711dfaa72d51867fe6f0",
  "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
  "current_phase": "phase_1",
@@ -55,6 +55,11 @@
    "id": "agents-team-override",
    "summary": "Het explicitly requested a subfolder-based 'team of agents' (judge/researcher/breeder/risk_manager/reporter) despite being warned this isn't Phase 0/1 priority per EXECUTION_PLAN.md; confirmed via AskUserQuestion 'build it anyway, I want the new agents now'. Scoped narrowly: judge/researcher/breeder are read-only wrappers around existing factory.py/advisors.py logic (no duplicated computation, no new write path). risk_manager and reporter are new logic but strictly advisory/printed-only, wired additively into factory.report() after save_state() with a try/except so a bug there can't break the core report. No verdict, RULES/LADDER/COST_PER_SIDE, or ledger-write behavior changed. See agents/README.md.",
    "commit": "a06e392"
+  },
+  {
+   "id": "pr2-merge-nifty-backfill",
+   "summary": "PR #2 (nifty_benchmark ledger-backfill fix) merged 2026-08-25 with Het's fresh explicit AskUserQuestion confirmation, asked specifically because he asked whether the agents were actually trading -- checking the real production ledger surfaced that P0-3's benchmark had never actually been running live.",
+   "commit": "b55b562"
   }
  ],
  "queue": [
