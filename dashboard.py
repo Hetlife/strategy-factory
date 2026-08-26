@@ -26,6 +26,8 @@ NOTES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 # and agents/ as local modules -- exactly the "run it locally" setup.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
+    import numpy as _np
+    import factory as _factory
     from agents.judge.judge import explain_verdict, who_is_eligible_for_promotion
     from agents.breeder.breeder import lineage_tree
     from agents.risk_manager.risk_manager import (
@@ -35,6 +37,23 @@ try:
     AGENTS_AVAILABLE = True
 except Exception as _agents_import_error:
     AGENTS_AVAILABLE = False
+
+
+def _live_sharpe_and_tax(s):
+    """Recomputes report()'s exact Sharpe/post-tax-expectancy formulas from
+    a contestant's own stored stats -- same numbers report() would print,
+    just derived here for the dashboard's live re-ranking toggle instead of
+    needing a full report() run. Read-only, no state mutation."""
+    n = max(s.get("days_in_market", 0), 1)
+    mean = s.get("sum_ret", 0.0) / n
+    if s.get("days_in_market", 0) < _factory.MIN_SHARPE_SAMPLE_DAYS:
+        sharpe = float("nan")
+    else:
+        var = max(s.get("sum_sq", 0.0) / n - mean ** 2, 1e-12)
+        sharpe = mean / _np.sqrt(var) * _np.sqrt(252)
+    pt_mean, _ = _factory.post_tax_expectancy(mean, s.get("days_in_market", 0),
+                                               s.get("trades", 0))
+    return sharpe, pt_mean
 
 st.set_page_config(page_title="Strategy Factory Arena", layout="wide", page_icon="🤖")
 
@@ -125,7 +144,7 @@ with tab_arena:
                 else:
                     lineage_str = "seed"
 
-                metric_cards_data.append({
+                row = {
                     "Strategy": name,
                     "Current Equity": equity,
                     "Peak Equity": config.get("peak", 1.0),
@@ -136,7 +155,12 @@ with tab_arena:
                                else "Retired" if config.get("retired", False)
                                else "Active"),
                     "Lineage": lineage_str,
-                })
+                }
+                if AGENTS_AVAILABLE:
+                    sharpe, pt_mean = _live_sharpe_and_tax(config)
+                    row["Sharpe"] = round(sharpe, 3) if sharpe == sharpe else None  # NaN check
+                    row["Post-tax Expectancy"] = round(pt_mean, 6)
+                metric_cards_data.append(row)
 
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Total Contestants", total_strategies)
@@ -175,8 +199,19 @@ with tab_arena:
         st.subheader("🏆 Strategy Leaderboard")
         if metric_cards_data:
             summary_df = pd.DataFrame(metric_cards_data)
+            rank_options = ["Current Equity", "Paper P&L (Rs)"]
+            if "Sharpe" in summary_df.columns:
+                rank_options += ["Sharpe", "Post-tax Expectancy"]
+            rank_by = st.selectbox(
+                "Rank leaderboard by:", rank_options, index=0,
+                help="Re-sorts the table below live -- doesn't change any "
+                     "actual promotion/demotion verdict, which always uses "
+                     "report()'s own pre-tax Sharpe per RULES."
+            )
+            sorted_df = summary_df.sort_values(
+                by=rank_by, ascending=False, na_position="last")
             st.dataframe(
-                summary_df.sort_values(by="Current Equity", ascending=False),
+                sorted_df,
                 use_container_width=True,
                 hide_index=True
             )
