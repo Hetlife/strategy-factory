@@ -16,7 +16,7 @@ to state and the only source of truth for promotion/demotion/evolution
 logic — everything here either wraps them read-only or adds a strictly
 advisory, printed-only layer.
 
-## The five agents
+## The six agents
 
 | Agent | File | What it actually is |
 |---|---|---|
@@ -25,6 +25,34 @@ advisory, printed-only layer.
 | Breeder | `breeder/breeder.py` | Renders the `lineage` field factory.py already records (via `spawn_neighbor`/`advisor_evolve`/`crossover`) as a readable family tree. Does not create contestants. |
 | Risk Manager | `risk_manager/risk_manager.py` | **New logic**, but read-only/advisory only: sector concentration, aggregate real-money exposure (should be Rs 0 through Phase 0/1 — this is the one number worth watching), and a portfolio-wide correlated-drawdown flag that no single contestant's DEMOTE check can see. Wired into `factory.report()` as an additive printed section, after the ledger is already saved. |
 | Reporter | `reporter/reporter.py` | **New logic**, plain-English translation of `report()`'s output (promotions, demotions, evolutions, births, best/worst performer) — for Het's stated preference for explanation over raw tables. No financial computation of its own. Wired into `factory.report()` the same way, last. |
+| Healer | `healer/healer.py` | Runs `tools/health_check.py`'s deterministic repo-consistency checks (registry drift, state.json well-formedness, CLAUDE.md hash drift, bug_log/state.json contradictions) and prints plain findings. **Never fixes anything itself** — detection only, same as the others. See "Code over tokens" below for why this exists. |
+
+## Code over tokens
+
+Het's framing, 2026-08-25: "pass on work that can be done with code to
+code" instead of a session re-deriving the same facts from scratch via
+many tool calls every time. The concrete trigger was a real incident —
+P0-3's `nifty_benchmark` sat merged in code but silently absent from the
+live ledger for a full day, and the only reason it surfaced was Het
+happening to ask "are the agents actually trading?" and a session manually
+reading the raw ledger by hand.
+
+`tools/health_check.py` is the response: a pure-Python script (no LLM
+judgment needed to run it) that answers exactly that class of question —
+is the ledger missing anything seed_registry() defines, does state.json
+agree with itself, does CLAUDE.md's recorded hash match its real content,
+does bug_log.md contradict what state.json says is resolved. `healer.py`
+is the thin presentation layer over it. **Any session, before manually
+re-deriving repo-consistency facts via a chain of Read/Bash/GitHub-API
+calls, should run this first** — it's free, deterministic, and catches
+the exact class of bug that cost a full day of silent drift last time.
+
+This is wired into the daily report Routine's prompt (see
+`.autonomous/het_directives.md`) so it runs automatically, at zero
+additional session cost, as part of the existing schedule — not as a new
+paid Routine. Extend `tools/health_check.py` with new checks whenever a
+session finds itself manually re-deriving the same fact more than once;
+that repetition is the signal a check belongs here instead.
 
 ## Why this shape
 
