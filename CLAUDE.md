@@ -168,7 +168,10 @@ required regardless of how confident a session feels; 90%-confident on
 a financial-parameter change is still not authorization, because
 confidence isn't the same thing as authorization. Where it's genuinely
 below ~75% (a real judgment call, not just "I'd rather not decide"),
-queue it instead of guessing.
+queue it instead of guessing -- and, per Het's own follow-up (2026-08-26,
+via a note on his hosted dashboard, see below), don't just idle waiting
+on that one answer: keep working on other already-pending, already-
+authorized tasks while the uncertain one sits queued.
 
 **The "notebook" is the Trading Floor Artifact's note bowl + this
 file's own NEEDS HET section — not a new thing to build.** The Artifact

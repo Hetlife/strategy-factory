@@ -557,11 +557,17 @@ with tab_office:
 
     st.markdown("---")
     st.subheader("📋 Notes")
-    st.caption(
-        "Not a live AI chat — this just saves what you type to a local file "
-        "(`.autonomous/dashboard_notes.md`) so you can bring it to your next "
-        "session with Claude. Only works when running locally (writes to "
-        "disk); has no effect on a hosted/shared copy of this page."
+    st.warning(
+        "⚠️ **This does NOT reach Claude, even though the save succeeds.** "
+        "It writes to this page's own disk (`.autonomous/dashboard_notes.md`), "
+        "which — on a hosted copy like Streamlit Community Cloud — is a "
+        "throwaway container filesystem, not this GitHub repo. It's never "
+        "committed, so no Claude session will ever see it, no matter how "
+        "many times you save. **Use the note bowl in the Trading Floor "
+        "artifact instead** — that one actually persists and Claude can "
+        "read it back. This box only makes sense if you're running "
+        "`dashboard.py` on your own machine AND manually `git add`/`commit`/"
+        "`push` the notes file afterward."
     )
     note_text = st.text_area("Write a note or question to bring back later:", height=100)
     if st.button("Save note"):
@@ -571,9 +577,12 @@ with tab_office:
                 timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
                 with open(NOTES_FILE, "a") as f:
                     f.write(f"\n- **{timestamp}** — {note_text.strip()}\n")
-                st.success(f"Saved to {NOTES_FILE}")
+                st.success(f"Written to {NOTES_FILE} on this page's own disk. "
+                          f"Remember: Claude can't see this until you commit+push "
+                          f"it yourself — it is NOT the same as the Trading Floor "
+                          f"artifact's note bowl.")
             except Exception as e:
-                st.error(f"Couldn't save (read-only filesystem or hosted copy?): {e}")
+                st.error(f"Couldn't save (read-only filesystem?): {e}")
         else:
             st.warning("Nothing to save — write something first.")
 
