@@ -98,12 +98,103 @@ def load_parameter_bank(ts):
 def load_state_json(ts):
     return _fetch_json(STATE_JSON_PATH, ts)
 
+@st.cache_data(ttl=60)
+def _fetch_text(path, ts):
+    url = f"https://raw.githubusercontent.com/{GITHUB_USER}/{REPO_NAME}/refs/heads/{BRANCH}/{path}?t={ts}"
+    try:
+        response = requests.get(url)
+        return response.text if response.status_code == 200 else None
+    except Exception:
+        return None
+
+def _run_health_check(ledger_data, state_data):
+    """Shared by the heartbeat banner and the Office/Healer card -- runs the
+    same tools/health_check.py deterministic checks against whatever was
+    just fetched from GitHub, no separate local state needed."""
+    if not (ledger_data and state_data):
+        return None
+    import json as _json
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmpdir:
+        ledger_tmp = os.path.join(tmpdir, "ledger.json")
+        state_tmp = os.path.join(tmpdir, "state.json")
+        _json.dump(ledger_data, open(ledger_tmp, "w"))
+        _json.dump(state_data, open(state_tmp, "w"))
+        try:
+            from tools import health_check
+            return health_check.run_all(ledger_tmp, state_tmp)
+        except Exception:
+            return None
+
 # --- LOAD DATA ---
 current_timestamp = int(time.time())
 data = load_ledger_data(current_timestamp)
 advisor_state = load_advisor_state(current_timestamp)
 parameter_bank = load_parameter_bank(current_timestamp)
 state_json = load_state_json(current_timestamp)
+log_text = _fetch_text("AUTONOMOUS_LOG.md", current_timestamp)
+
+# ======================================================= HEARTBEAT BANNER ===
+# Het: "give me a heartbeat or indicator to see it's working so I can check
+# it every day, and what was done by the AI when." Derived entirely from
+# files already committed to the repo (ledger.json, AUTONOMOUS_LOG.md) --
+# no GitHub Actions API / auth needed, so it works the same for Het as for
+# anyone else loading this page.
+with st.container(border=True):
+    hb1, hb2, hb3 = st.columns([1, 1, 2])
+
+    with hb1:
+        last_update_str = "unknown"
+        days_stale = None
+        if data and "contestants" in data:
+            last_dates = [s["history"][-1][0] for s in data["contestants"].values()
+                          if s.get("history")]
+            if last_dates:
+                last_update_str = max(last_dates)
+                days_stale = (datetime.now(timezone.utc).date()
+                              - datetime.strptime(last_update_str, "%Y-%m-%d").date()).days
+        if days_stale is None:
+            st.metric("💓 Last trading update", last_update_str)
+        elif days_stale <= 3:
+            st.metric("💓 Last trading update", last_update_str, "up to date")
+        else:
+            st.metric("💔 Last trading update", last_update_str,
+                      f"{days_stale} days stale", delta_color="inverse")
+            st.caption("More than a long weekend since the last update -- "
+                      "the daily GitHub Actions run may have stopped firing.")
+
+    with hb2:
+        findings = _run_health_check(data, state_json)
+        if findings is None:
+            st.metric("🩺 Health check", "unavailable")
+        else:
+            real = [f for f in findings if f[0] != "info"]
+            errors = [f for f in real if f[0] == "error"]
+            if errors:
+                st.metric("🔴 Health check", f"{len(errors)} issue(s)")
+            elif real:
+                st.metric("🟡 Health check", f"{len(real)} finding(s)")
+            else:
+                st.metric("🟢 Health check", "all clear")
+        st.caption("Same tools/health_check.py the Healer agent runs — "
+                  "see The Office tab for details.")
+
+    with hb3:
+        st.markdown("**🕘 Recent AI activity**")
+        if log_text:
+            lines = [l for l in log_text.strip().splitlines()
+                     if l.startswith("2")]  # skip header/blank lines
+            recent = lines[-8:][::-1]
+            for line in recent:
+                parts = line.split("|", 4)
+                if len(parts) >= 5:
+                    date, commit, qid, outcome, note = [p.strip() for p in parts]
+                    note = note if len(note) <= 160 else note[:157] + "..."
+                    st.caption(f"**{date}** · {qid} · {outcome} — {note}")
+                else:
+                    st.caption(line.strip())
+        else:
+            st.caption("AUTONOMOUS_LOG.md not fetched.")
 
 tab_arena, tab_office = st.tabs(["📊 Arena", "🏢 The Office"])
 
@@ -414,19 +505,9 @@ with tab_office:
             st.caption("Scans repo consistency between operations — "
                        "detects only, never fixes anything itself.")
             if state_json:
-                import json as _json
-                import tempfile
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    ledger_tmp = os.path.join(tmpdir, "ledger.json")
-                    state_tmp = os.path.join(tmpdir, "state.json")
-                    _json.dump(data, open(ledger_tmp, "w"))
-                    _json.dump(state_json, open(state_tmp, "w"))
-                    try:
-                        from tools import health_check
-                        findings = health_check.run_all(ledger_tmp, state_tmp)
-                    except Exception as e:
-                        findings = None
-                        st.caption(f"(couldn't run tools/health_check.py: {e})")
+                findings = _run_health_check(data, state_json)
+                if findings is None:
+                    st.caption("(couldn't run tools/health_check.py)")
                 if findings is not None:
                     real = [f for f in findings if f[0] != "info"]
                     if real:
