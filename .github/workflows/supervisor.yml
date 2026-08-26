@@ -27,5 +27,8 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install dependencies
+        run: pip install pandas numpy
+
       - name: Run supervisor check
         run: python tools/supervisor_check.py

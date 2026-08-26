@@ -1,250 +1,269 @@
 # NEXT SESSION
 
 ## READ FIRST
-1. CLAUDE.md (auto-loaded — binding rules, architecture, phase pointer)
+1. CLAUDE.md (auto-loaded — binding rules, architecture, phase pointer,
+   and the new "Standing autonomy rule" section: free work needs no ask,
+   anything close to costing does — does NOT loosen the merge/push hard
+   rules, which still need Het's fresh confirmation every time)
 2. .autonomous/state.json (structured queue, decisions, test status)
 3. This file
 4. .autonomous/het_directives.md — Het's own recent asks + a standing
    "NEEDS HET" section; carry that section into any report back to him.
-5. .autonomous/bug_log.md — known OPEN/FIXED/CLOSED defects, check before
-   assuming something is broken
-6. AUTONOMOUS_LOG.md (tail -30, don't read the whole thing)
-7. .autonomous/operator_profile.md — before writing anything Het will
+5. .autonomous/hr_log.md — hires made via agents/hr/hr.py (0 so far)
+6. .autonomous/it_guy_protocol.md — read this specifically if
+   supervisor.yml has failed recently, before doing anything else
+7. .autonomous/bug_log.md — known OPEN/FIXED/CLOSED defects
+8. AUTONOMOUS_LOG.md (tail -40, don't read the whole thing)
+9. .autonomous/operator_profile.md — before writing anything Het will
    read: plain language, why not just what, hands-off on code
-8. agents/README.md — the agents/ team + the "code over tokens" pattern
-9. EXECUTION_PLAN.md — only if you need the phase/gate detail this file
-   compresses away
+10. agents/README.md — the agents/ team, hiring protocol, "code over
+    tokens" pattern
 
-## CURRENT STATE (as of 2026-08-26, commit `be5c8b1`)
+## CURRENT STATE (as of 2026-08-26 ~12:50 UTC, commit `9feb4fc`)
 
-**`main` has**: Phase 0 complete (P0-1..P0-4), the `agents/` team (judge,
-researcher, breeder, risk_manager, reporter, healer), the LADDER raise to
-`[0, 25k, 50k, 100k, 200k]`, the nifty_benchmark ledger-backfill fix,
-`tools/health_check.py`, the dashboard "Office" tab + factor toggle, and
-the paper-tier holding-cost decay (`PAPER_HOLDING_TAX_WEEKLY`). PRs #1-#4
-all merged with Het's fresh explicit confirmation each time.
+**Het is away for a few days as of this writing (his own message).**
+Branch and main are fully in sync — no open merge backlog. Everything
+built this session is live on `main`.
 
-**ONE thing is on the branch, NOT yet merged**: the shared-graveyard
-anti-repeat guard (`factory.graveyard()`/`already_failed()`, commit
-`d1e4db4`). It changes live evolution behavior (skips an otherwise-valid
-evolution round in the rare case of an exact repeat of an already-failed
-setup) — needs Het's fresh explicit merge confirmation before it goes to
-main, same pattern as every other behavior-changing change this session.
-**This is the single most actionable item for whoever picks this up next
-if Het hasn't already answered it.**
+**What's live on main**: Phase 0 complete, the `agents/` team (now
+SEVEN: judge, researcher, breeder, risk_manager, reporter, healer, hr),
+per-agent `workspace.md` files, `tools/health_check.py`, the dashboard
+Office tab (7 desk cards) + heartbeat banner + factor toggle, paper-tier
+holding-cost decay, the shared graveyard anti-repeat guard, the market
+log ("mother file"), free open monsoon rainfall data (research-only,
+NOT wired to the live signal — see factory.py's `sig_monsoon` comment),
+crude oil (Brent) input-cost hypotheses for cement/steel, the free
+15-minute GitHub Actions supervisor (`tools/supervisor_check.py` +
+`.github/workflows/supervisor.yml`), the IT-guy protocol (event-driven
+bug-fixing, piggybacks on the two existing Routines, never merges
+without Het), and the new CLAUDE.md standing autonomy rule.
 
-**Phase 1 = STANDING MODE** (EXECUTION_PLAN.md Section 4) is technically
-still in force, but this session shipped several real feature additions
-at Het's explicit, repeated request (agents/healer, dashboard Office tab,
-holding-cost decay, shared graveyard) — each one confirmed via
-AskUserQuestion before building, not assumed. This is a deliberate,
-repeatedly-informed override pattern (same category as the Law 1/Law 2
-overrides), not scope creep — but if a session finds itself wanting to
-add something NEW beyond what's already been explicitly asked for, that's
-where Phase 1 discipline should reassert itself. Build what's asked,
-confirmed, and tested — don't invent new features on your own initiative.
+**A published Artifact exists for Het** — "Trading Floor",
+https://claude.ai/code/artifact/6af2bce8-b4a5-4b08-b60a-916c239e8a65 —
+a mobile-first pixel-office view he can open on his phone with no setup.
+Has the `artifact` capability declared (he can write notes that persist
+via `claude.use('artifact').publish()`). **This session cannot get
+live-notified when he writes a note** (no watch support for remote
+sessions yet) — if a future session wants to check, use
+`Artifact({action: "read", url: "..."})` and look at the `notes` array
+in the embedded `page-state` JSON. Republish (same `file_path`, pass
+`url` to update in place) whenever the underlying data materially
+changes — it's a snapshot, not live-fetched (Artifact CSP blocks
+client-side fetch to GitHub anyway).
 
-**Two Routines exist**:
-- `trig_01Y9q1Dn98ghLMD4KX7xZfxp` — daily report, 13:00 UTC, push-notified,
-  detection/reporting only. Works reliably (it never needs to commit).
-- `trig_01KoWHtWkQnLaW9WhHo3kumu` — nightly maintenance, 21:00 UTC (~2:30
-  AM IST, timezone ASSUMED not confirmed — flag to Het if wrong), fires a
-  fresh session, push-notified, deliberately detection-only for the same
-  reason.
+**Two Routines + one free workflow are the standing operation while
+Het is away** (confirmed with him directly, 2026-08-26 — he explicitly
+declined a more active/expensive background loop):
+- `trig_01Y9q1Dn98ghLMD4KX7xZfxp` — daily report, 13:00 UTC.
+- `trig_01KoWHtWkQnLaW9WhHo3kumu` — nightly maintenance, 21:00 UTC
+  (~2:30 AM IST, timezone assumed not confirmed).
+- Both now ALSO check `supervisor.yml`'s recent runs and follow
+  `.autonomous/it_guy_protocol.md` if it found a real error — diagnose,
+  fix+test ON THE BRANCH, never main, surface for Het's confirmation.
+- `.github/workflows/supervisor.yml` — every 15 min, free, GitHub
+  Actions only, no Claude session. Only fails on a real "error"-level
+  `health_check` finding or >3 days ledger staleness — not the routine
+  self-healing warnings.
 - `trig_013GUxs9AwHaRvb1o4eGJRGx` — the old 5-hourly autonomous dev-loop
-  Routine — **stays DISABLED indefinitely.** Failed 5 confirmed times
-  across 2 structurally different fixes. Het explicitly chose manual/
-  interactive operation over continued debugging. Do NOT re-enable or
-  re-fire without either a genuinely new diagnostic capability (real
-  transcript visibility into what a Routine session does internally,
-  which doesn't exist yet) or a fresh explicit ask from Het.
+  Routine — **stays DISABLED indefinitely.** Failed 5 confirmed times.
+  Do not re-enable without a genuinely new diagnostic capability or a
+  fresh ask from Het.
 
-A live status Artifact exists for Het at
-https://claude.ai/code/artifact/c8ef2e56-3280-4141-b6fd-bc14c91333c1 — it
-was NOT updated this session (the dashboard's Office tab has mostly
-superseded its purpose for real-time viewing), consider whether it's
-still worth maintaining or should be retired in favor of the dashboard.
+**Standing instruction while Het is away**: no new proactive feature
+work, no merges to main, without him. The Routines/supervisor/IT-guy
+protocol keep the lights on for free or near-free; anything that needs
+a real decision queues in `het_directives.md`'s NEEDS HET section
+instead of being guessed at.
 
-**Active cost awareness**: Het asked (2026-08-25) to be asked before any
-new paid session/Routine is fired without him prompting it. He has since
-explicitly asked for the nightly Routine himself, so that one's fine. The
-underlying principle still holds: don't spin up new paid sessions on your
-own initiative without asking, but normal work inside an already-running
-interactive session is fine.
-
-## WHAT WAS DONE THIS SESSION (2026-08-25 evening → 2026-08-26, chronological)
-- Closed the autonomous-loop investigation: 5 confirmed failures, Het
-  chose manual check-ins. `bug_log.md` entry marked CLOSED (accepted, not
-  fixed), not FIXED.
-- Found and fixed a real bug: `nifty_benchmark` had never actually been
-  running live despite being merged, because `load_state()` only seeds a
-  ledger that doesn't exist yet. General fix (backfills ANY missing
-  `seed_registry()` key), not nifty_benchmark-specific. PR #2.
+## WHAT WAS DONE THIS SESSION (2026-08-26, chronological, high level)
+- Verified real trading/learning activity, fixed a real bug
+  (`nifty_benchmark` silently missing from the live ledger).
 - Built `tools/health_check.py` + `agents/healer/healer.py` ("code over
-  tokens" — Het's request to stop re-deriving repo-consistency facts by
-  hand every session). Immediately caught 2 real issues (the
-  nifty_benchmark gap, a stale `claude_md_sha1`), both fixed. Wired into
-  the existing daily report Routine, zero new cost. PR #3.
-- Built the dashboard "Office" tab (org-chart view of all 6 agents, live
-  from GitHub) + a leaderboard factor-rating toggle. PR #4 (bundled with
-  the item below).
-- Built the paper-tier holding-cost decay (`PAPER_HOLDING_TAX_WEEKLY =
-  0.13%/week`, ~6.5%/year, anchored to roughly India's risk-free rate).
-  Reuses the existing drawdown-retirement pathway. PR #4.
-- Built the shared graveyard (`factory.graveyard()`/`already_failed()`) —
-  **on branch, not merged**, see above.
-- Set up the nightly maintenance Routine (detection-only).
-- Pushed back directly on "make the model learn as fast as possible" —
-  declined to build anything that would fake evidence-accumulation speed,
-  explained why (Law 1, the 12-month Phase 1 evidence window).
+  tokens").
+- Built the dashboard Office tab, heartbeat banner, and a re-rank toggle.
+- Built the paper-tier holding-cost decay and the shared graveyard
+  anti-repeat guard.
+- Sourced free open monsoon rainfall data (research-only, not live) and
+  added crude-oil input-cost hypotheses (a real, direct mechanism) after
+  explicitly declining a weaker gold hypothesis Het offered to add anyway
+  — he chose to skip it.
+- Built the market log ("mother file") — pure record-keeping, never read
+  by any signal.
+- Built the free 15-min GitHub Actions supervisor and the IT-guy
+  protocol, after directly flagging the cost tradeoff and the history of
+  the disabled dev-loop Routine — Het chose the free/event-driven design
+  both times.
+- Built the HR agent (`agents/hr/hr.py`) and per-agent `workspace.md`
+  files, after clarifying scope via AskUserQuestion first (team-role
+  tooling only, never trading strategies; 10 hires pre-authorized).
+- Built and iterated the "Trading Floor" Artifact through three
+  redesigns: pocket-office → uptime-hero + animated door → fullscreen
+  walk-in office view with working/sleeping zones.
+- Recorded a new CLAUDE.md "Standing autonomy rule" (free work needs no
+  ask, anything close to costing does) at Het's explicit request,
+  written to be clear it doesn't loosen the merge/push hard rules.
+- Merged everything (PRs #6, #7, #8, #9) with Het's fresh confirmation
+  each time — final one specifically because he was about to be away.
 
 ## WHAT WAS LEARNED
-- **Every feature this session was preceded by an `AskUserQuestion` on the
-  concrete design choice** (dashboard platform, notes-box scope, decay
-  mechanism/rate, office-visual literalness) before building — this
-  worked well and caught real scope mismatches early (e.g. "prompt area"
-  turned out to mean a notes box, not a live AI chat). Keep doing this for
-  anything with more than one reasonable design.
-- **Test your own tests.** The shared-graveyard integration test initially
-  gave a false "PASS" because `EVOLUTION_TOP_N` rank-filtering was
-  masking the actual check being tested, not because the graveyard logic
-  worked. Caught by adding a control case (same setup minus the graveyard
-  entry, expecting a DIFFERENT outcome) and noticing it also produced
-  nothing. Worth remembering as a general lesson: a test that always
-  passes regardless of the thing you're testing isn't validating anything.
-- `ledger.json` (registry + contestants) has always functionally been the
-  "common library" every mechanism in this project reads from — several
-  of Het's requests this session (healer, graveyard, dashboard) were
-  really about making that existing shared state legible/visible rather
-  than building new shared infrastructure from scratch. Worth remembering
-  before assuming a "shared data" request needs a new data store.
-- Streamlit + a local headless-browser check (not just `curl` for an HTTP
-  200) is the right way to verify dashboard.py changes — a Streamlit app
-  is a JS SPA, so a raw HTTP response tells you almost nothing about
-  whether it actually rendered without exceptions.
+- **Every feature this session was preceded by an `AskUserQuestion` on
+  ambiguous design/scope/cost before building** — this keeps working
+  well, including for genuinely high-stakes asks (the HR agent's scope
+  was clarified before writing a line of code, since "hire more agents"
+  could easily have meant something that touches Law 1). Keep doing this.
+- **Cost vs. risk are different axes** — Het's "do free things, ask
+  about cost" rule is about money; it does not and should not be read
+  as loosening the separate, unconditional "never merge/push main
+  without fresh confirmation" rule. Keep them explicitly distinct in any
+  future session's reasoning, don't let a broad permission grant blur
+  into the narrower hard rules.
+- **When a session can't build the ideal solution (true event-driven
+  wake-on-CI-failure), say so plainly and build the honest fallback**
+  (piggybacking on existing scheduled Routines) rather than either
+  overpromising or silently doing nothing. The IT-guy protocol doc
+  states its own ~12h worst-case latency directly.
+- Streamlit + a local headless-browser check (not just `curl` for HTTP
+  200) is the right way to verify `dashboard.py` changes. The same
+  applies to the Artifact — test in a real headless browser before
+  publishing, `window.claude` won't exist there so the note-save
+  fallback path gets exercised for free.
+- For the Artifact's two-way notes: capture `document.documentElement.
+  outerHTML` and split HEAD/TAIL around the `page-state` script tag
+  **at the very start of the script**, before any render()/DOM mutation
+  — this avoids the "don't serialize a live DOM" pitfall the
+  artifact-capabilities skill warns about, since the textarea's typed
+  value never gets read via outerHTML (it's injected into the state
+  object directly instead).
 
 ## WHAT REMAINS
-state.json `queue`, in rough priority order:
-- **`shared-graveyard-anti-repeat`** (P1) — on branch (`d1e4db4`), needs
-  Het's merge decision. Check `.autonomous/het_directives.md`'s NEEDS HET
-  section first — he may have already answered by the time you read this.
-- `P1-dashboard-auth` — blocked_on_human, needs Het with a real browser.
-- `P1-advisor-training-real-run` — unblocked (PR #1 merged), no action
-  needed unless Het wants it manually triggered before its monthly cron.
-- `P3-anti-pattern-visibility-for-new-agents` — done_pending_merge, same
-  item as shared-graveyard-anti-repeat above (duplicated at two priority
-  levels intentionally, see state.json for why).
-- Fund research (SEBI PMS/AIF/RIA) — early scoping done in a prior
-  session, not committed to this repo (deliberately kept separate). SEBI
-  RIA route specifically was flagged as worth researching further but
-  never was. Check with Het before continuing — it may not still be a
-  live priority.
-- P2/P3 items — low-priority/gated per Phase 1's "don't add machinery"
-  guidance where not already explicitly requested. See state.json.
+- **Dashboard hosting decision** — Streamlit Community Cloud offered
+  (free, but the resulting link is public with no built-in access
+  control on the free tier). Het hasn't decided yet; not urgent, the
+  Artifact already works as a phone-checkable view meanwhile.
+- `P1-dashboard-auth` — blocked_on_human, needs Het with a real browser
+  in an incognito tab.
+- Fund research (SEBI PMS/AIF/RIA) — parked, not committed to this repo,
+  check with Het before reviving.
+- HR agent: 0/10 hires used. Don't manufacture a hire just to use the
+  allowance — only scaffold a new helper when a session judges there's
+  a real, observed gap (same bar that produced healer.py).
+- A "news" data source for the input_cost family — still not found
+  (nothing free/simple/reliable enough yet). Keep flagging rather than
+  force a low-quality one in.
 
 ## EXACT NEXT TASK
 1. `git fetch` + check `state.json`/`het_directives.md`'s NEEDS HET
    section — this file is a snapshot, those are live.
-2. If Het has answered the shared-graveyard merge question: act on it
-   (merge via a new PR against main + `mcp__github__merge_pull_request`,
-   or explicitly note he said hold).
-3. If Het hasn't answered yet and you're a scheduled/unattended firing:
-   do NOT merge on your own initiative — this needs his fresh explicit
-   confirmation, no exceptions, regardless of how confident the testing
-   looks.
-4. Otherwise: standing-mode discipline applies. Watch for a real PROMOTE
-   (first ever, flag prominently). Don't start new features beyond what's
-   already been explicitly asked for and confirmed.
-5. If a genuinely new request comes in from Het: same pattern as this
-   session — clarify ambiguous scope via AskUserQuestion before building,
-   test thoroughly (including a control case, see WHAT WAS LEARNED
-   above), commit to the branch, ask before merging to main if it changes
-   live financial/evolution behavior, don't ask if it's pure tooling/docs
-   (like health_check.py was — that got merged without a separate
-   merge-specific question because dashboard/tooling changes were
-   pre-approved as low-risk in that batch's own AskUserQuestion).
+2. Read `.autonomous/hr_log.md` and `.autonomous/it_guy_protocol.md` if
+   you haven't already (short files, cheap).
+3. If this is a Routine firing (daily report or nightly maintenance):
+   follow that Routine's own prompt exactly, including the new
+   supervisor.yml check + IT-guy protocol step.
+4. If this is an interactive session with Het: normal operation — read
+   what he's asking for, clarify ambiguous scope/cost/risk via
+   AskUserQuestion before building anything non-trivial, test thoroughly,
+   commit to the branch, ask before merging to main every time.
+5. If this is an unattended/scheduled session and nothing looks broken:
+   don't invent work. Phase 1 standing-mode discipline still applies —
+   watch for a first-ever real PROMOTE (flag prominently if it happens),
+   don't start new features on your own initiative.
 
 ## FILES TO OPEN
 - `.autonomous/state.json`, `.autonomous/het_directives.md`,
-  `.autonomous/bug_log.md` — the three living trackers.
-- `agents/README.md` — the "code over tokens" pattern and what each agent
-  actually does; read before assuming a new check needs a new agent
-  rather than a new function in `tools/health_check.py`.
+  `.autonomous/bug_log.md`, `.autonomous/hr_log.md` — living trackers.
+- `agents/README.md` — the team, hiring protocol, "code over tokens."
+- `.autonomous/it_guy_protocol.md` — only if the supervisor found
+  something.
 - `factory.py` only if there's an actual bug to fix or a Het-confirmed
   feature to build — not for unprompted feature work.
 
 ## FILES NOT TO OPEN UNLESS NEEDED
-- understanding.txt / pivot_document.txt / mission_document.txt — already
-  compressed into EXECUTION_PLAN.md.
+- understanding.txt / pivot_document.txt / mission_document.txt —
+  already compressed into EXECUTION_PLAN.md.
 - AUTONOMOUS_TODO.md — narrative decision rationale only.
 
 ## TEST COMMANDS
-No committed test suite exists — all testing is ad hoc, in `/tmp`, against
-synthetic monkeypatched price data (Yahoo Finance unreachable here).
-Recreate a `synthetic_test.py`-style script as needed. For anything
-touching `propose_evolutions()`/`attempt_breeding()`, write BOTH a
-positive test (the mechanism does what's intended) AND a control/negative
-test (the same setup minus the one variable, expecting a DIFFERENT
-result) — see WHAT WAS LEARNED above for why this matters.
+No committed test suite exists — all testing is ad hoc, in `/tmp`,
+against synthetic monkeypatched price data (Yahoo Finance unreachable
+here). For anything touching `propose_evolutions()`/`attempt_breeding()`,
+write BOTH a positive test AND a control/negative test (same setup minus
+the one variable, expecting a DIFFERENT result).
 
-For `dashboard.py` changes: `streamlit run dashboard.py --server.headless
-true --server.port <N>`, then verify with a headless browser
-(`playwright`, pre-installed at `/opt/pw-browsers/chromium`) — check
-`page.inner_text('body')` for exception/traceback text, don't just check
-for an HTTP 200.
+For `dashboard.py`/Artifact changes: `streamlit run dashboard.py
+--server.headless true --server.port <N>`, then verify with a headless
+browser (`playwright`, pre-installed at `/opt/pw-browsers/chromium`) —
+check `page.inner_text('body')` for exception/traceback text, don't just
+check for an HTTP 200.
+
+Quick health check before trusting anything: `python3
+tools/health_check.py` and `python3 tools/supervisor_check.py` against
+real live data (fetch fresh from main, don't trust a stale local copy).
 
 ## EXPECTED RESULT
-Nothing about a routine session should surprise Het when he checks in —
-every behavior-changing addition this session was confirmed via
-AskUserQuestion before being built, tested thoroughly (with controls) 
-before being trusted, and asked about again before touching main. Keep
-that discipline. A session that builds something Het didn't ask for, or
-merges something without asking, is breaking the pattern that's worked
-well so far.
+Nothing about a routine or unattended session should surprise Het when
+he's back. Every behavior-changing addition gets confirmed via
+AskUserQuestion before being built, tested thoroughly before being
+trusted, and asked about again before touching main — including during
+his absence. A session that builds something he didn't ask for, or
+merges something without asking, breaks the pattern that's worked well
+so far.
 
 ## STOP IF
 - You find yourself wanting to change RULES, LADDER, or COST_PER_SIDE's
   underlying risk appetite beyond what's already been explicitly
-  requested and confirmed — kill-condition signal per EXECUTION_PLAN.md
-  Section 5(f).
-- You're about to fire a new paid session/Routine without Het having
-  asked for it first.
+  requested and confirmed.
+- You're about to fire a new paid session/Routine, or run this session
+  itself on an expensive active loop, without Het having asked for it —
+  he explicitly declined this on 2026-08-26.
 - You're about to merge anything to main without a fresh, specific
-  confirmation for THAT change (a prior "yes" on a different change
-  doesn't carry over).
-- You're about to build a feature Het hasn't actually asked for, even if
-  it seems like a natural extension of something he did ask for.
+  confirmation for THAT change.
+- You're about to build a feature Het hasn't actually asked for.
+- You're about to scaffold an HR-agent hire without a real observed gap,
+  or scaffold anything that reads like trading-strategy territory
+  (agents/hr/hr.py's guardrail will refuse the latter, but don't rely on
+  the code catching a judgment call the session should have made first).
 - You're below ~20-30% of usable session context — stop, spend the
   remainder verifying and rewriting state.json/log/this file.
 
 ## OPERATOR AUTHORIZATION REQUIRED
-- Merging the shared-graveyard anti-repeat guard to main (commit
-  `d1e4db4`) — changes live evolution behavior.
+- Any merge to main, every time, no exceptions carried forward.
 - Confirming dashboard.py's private-repo auth (needs Het, real browser).
-- Any future request implying pooled/outside capital — needs its own
-  dedicated conversation (SEBI registration territory).
+- Deciding on Streamlit Community Cloud hosting (free but public link).
+- Any future request implying pooled/outside capital.
 - Re-enabling or re-firing the disabled autonomous dev-loop Routine.
+- HR agent hire #11 onward (0/10 used as of this writing).
+- Any request to speed up evidence-accumulation or otherwise touch how
+  Phase 1's 12-month window works — "earn real money" is the real goal,
+  restated by Het 2026-08-26, but he was told directly it changes
+  nothing about the path there.
 
 ## DO NOT RE-DERIVE
 - EXECUTION_PLAN.md Section 2 (Settled Facts) and Section 9 (Strategic
   Decisions).
 - The Three Laws and their authorized overrides — see state.json
   `decisions` for the full list with commit references.
-- The autonomous-loop root-cause investigation — closed, Het chose manual
-  operation, don't reopen without a genuinely new diagnostic capability.
+- The autonomous-loop root-cause investigation — closed, Het chose
+  manual operation.
 - Why `graveyard()`/`already_failed()` are deliberately narrow (exact
-  match only, never hypothesis-generating) — this is a Law 1 boundary
-  that was reasoned through carefully, not an oversight to "improve" by
-  making it fuzzier/smarter later without the same care.
+  match only, never hypothesis-generating).
+- Why the monsoon data is research-only and not wired to `sig_monsoon`'s
+  live path (the source data ends in 2017 — dropping it live would make
+  the signal forward-fill a 9-year-stale reading forever).
+- Why the HR agent is scoped to team-role tooling only, never trading
+  strategies (confirmed with Het via AskUserQuestion, not assumed).
+- Why the IT-guy protocol piggybacks on existing Routines instead of a
+  new schedule (the earlier autonomous fix-and-commit loop failed 5
+  times; a new standing schedule risks the same failure mode plus real
+  recurring cost Het didn't ask for).
 
 ## IMPORTANT NEW KNOWLEDGE
 - `ledger.json` is the de facto "common library" every mechanism already
-  shares — remember this before assuming a new shared-data request needs
-  new infrastructure.
+  shares.
 - `agents/README.md`'s "code over tokens" section is the standing
-  instruction for when to add a `tools/health_check.py` check vs. when to
-  just answer a question by hand once.
-- Two working Routines (daily report, nightly maintenance) share the same
-  reliability pattern: detection/reporting only, never trying to
-  fix-and-commit autonomously. The disabled dev-loop Routine is the
-  cautionary example of why that boundary exists.
+  instruction for when to add a check/agent vs. answer by hand once.
+- The Trading Floor Artifact's HEAD/TAIL-split republish pattern (see
+  WHAT WAS LEARNED above) is reusable for any future artifact that needs
+  two-way state with Claude.
+- Sandbox network policy blocks data.gov.in/IMD/most .gov domains
+  directly, but GitHub raw content is reachable — useful for sourcing
+  free datasets when the official source is blocked.
