@@ -130,6 +130,31 @@ Artifact) — proceed without asking. Anything that spends money, a paid
 Claude session/Routine firing, or is genuinely ambiguous about whether
 it might — ask first, don't guess in Het's favor.
 
+## Outsource to free tooling first (Het, 2026-08-26)
+
+"Make sure you outsource all the work you want to free sources if you
+have access to them, and use your API and brain on improving and
+overseeing everything." Formalizes a pattern already in place before he
+said it — `tools/health_check.py`, `supervisor.yml`, `factory.yml`,
+`advisor_training.yml` all run as free, deterministic GitHub Actions
+code, not Claude reasoning, precisely because the checks they do don't
+need judgment. Before reaching for a paid session/tool call to do
+something mechanical (a repeated check, a scheduled task, a fixed
+transformation), ask: could this be a free script/workflow instead?
+Reserve actual reasoning (planning, diagnosing an ambiguous bug,
+judging whether a hypothesis has a real mechanism, deciding what a
+finding means) for what genuinely needs it — that's the "brain" this
+rule means to protect, not spend on work code can already do.
+
+Het now calls this project "the company" in conversation — noted, no
+objection, but this is a naming preference, not a scope change: still a
+personal paper-trading research program, not a registered legal entity.
+The SEBI/fund distinction from 2026-08-24 stands exactly as before ("we
+are making a private fund" was corrected then, not revisited since) —
+if "company" language ever seems to imply pooling outside money or
+operating as a real firm, that still needs its own dedicated
+conversation, not an assumption from the label.
+
 ## Known environment quirks (don't re-derive these — save the tokens)
 
 - Yahoo Finance is unreachable from Claude Code sandbox environments in
