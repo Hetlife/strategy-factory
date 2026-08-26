@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
- "updated_at": "2026-08-25T11:45:00Z",
- "updated_by_commit": "b55b562",
+ "updated_at": "2026-08-26T12:15:00Z",
+ "updated_by_commit": "d1e4db4",
  "branch": "claude/scheduled-maintenance-template-d7yufr",
- "pr_number": 2,
- "pr_status": "PR #1 merged (aa55914, 2026-08-25). PR #2 merged (b55b562, 2026-08-25) -- nifty_benchmark ledger-backfill fix, discovered by checking whether the tournament was actually trading. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement; main now has everything through the backfill fix.",
+ "pr_number": 4,
+ "pr_status": "PR #1 (aa55914), #2 (b55b562), #3 (3df9143), #4 (9f5f30e) all merged to main, all with Het's fresh explicit confirmation. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement. main currently has: Phase 0 (P0-1..P0-4), agents/ team, LADDER raise, nifty_benchmark backfill fix, healer agent + health_check tool, dashboard Office tab + factor toggle, paper holding-cost decay. ONE more commit (d1e4db4, shared graveyard) is on the branch, NOT yet merged -- see queue item shared-graveyard-anti-repeat below.",
  "claude_md_sha1": "ff10e2bb3d05f3e69aaa5484655bc86beac593b7",
  "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
  "current_phase": "phase_1",
@@ -68,13 +68,13 @@
   },
   {
    "id": "dashboard-office-and-toggle",
-   "summary": "Het asked for a way to see the agents/code/files working -- an org-chart interface (not a literal animated office), running locally, linked to GitHub, plus a notes area (explicitly NOT a live AI chat, confirmed via AskUserQuestion) and a leaderboard re-ranking toggle. Extended the existing dashboard.py (Streamlit, already GitHub-linked) rather than building a separate page. Tested via headless browser against real live data. Commits 7bc23c9, 6494b9f -- on branch, low-risk (display-only, no financial logic), pending Het's merge decision.",
-   "commit": "n/a-branch-only"
+   "summary": "Het asked for a way to see the agents/code/files working -- an org-chart interface (not a literal animated office), running locally, linked to GitHub, plus a notes area (explicitly NOT a live AI chat, confirmed via AskUserQuestion) and a leaderboard re-ranking toggle. Extended the existing dashboard.py (Streamlit, already GitHub-linked) rather than building a separate page. Tested via headless browser against real live data. MERGED to main via PR #4 (9f5f30e), 2026-08-26, with Het's fresh 'merge both now' confirmation.",
+   "commit": "9f5f30e"
   },
   {
    "id": "paper-holding-cost-decay-request",
-   "summary": "Het asked for a mechanic where paper-tier agents that don't keep improving 'run out of money and die.' Design confirmed via AskUserQuestion: ongoing weekly decay (not a hard time limit). PAPER_HOLDING_TAX_WEEKLY=0.13%/week added to report(), anchored to roughly India's risk-free rate as the rationale (unproven capital not beating 'doing nothing' is a real, not just relative, drag), applied only to rung-0 non-permanent contestants, reuses the existing drawdown-retirement pathway rather than a new death condition. Tested thoroughly (flat/edge/exempt scenarios, exact-match verification). Commit 971882a -- ON BRANCH ONLY, needs a fresh explicit merge decision since it changes live paper-trading dynamics for every rung-0 contestant, same category as the LADDER change.",
-   "commit": "n/a-branch-only"
+   "summary": "Het asked for a mechanic where paper-tier agents that don't keep improving 'run out of money and die.' Design confirmed via AskUserQuestion: ongoing weekly decay (not a hard time limit). PAPER_HOLDING_TAX_WEEKLY=0.13%/week added to report(), anchored to roughly India's risk-free rate as the rationale (unproven capital not beating 'doing nothing' is a real, not just relative, drag), applied only to rung-0 non-permanent contestants, reuses the existing drawdown-retirement pathway rather than a new death condition. Tested thoroughly (flat/edge/exempt scenarios, exact-match verification). MERGED to main via PR #4 (9f5f30e), 2026-08-26, with Het's fresh 'merge both now' confirmation -- now live, takes effect on the next scheduled weekly report() run.",
+   "commit": "9f5f30e"
   }
  ],
  "queue": [
@@ -171,8 +171,15 @@
   {
    "id": "P3-anti-pattern-visibility-for-new-agents",
    "priority": "P3",
-   "status": "idea_not_started_needs_scoping",
-   "summary": "2026-08-26: Het asked that retired/failed contestants' data be explicitly available for new agents to see what not to do. Partially already true (retired contestants keep full history/lineage in the ledger, never deleted; robustness_advisor already penalizes regime-break-fragile parameters). What's NOT built: an explicit 'graveyard summary' (why did each retired contestant actually die -- drawdown breach vs. holding-cost decay vs. paper_failures) that a future advisor/researcher pass could reference. Deferred rather than built same-session as the holding-cost decay -- needs its own design pass (where would a new hypothesis actually consult this without becoming a second, competing signal source to the mechanism-first Law 1 discipline). Not started."
+   "status": "done_pending_merge",
+   "summary": "DONE 2026-08-26 (commit d1e4db4, on branch, not yet merged). factory.graveyard(state) lists every retired contestant + why it died; factory.already_failed(candidate_params, state) is a narrow EXACT-match guard wired into propose_evolutions() so it never proposes a literal repeat of an already-failed setup. Deliberately does NOT invent hypotheses from graveyard contents (Law 1 stays intact) -- exact match only, a close-but-different candidate is never blocked. agents/researcher/researcher.py re-exports both; dashboard.py's Office tab shows the graveyard live. Tested (see AUTONOMOUS_LOG.md) including a corrected integration test after catching my own first test's false-pass (EVOLUTION_TOP_N rank filtering masked the real check). See queue item shared-graveyard-anti-repeat for the merge-decision tracking."
+  },
+  {
+   "id": "shared-graveyard-anti-repeat",
+   "priority": "P1",
+   "status": "branch_only_needs_merge_decision",
+   "summary": "Het's request 2026-08-26: 'make sure all AI agents don't just learn from their own failures but also have a common library they can refer to.' ledger.json was already that shared library (every mechanism reads the same dict); this adds the missing 'what not to do' half. See P3-anti-pattern-visibility-for-new-agents above for full detail -- duplicated here at P1 because it's an actual behavior change to propose_evolutions() (skips an otherwise-valid evolution in the rare exact-graveyard-match case), same category as the LADDER raise and holding-cost decay, and needs the same explicit merge sign-off before it affects the live ledger. Commit d1e4db4.",
+   "commit": "d1e4db4"
   },
   {
    "id": "P3-broker-execution",
