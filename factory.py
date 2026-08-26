@@ -112,6 +112,26 @@ LTCG_EXEMPTION_PER_YEAR = 125_000   # Rs, account-wide/annual -- NOT applied
                                      # per-strategy here, see note above
 TRADING_DAYS_PER_YEAR = 252         # same convention as the Sharpe annualization
 
+# ---------------- paper holding-cost decay (P1, per Het's request 2026-08-26) --
+# Real capital sitting in an unproven strategy has a real opportunity cost --
+# even doing nothing (a savings account / T-bill) earns something. A
+# paper-tier contestant that never beats that isn't neutral, it's losing in
+# real terms. PAPER_HOLDING_TAX_WEEKLY makes report()'s weekly cycle apply
+# that pressure directly, instead of letting a flat/dead strategy squat on a
+# registry slot indefinitely -- "run out of money and retire if you don't
+# keep improving," per Het's framing. Rate is anchored to a real number
+# (~India's risk-free rate, ~6.5%/yr, expressed weekly) rather than picked
+# to make results look a certain way -- see EXECUTION_PLAN.md Section 5(f)
+# on why an arbitrary punitive rate would be a red flag. RULES["min_expectancy"]
+# (~12.6%/yr) is already a tougher bar than this tax alone, so this mostly
+# matters for strategies stuck near zero/negative for a long stretch, not as
+# a redundant promotion gate.
+# NEVER applied to rung>=1 (real money, RULES/LADDER-protected) or to a
+# `permanent` contestant (nifty_benchmark -- the passive bar itself doesn't
+# pay a management fee in this model, taxing it would corrupt the comparison
+# P0-3 exists to provide).
+PAPER_HOLDING_TAX_WEEKLY = 0.0013
+
 def post_tax_expectancy(mean_daily_return, days_in_market, trades):
     """Rough, ranking-purpose approximation, not a lot-level tax computation
     (this engine tracks aggregate portfolio weights, not discrete buy/sell
@@ -547,6 +567,9 @@ def report():
     for name, s in con.items():
         if s["retired"]:
             continue
+        is_benchmark = reg.get(name, {}).get("permanent", False)
+        if s["rung"] == 0 and not is_benchmark:
+            s["equity"] *= (1 - PAPER_HOLDING_TAX_WEEKLY)
         n = max(s["days_in_market"], 1)
         mean = s["sum_ret"] / n
         if s["days_in_market"] < MIN_SHARPE_SAMPLE_DAYS:
@@ -555,7 +578,6 @@ def report():
             var = max(s["sum_sq"] / n - mean ** 2, 1e-12)
             sharpe = mean / np.sqrt(var) * np.sqrt(252)
         dd = s["equity"] / s["peak"] - 1
-        is_benchmark = reg.get(name, {}).get("permanent", False)
         verdict = "hold"
         if is_benchmark:
             # P0-3: the bar to clear, never itself subject to promotion/
