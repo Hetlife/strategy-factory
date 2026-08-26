@@ -30,6 +30,7 @@ try:
     import factory as _factory
     from agents.judge.judge import explain_verdict, who_is_eligible_for_promotion
     from agents.breeder.breeder import lineage_tree
+    import agents.researcher.researcher as researcher
     from agents.risk_manager.risk_manager import (
         sector_concentration, aggregate_real_money_exposure,
         portfolio_drawdown_correlation_flag,
@@ -334,6 +335,23 @@ with tab_office:
             else:
                 st.info("Hasn't run yet — first monthly training "
                         "(advisor_training.yml) is still pending.")
+            grave = researcher.graveyard(data)
+            if grave:
+                with st.expander(f"🪦 Graveyard — {len(grave)} setup(s) already tried and failed"):
+                    st.caption(
+                        "The shared 'what not to do' record every evolution "
+                        "round checks before proposing a new candidate — an "
+                        "exact repeat of one of these gets skipped "
+                        "automatically. Never used to invent new hypotheses, "
+                        "only to avoid repeating a proven failure."
+                    )
+                    for entry in grave:
+                        st.write(f"**{entry['name']}** ({entry['fn']}/{entry['sector']}) "
+                                f"— {entry['numeric_params']}, survived "
+                                f"{entry['days_survived']} days, final equity "
+                                f"{entry['final_equity']} — {entry['cause']}")
+            else:
+                st.caption("Graveyard is empty — nothing has been retired yet.")
 
         # --- Breeder ---
         with desk3:

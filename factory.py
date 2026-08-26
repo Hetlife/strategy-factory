@@ -385,6 +385,61 @@ def update():
     print(f"Arena updated {today}: {live} live contestants "
           f"({sum(1 for c in con.values() if c['retired'])} retired).")
 
+# ---------------- shared library: what's already been tried and failed --
+# ledger.json (registry + contestants) is already the one shared data store
+# every mechanism in this file reads from -- report()'s evolution,
+# attempt_breeding(), advisors.py's backtest grid, every agents/ module.
+# graveyard() and already_failed() are the missing "what not to do" half of
+# that library (Het's request, 2026-08-26): retired contestants already
+# keep their full params/history in the ledger forever (retirement never
+# deletes a registry or contestant entry), this just makes that legible and
+# gives ONE mechanism a narrow, safe use for it.
+#
+# Deliberately narrow, to stay inside Law 1: this NEVER invents a new
+# hypothesis from the graveyard's contents -- it only recognizes an EXACT
+# repeat of a setup that already proved not to work, and skips proposing
+# that exact repeat again. A close-but-different candidate is a legitimate
+# new attempt, not a repeat, and is never blocked.
+_NON_NUMERIC_PARAM_KEYS = ("fn", "sector", "leader", "proxy", "csv")
+
+def graveyard(state=None):
+    """Every retired, non-permanent contestant: what it was, why it died,
+    how long it lasted. Read-only, purely descriptive."""
+    state = state or load_state()
+    reg, con = state["registry"], state["contestants"]
+    entries = []
+    for name, s in con.items():
+        if not s.get("retired") or reg.get(name, {}).get("permanent"):
+            continue
+        params = reg.get(name, {})
+        numeric_params = {k: v for k, v in params.items()
+                           if k not in _NON_NUMERIC_PARAM_KEYS}
+        cause = ("repeated drawdown breaches (paper_failures cap)"
+                 if s.get("paper_failures", 0) >= RULES["max_paper_failures"]
+                 else "retired (reason not mechanically tagged)")
+        entries.append(dict(
+            name=name, fn=params.get("fn"), sector=params.get("sector"),
+            numeric_params=numeric_params,
+            final_equity=round(s.get("equity", 1.0), 4),
+            days_survived=s.get("days_on_rung", 0),
+            cause=cause,
+        ))
+    return entries
+
+def already_failed(candidate_params, state=None):
+    """True only if candidate_params is an EXACT match (same fn, sector,
+    and every numeric value) to something already in the graveyard. Exact
+    match only, deliberately conservative -- this is an anti-repeat guard,
+    not a signal to steer new hypotheses toward or away from anything."""
+    cand_numeric = {k: v for k, v in candidate_params.items()
+                     if k not in _NON_NUMERIC_PARAM_KEYS}
+    for entry in graveyard(state):
+        if (entry["fn"] == candidate_params.get("fn")
+                and entry["sector"] == candidate_params.get("sector")
+                and entry["numeric_params"] == cand_numeric):
+            return True
+    return False
+
 # ---------------- advisor-informed evolution (paper tier only) ----------
 def mutate_params(current, advisor_params, weight):
     """Blend a contestant's current numeric hyperparameters toward the
@@ -427,6 +482,8 @@ def propose_evolutions(rows, reg, con, bank, trust_weight):
         new_params = mutate_params(params, best, trust_weight)
         if new_params == params:
             continue
+        if already_failed(new_params, {"registry": reg, "contestants": con}):
+            continue   # exact repeat of a setup already proven not to work
         gen = (s["lineage"] or {}).get("gen", 0) + 1 if s["lineage"] else 1
         if len(reg) >= MAX_CONTESTANTS:
             continue

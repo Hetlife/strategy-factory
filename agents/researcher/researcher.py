@@ -9,7 +9,7 @@ currently believe is the best parameter set for X" without re-reading raw
 JSON structure.
 
 USAGE:
-    from agents.researcher.researcher import train, top_candidate
+    from agents.researcher.researcher import train, top_candidate, graveyard, already_failed
 """
 import advisors as a
 import factory as f
@@ -32,3 +32,19 @@ def top_candidate(family, sector, bank=None):
     if not bucket:
         return None
     return bucket[0]   # already rank-sorted by advisors.py's ensemble_rank
+
+
+def graveyard(ledger_state=None):
+    """What's already been tried and failed -- see factory.graveyard()'s
+    docstring for the full rationale (this is a thin re-export, the real
+    logic lives in factory.py since propose_evolutions() also needs it and
+    factory.py can't import agents.researcher without a circular import)."""
+    return f.graveyard(ledger_state)
+
+
+def already_failed(candidate_params, ledger_state=None):
+    """True only for an EXACT repeat of an already-retired setup -- see
+    factory.already_failed()'s docstring. Deliberately narrow: never used
+    to invent a new hypothesis (Law 1), only to avoid proposing an exact
+    repeat of a setup that's already proven not to work."""
+    return f.already_failed(candidate_params, ledger_state)
