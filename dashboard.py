@@ -258,10 +258,22 @@ with tab_arena:
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Total Contestants", total_strategies)
         col2.metric("Active Strategies", active_strategies)
-        col3.metric("Paper Bankroll / Contestant", f"Rs {PAPER_STARTING_CAPITAL:,}",
-                    help="Every contestant starts here on paper (rung 0 = Rs 0 real "
-                         "money at risk). Paper P&L below is this times the equity "
-                         "factor -- a bookkeeping display, not a real balance.")
+        if metric_cards_data:
+            _live_rows = [r for r in metric_cards_data if r["Status"] == "Active"]
+            if _live_rows:
+                _best = max(_live_rows, key=lambda r: r["Current Equity"])
+                _best_pct = (_best["Current Equity"] - 1) * 100
+                col3.metric("Top Performer", _best["Strategy"],
+                            f"{_best_pct:+.2f}%",
+                            help="The live contestant with the highest equity right "
+                                 "now, and how far it's moved since it started (not "
+                                 "a Rs figure -- every contestant starts at the same "
+                                 f"Rs {PAPER_STARTING_CAPITAL:,} paper baseline, so % "
+                                 "move is what actually differs between them).")
+            else:
+                col3.metric("Top Performer", "—")
+        else:
+            col3.metric("Top Performer", "—")
 
         if metric_cards_data:
             avg_equity = pd.DataFrame(metric_cards_data)["Current Equity"].mean()
