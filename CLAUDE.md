@@ -155,6 +155,34 @@ if "company" language ever seems to imply pooling outside money or
 operating as a real firm, that still needs its own dedicated
 conversation, not an assumption from the label.
 
+## Confidence threshold for judgment calls (Het, 2026-08-26)
+
+"If you're more than 75% sure just do it, otherwise [queue] the task,
+keep a notebook in the dashboard I can see and reply to your question."
+A THIRD axis alongside cost (money) and risk (the Hard rules) — this one
+is about **certainty**. Applies only inside territory a session already
+has standing authority over (a bug diagnosis, a tooling/code-quality
+call, which of several reasonable implementations to pick) — it does
+NOT touch the Hard rules section above, which stays confirmation-
+required regardless of how confident a session feels; 90%-confident on
+a financial-parameter change is still not authorization, because
+confidence isn't the same thing as authorization. Where it's genuinely
+below ~75% (a real judgment call, not just "I'd rather not decide"),
+queue it instead of guessing.
+
+**The "notebook" is the Trading Floor Artifact's note bowl + this
+file's own NEEDS HET section — not a new thing to build.** The Artifact
+(https://claude.ai/code/artifact/6af2bce8-b4a5-4b08-b60a-916c239e8a65)
+already lets Het write back (`artifact` capability, persists in the
+page's own state, readable via `Artifact({action:"read", url:...})`),
+and shows Claude's open questions pulled live from
+`het_directives.md`'s NEEDS HET section via
+`tools/build_trading_floor_state.py`. `dashboard.py` (Streamlit) has a
+separate, LOCAL-ONLY notes box (`.autonomous/dashboard_notes.md`) that
+only works when Het runs the dashboard himself on his own machine — it
+does not reach a session running elsewhere, so don't treat it as the
+two-way channel; the Artifact is.
+
 ## Known environment quirks (don't re-derive these — save the tokens)
 
 - Yahoo Finance is unreachable from Claude Code sandbox environments in
