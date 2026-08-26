@@ -41,7 +41,20 @@ UNIVERSE = {
     "pipes_tiles": ["ASTRAL.NS", "SUPREMEIND.NS", "KAJARIACER.NS", "CERA.NS"],
     "steel": ["TATASTEEL.NS", "JSWSTEEL.NS", "JINDALSTEL.NS", "SAIL.NS"],
 }
-ALL_TICKERS = sorted({t for v in UNIVERSE.values() for t in v} | {BENCHMARK})
+# Macro cost proxies (not tradeable sectors -- fetched alongside the
+# equity panel purely so sig_input_cost can read them as `proxy`).
+# 2026-08-26 (Het: "add gold and petrol prices... we can use them as
+# indicators"). Crude oil (Brent, global benchmark India's imports price
+# off) has a direct, well-established mechanism: cement kilns and steel
+# furnaces are energy-intensive, so falling crude -> falling fuel/energy
+# input costs -> margin tailwind, same "cost proxy drops -> buy sector"
+# shape as the existing input_cost_lag hypothesis. Gold intentionally NOT
+# added yet -- no comparably direct mechanism to cement/infra/steel was
+# found (see AUTONOMOUS_LOG.md); asked Het rather than force a weak,
+# two-hop story into the registry.
+MACRO_PROXIES = ["BZ=F"]   # ICE Brent Crude continuous future
+ALL_TICKERS = sorted({t for v in UNIVERSE.values() for t in v}
+                      | {BENCHMARK} | set(MACRO_PROXIES))
 
 LADDER = [0, 25_000, 50_000, 100_000, 200_000]    # rupees per rung (0 = paper)
                                    # Raised 2026-08-25 (Het, fresh explicit
@@ -67,6 +80,19 @@ MIN_SHARPE_SAMPLE_DAYS = 20   # below this, the variance estimate behind Sharpe
 # real-money rung. Those still only evolve via spawn_children() above.
 PARAM_BANK_PATH = os.path.join(STATE_DIR, "parameter_bank.json")
 ADVISOR_STATE_PATH = os.path.join(STATE_DIR, "advisor_state.json")
+
+# ---------------- market log ("mother file") -----------------------------
+# Het's request, 2026-08-26: a single shared record of what the actual
+# market did each day, separate from any one strategy's interpretation of
+# it. Every contestant's `history` array already records ITS OWN daily
+# return -- this records the raw ticker-level closing prices instead, once
+# per day, regardless of which strategies existed or what they did with
+# it. Pure record-keeping: never read by any signal function, never
+# influences a verdict -- it exists for transparency/audit, not as a new
+# input. Capped like every other growing list in this file (see
+# s["history"][-1300:] in update()) so it can't grow unbounded.
+MARKET_LOG_PATH = os.path.join(STATE_DIR, "market_log.json")
+MARKET_LOG_MAX_DAYS = 1300
 EVOLUTION_TOP_N = 10          # only contestants ranked outside the overall
                                # top N are candidates for advisor-informed evolution
 PARAM_BOUNDS = {               # mechanism-bounded blend ranges, mirrors seed grid
@@ -207,6 +233,16 @@ def seed_registry():
                 fn="momentum", sector=sector, lookback=lb, top_frac=0.34)
     reg["input_cost_lag"] = dict(fn="input_cost", sector="cement",
                                  proxy="TATASTEEL.NS", lb=20, drop=-0.05)
+    # 2026-08-26 (Het): crude oil as an energy-cost proxy. Reuses the same
+    # sig_input_cost mechanism as input_cost_lag above (falling cost proxy
+    # over `lb` days -> margin tailwind -> buy the sector), just against
+    # Brent instead of steel. Two sectors, same threshold/lookback as the
+    # existing input_cost hypothesis -- not grid-searched, mirrors the one
+    # already-approved instance of this mechanism shape.
+    reg["input_cost_crude_cement"] = dict(fn="input_cost", sector="cement",
+                                 proxy="BZ=F", lb=20, drop=-0.05)
+    reg["input_cost_crude_steel"] = dict(fn="input_cost", sector="steel",
+                                 proxy="BZ=F", lb=20, drop=-0.05)
     reg["monsoon_cement"] = dict(fn="monsoon", csv="imd_rainfall_departure.csv",
                                  lag=10, sector="cement", thresh=10.0)
     # P0-3 (EXECUTION_PLAN.md Section 3): permanent Nifty buy-and-hold
@@ -301,6 +337,24 @@ def save_json(path, obj):
 def load_parameter_bank():
     return load_json(PARAM_BANK_PATH, {"bank": {}})
 
+def append_market_log(today, px):
+    """Record what the market actually did today -- every ticker's
+    closing price and day-over-day return, independent of any strategy.
+    Additive only: one entry per calendar day, keyed by date so a rerun on
+    the same day overwrites that day's entry rather than duplicating it."""
+    log = load_json(MARKET_LOG_PATH, {})
+    todays_ret = px.pct_change().iloc[-1]
+    log[today] = {
+        t: dict(close=round(float(px[t].iloc[-1]), 4),
+                ret=round(float(todays_ret.get(t, 0.0)), 6))
+        for t in px.columns if not pd.isna(px[t].iloc[-1])
+    }
+    # keep only the most recent MARKET_LOG_MAX_DAYS entries, oldest first
+    if len(log) > MARKET_LOG_MAX_DAYS:
+        for old_date in sorted(log.keys())[:len(log) - MARKET_LOG_MAX_DAYS]:
+            del log[old_date]
+    save_json(MARKET_LOG_PATH, log)
+
 def load_advisor_state():
     return load_json(ADVISOR_STATE_PATH,
                       {"trust_weight": 0.25, "history": []})
@@ -347,6 +401,7 @@ def update():
     px = fetch_prices()
     today = str(px.index[-1].date())
     todays_ret = px.pct_change().iloc[-1]
+    append_market_log(today, px)
     state = load_state()
     reg, con = state["registry"], state["contestants"]
 

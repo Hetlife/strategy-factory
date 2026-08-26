@@ -3,8 +3,8 @@
  "updated_at": "2026-08-26T12:15:00Z",
  "updated_by_commit": "d1e4db4",
  "branch": "claude/scheduled-maintenance-template-d7yufr",
- "pr_number": 4,
- "pr_status": "PR #1 (aa55914), #2 (b55b562), #3 (3df9143), #4 (9f5f30e) all merged to main, all with Het's fresh explicit confirmation. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement. main currently has: Phase 0 (P0-1..P0-4), agents/ team, LADDER raise, nifty_benchmark backfill fix, healer agent + health_check tool, dashboard Office tab + factor toggle, paper holding-cost decay. ONE more commit (d1e4db4, shared graveyard) is on the branch, NOT yet merged -- see queue item shared-graveyard-anti-repeat below.",
+ "pr_number": 5,
+ "pr_status": "PR #1 (aa55914), #2 (b55b562), #3 (3df9143), #4 (9f5f30e), #5 (ea877a1) all merged to main, all with Het's fresh explicit confirmation. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement. main now has everything: Phase 0 (P0-1..P0-4), agents/ team, LADDER raise, nifty_benchmark backfill fix, healer agent + health_check tool, dashboard Office tab + factor toggle, paper holding-cost decay, and the shared graveyard anti-repeat guard. No known outstanding branch-vs-main gap as of this update.",
  "claude_md_sha1": "ff10e2bb3d05f3e69aaa5484655bc86beac593b7",
  "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
  "current_phase": "phase_1",
@@ -172,14 +172,14 @@
    "id": "P3-anti-pattern-visibility-for-new-agents",
    "priority": "P3",
    "status": "done_pending_merge",
-   "summary": "DONE 2026-08-26 (commit d1e4db4, on branch, not yet merged). factory.graveyard(state) lists every retired contestant + why it died; factory.already_failed(candidate_params, state) is a narrow EXACT-match guard wired into propose_evolutions() so it never proposes a literal repeat of an already-failed setup. Deliberately does NOT invent hypotheses from graveyard contents (Law 1 stays intact) -- exact match only, a close-but-different candidate is never blocked. agents/researcher/researcher.py re-exports both; dashboard.py's Office tab shows the graveyard live. Tested (see AUTONOMOUS_LOG.md) including a corrected integration test after catching my own first test's false-pass (EVOLUTION_TOP_N rank filtering masked the real check). See queue item shared-graveyard-anti-repeat for the merge-decision tracking."
+   "summary": "DONE and MERGED 2026-08-26 (commit ea877a1, PR #5, Het's fresh 'Yes merge' confirmation). factory.graveyard(state) lists every retired contestant + why it died; factory.already_failed(candidate_params, state) is a narrow EXACT-match guard wired into propose_evolutions() so it never proposes a literal repeat of an already-failed setup. Deliberately does NOT invent hypotheses from graveyard contents (Law 1 stays intact) -- exact match only, a close-but-different candidate is never blocked. agents/researcher/researcher.py re-exports both; dashboard.py's Office tab shows the graveyard live. Tested (see AUTONOMOUS_LOG.md) including a corrected integration test after catching my own first test's false-pass (EVOLUTION_TOP_N rank filtering masked the real check)."
   },
   {
    "id": "shared-graveyard-anti-repeat",
    "priority": "P1",
-   "status": "branch_only_needs_merge_decision",
-   "summary": "Het's request 2026-08-26: 'make sure all AI agents don't just learn from their own failures but also have a common library they can refer to.' ledger.json was already that shared library (every mechanism reads the same dict); this adds the missing 'what not to do' half. See P3-anti-pattern-visibility-for-new-agents above for full detail -- duplicated here at P1 because it's an actual behavior change to propose_evolutions() (skips an otherwise-valid evolution in the rare exact-graveyard-match case), same category as the LADDER raise and holding-cost decay, and needs the same explicit merge sign-off before it affects the live ledger. Commit d1e4db4.",
-   "commit": "d1e4db4"
+   "status": "done",
+   "summary": "Het's request 2026-08-26: 'make sure all AI agents don't just learn from their own failures but also have a common library they can refer to.' ledger.json was already that shared library (every mechanism reads the same dict); this adds the missing 'what not to do' half. See P3-anti-pattern-visibility-for-new-agents above for full detail. MERGED to main via PR #5 (ea877a1), 2026-08-26, with Het's fresh 'Yes merge' confirmation -- now live, takes effect on the next report() run.",
+   "commit": "ea877a1"
   },
   {
    "id": "P3-broker-execution",
