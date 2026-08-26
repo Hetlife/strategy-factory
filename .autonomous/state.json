@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
- "updated_at": "2026-08-24T18:55:00Z",
- "updated_by_commit": "ea5ac0c",
+ "updated_at": "2026-08-25T11:15:00Z",
+ "updated_by_commit": "6caf01c",
  "branch": "claude/scheduled-maintenance-template-d7yufr",
  "pr_number": 1,
- "pr_status": "open_unmerged",
+ "pr_status": "MERGED (aa55914, 2026-08-25) -- branch still exists and is still where all further work happens per this repo's git-development-branch requirement; main now has everything through the LADDER raise",
  "claude_md_sha1": "0249acb68911066c84ce711dfaa72d51867fe6f0",
  "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
  "current_phase": "phase_1",
@@ -28,8 +28,8 @@
   },
   {
    "id": "pr1-merge-status",
-   "summary": "asked twice, final answer HOLD OFF -- do not merge without a fresh unambiguous confirmation in a NEW session, a prior session's yes does not carry forward",
-   "as_of_commit": "dbc9408"
+   "summary": "MERGED 2026-08-25 (merge commit aa55914) after fresh explicit AskUserQuestion confirmation in-session. Supersedes the earlier HOLD OFF answer.",
+   "as_of_commit": "6caf01c"
   },
   {
    "id": "spawn-children-input-cost",
@@ -89,8 +89,8 @@
   {
    "id": "P0-5-diagnose-routine-zero-commits",
    "priority": "P0",
-   "status": "likely_root_cause_found_fix_untested",
-   "summary": "The 5-hourly autonomous dev-loop Routine (trig_013GUxs9AwHaRvb1o4eGJRGx, DISABLED) failed 4 confirmed times in a row. 2026-08-25: controlled comparison found the likely cause -- create_trigger-fired sessions carry NO git repo binding in session_context (no sources/outcomes fields, unlike create_session which has explicit source_url/outcome_branch and successfully committed+pushed in an equivalent trivial test, verified independently via list_commits). The Routine's prompt has always assumed a checkout already exists rather than cloning one. PROPOSED FIX: rewrite the prompt to explicitly `git clone` + `git checkout` the target branch as its literal first action. NOT YET TESTED -- holding on the next paid firing pending Het's go-ahead (he asked to confirm before any further cost, 2026-08-25). See bug_log.md for the full comparison and evidence.",
+   "status": "abandoned_by_het_decision",
+   "summary": "The 5-hourly autonomous dev-loop Routine (trig_013GUxs9AwHaRvb1o4eGJRGx, DISABLED) failed 5 confirmed times across two structurally different fix approaches (retry-tuning, then explicit git-clone-first). Root cause never conclusively found -- the real blocker was lack of any tool to inspect a Routine-fired session's internal transcript, which made further prompt-guessing low-value. 2026-08-25: asked Het directly whether to keep spending on more attempts or accept manual/interactive check-ins instead. **Het chose manual check-ins (recommended option).** Routine stays disabled indefinitely -- do not re-enable or re-fire it without a genuinely new diagnostic capability (e.g. actual transcript visibility becoming available), not another prompt variant. The daily report Routine (trig_01Y9q1Dn98ghLMD4KX7xZfxp) is unaffected and remains the standing mechanism for periodic updates; real day-to-day progress now depends on interactive sessions, which Het has accepted.",
    "commit": "n/a-ops-only"
   },
   {
@@ -102,14 +102,15 @@
   {
    "id": "P1-ladder-rung1-raise",
    "priority": "P1",
-   "status": "direction_confirmed_number_pending",
-   "summary": "2026-08-25: Het answered the standing rung-1-sizing question with 'raise the rung-1 rupee amount' (not the cap-names-held alternative). This authorizes the DIRECTION, not yet a specific number -- LADDER is currently [0, 10_000, 25_000, 50_000, 100_000], and rung 1 can't exceed rung 2 without rethinking the whole ladder, not just one value. PROPOSED (not yet implemented): [0, 25_000, 50_000, 100_000, 200_000] -- roughly doubles/2.5x each rung, and at 25,000 capital the same 6-name-basket fixed DP cost (6*15.34=92.04) drops from ~1.14% RT to roughly ~0.6% RT, a meaningful improvement without eliminating the fixed-cost signal entirely. STILL NEEDS a fresh explicit confirmation on the exact numbers before editing factory.py's LADDER constant -- this remains a hard-guarded financial risk parameter per CLAUDE.md, a direction answer is not the same as sign-off on specific figures."
+   "status": "done",
+   "summary": "2026-08-25: Het confirmed the exact figures via fresh AskUserQuestion sign-off (not just direction). LADDER changed [0,10_000,25_000,50_000,100_000] -> [0,25_000,50_000,100_000,200_000] in factory.py. Cuts rung-1's fixed DP-charge drag from ~1.14% to ~0.6% RT on a 6-name basket. Also fixed report()'s rung-summary footer, which hardcoded the old '10k/25k/50k/1L' text -- now derives from LADDER directly. Verified: 30 synthetic update() cycles + report() clean, no crash. Commit 6caf01c.",
+   "commit": "6caf01c"
   },
   {
    "id": "P1-pr1-decision",
    "priority": "P1",
-   "status": "blocked_on_human",
-   "summary": "get Het's fresh decision on PR #1 (merge/hold/close) -- do not attempt to infer or reuse a prior answer. Not phase-gated (a human decision, not feature work) but still requires Het."
+   "status": "done",
+   "summary": "Het confirmed via fresh AskUserQuestion sign-off (2026-08-25): merge. PR #1 merged to main, merge commit aa55914. Included: P0-1..P0-3, agents/ team, advisor-informed evolution layer, and the LADDER raise (6caf01c) landed on the branch just before merge."
   },
   {
    "id": "P1-dashboard-auth",
@@ -120,8 +121,8 @@
   {
    "id": "P1-advisor-training-real-run",
    "priority": "P1",
-   "status": "blocked_on_pr1_merge",
-   "summary": "once PR #1 merges, let advisor_training.yml run once against real data and sanity-check parameter_bank.json -- everything tested so far is synthetic"
+   "status": "ready_next_scheduled_run",
+   "summary": "PR #1 merged 2026-08-25 (aa55914) -- advisor_training.yml can now run for real against main. It's a monthly cron; no action needed unless Het wants it triggered manually to sanity-check parameter_bank.json sooner."
   },
   {
    "id": "P2-vectorize",

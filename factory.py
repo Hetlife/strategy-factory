@@ -255,6 +255,17 @@ def load_state():
         s.setdefault("lineage", None)
         s.setdefault("evolved_out", False)
         s.setdefault("trust_scored", False)
+    # Backfill any registry key seed_registry() defines that this existing
+    # ledger predates (e.g. nifty_benchmark, added after this ledger was
+    # first created) -- seed_registry() only ever runs on a brand-new
+    # ledger, so a pre-existing one silently never gets new seed entries
+    # without this. Additive only: never touches an existing registry key
+    # or existing contestant stats, only adds missing ones fresh.
+    for name, params in seed_registry().items():
+        if name not in state["registry"]:
+            state["registry"][name] = params
+        if name not in state["contestants"]:
+            state["contestants"][name] = blank_stats()
     return state
 
 def save_state(s):
