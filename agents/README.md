@@ -26,6 +26,41 @@ advisory, printed-only layer.
 | Risk Manager | `risk_manager/risk_manager.py` | **New logic**, but read-only/advisory only: sector concentration, aggregate real-money exposure (should be Rs 0 through Phase 0/1 — this is the one number worth watching), and a portfolio-wide correlated-drawdown flag that no single contestant's DEMOTE check can see. Wired into `factory.report()` as an additive printed section, after the ledger is already saved. |
 | Reporter | `reporter/reporter.py` | **New logic**, plain-English translation of `report()`'s output (promotions, demotions, evolutions, births, best/worst performer) — for Het's stated preference for explanation over raw tables. No financial computation of its own. Wired into `factory.report()` the same way, last. |
 | Healer | `healer/healer.py` | Runs `tools/health_check.py`'s deterministic repo-consistency checks (registry drift, state.json well-formedness, CLAUDE.md hash drift, bug_log/state.json contradictions) and prints plain findings. **Never fixes anything itself** — detection only, same as the others. See "Code over tokens" below for why this exists. |
+| HR | `hr/hr.py` | **The one agent allowed to create files outside its own folder** — scaffolds a brand-new `agents/<role>/` (another team-role tooling agent, same read-only/advisory shape as the six above). Never touches trading strategies, never runs unsupervised — see "Hiring" below. |
+
+## Each agent's workspace
+
+Every agent folder has a `workspace.md` — a personal scratch space for
+that agent's own notes/working data between runs. Het asked for this
+explicitly ("make sure each agent has their own area on GitHub to store
+files and personal data"). **Never read by any `sig_*` function or
+factory.py's trading logic** — Law 1 safety, an agent's own notes can
+never become a smuggled-in signal. Starts empty; an agent fills it in
+only as it does real work, not speculatively.
+
+## Hiring
+
+`agents/hr/hr.py` scaffolds new team-role helpers when a session judges
+there's a real, observed gap — same "code over tokens" bar as everything
+else here, not proactive headcount growth. Scoped narrowly, confirmed
+with Het 2026-08-26:
+
+- **Team-role tooling only** — the same shape as the agents above.
+  `scaffold_agent()` refuses outright (`ValueError`) if the role name or
+  description contains anything that reads like trading-strategy
+  territory (signal, hypothesis, buy/sell, backtest, ledger, etc.). A
+  real trading idea still goes through the normal mechanism-first
+  hypothesis process in `factory.py`, never through here.
+- **Pre-authorized cap of 10 hires** — a session can scaffold up to 10
+  new agents on its own judgment (free, code-only, matching existing
+  safe patterns) without asking Het first. Hire #11 onward needs his
+  explicit go-ahead; `scaffold_agent()` enforces this by counting
+  `.autonomous/hr_log.md`'s `HIRED` lines.
+- **Never autonomous** — the HR agent doesn't run on a schedule or fire
+  itself. A session calls `scaffold_agent()` deliberately, after judging
+  the gap is real, exactly like the reasoning that produced `healer.py`
+  in the first place. See `.autonomous/hr_log.md` for every proposal and
+  hire so far, with the reasoning behind each.
 
 ## Code over tokens
 
@@ -88,3 +123,7 @@ firing, that's a bug in `agents/`, not in the core engine.
   something to silence — it's a tripwire. If it ever fires, stop and
   confirm it was an explicit, fresh, in-session authorization before doing
   anything else.
+- Do not use `agents/hr/hr.py` to scaffold anything that could become a
+  trading-signal source, and do not bypass its cap-of-10 guard by editing
+  `.autonomous/hr_log.md` by hand — hire #11 onward needs Het, not a
+  workaround.

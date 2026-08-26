@@ -133,6 +133,7 @@ advisor_state = load_advisor_state(current_timestamp)
 parameter_bank = load_parameter_bank(current_timestamp)
 state_json = load_state_json(current_timestamp)
 log_text = _fetch_text("AUTONOMOUS_LOG.md", current_timestamp)
+hr_log_text = _fetch_text(".autonomous/hr_log.md", current_timestamp)
 
 # ======================================================= HEARTBEAT BANNER ===
 # Het: "give me a heartbeat or indicator to see it's working so I can check
@@ -391,6 +392,7 @@ with tab_office:
     else:
         desk1, desk2, desk3 = st.columns(3)
         desk4, desk5, desk6 = st.columns(3)
+        desk7, _sp2, _sp3 = st.columns(3)
 
         # --- Judge ---
         with desk1:
@@ -519,6 +521,27 @@ with tab_office:
             else:
                 st.caption("state.json not fetched — can't run the full check "
                           "here, only the registry-vs-ledger part would apply.")
+
+        # --- HR ---
+        with desk7:
+            st.markdown("### 🗂️ HR")
+            st.caption("Hires new team-role helper agents when there's a "
+                       "real gap — never trading strategies, never runs "
+                       "unsupervised. See agents/hr/hr.py.")
+            if hr_log_text:
+                hired = hr_log_text.count("\n- HIRED |")
+                st.info(f"{hired} / 10 pre-authorized hires used.")
+                lines = [l for l in hr_log_text.strip().splitlines()
+                         if l.startswith("- HIRED") or l.startswith("- PROPOSED")]
+                if lines:
+                    with st.expander("Hiring history"):
+                        for l in lines[-10:]:
+                            st.write(l.lstrip("- "))
+                else:
+                    st.caption("No hires yet — built and ready, waiting on a "
+                              "real observed gap before scaffolding anything.")
+            else:
+                st.caption(".autonomous/hr_log.md not fetched.")
 
     st.markdown("---")
     st.subheader("📋 Notes")
