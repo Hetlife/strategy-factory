@@ -41,7 +41,20 @@ UNIVERSE = {
     "pipes_tiles": ["ASTRAL.NS", "SUPREMEIND.NS", "KAJARIACER.NS", "CERA.NS"],
     "steel": ["TATASTEEL.NS", "JSWSTEEL.NS", "JINDALSTEL.NS", "SAIL.NS"],
 }
-ALL_TICKERS = sorted({t for v in UNIVERSE.values() for t in v} | {BENCHMARK})
+# Macro cost proxies (not tradeable sectors -- fetched alongside the
+# equity panel purely so sig_input_cost can read them as `proxy`).
+# 2026-08-26 (Het: "add gold and petrol prices... we can use them as
+# indicators"). Crude oil (Brent, global benchmark India's imports price
+# off) has a direct, well-established mechanism: cement kilns and steel
+# furnaces are energy-intensive, so falling crude -> falling fuel/energy
+# input costs -> margin tailwind, same "cost proxy drops -> buy sector"
+# shape as the existing input_cost_lag hypothesis. Gold intentionally NOT
+# added yet -- no comparably direct mechanism to cement/infra/steel was
+# found (see AUTONOMOUS_LOG.md); asked Het rather than force a weak,
+# two-hop story into the registry.
+MACRO_PROXIES = ["BZ=F"]   # ICE Brent Crude continuous future
+ALL_TICKERS = sorted({t for v in UNIVERSE.values() for t in v}
+                      | {BENCHMARK} | set(MACRO_PROXIES))
 
 LADDER = [0, 25_000, 50_000, 100_000, 200_000]    # rupees per rung (0 = paper)
                                    # Raised 2026-08-25 (Het, fresh explicit
@@ -220,6 +233,16 @@ def seed_registry():
                 fn="momentum", sector=sector, lookback=lb, top_frac=0.34)
     reg["input_cost_lag"] = dict(fn="input_cost", sector="cement",
                                  proxy="TATASTEEL.NS", lb=20, drop=-0.05)
+    # 2026-08-26 (Het): crude oil as an energy-cost proxy. Reuses the same
+    # sig_input_cost mechanism as input_cost_lag above (falling cost proxy
+    # over `lb` days -> margin tailwind -> buy the sector), just against
+    # Brent instead of steel. Two sectors, same threshold/lookback as the
+    # existing input_cost hypothesis -- not grid-searched, mirrors the one
+    # already-approved instance of this mechanism shape.
+    reg["input_cost_crude_cement"] = dict(fn="input_cost", sector="cement",
+                                 proxy="BZ=F", lb=20, drop=-0.05)
+    reg["input_cost_crude_steel"] = dict(fn="input_cost", sector="steel",
+                                 proxy="BZ=F", lb=20, drop=-0.05)
     reg["monsoon_cement"] = dict(fn="monsoon", csv="imd_rainfall_departure.csv",
                                  lag=10, sector="cement", thresh=10.0)
     # P0-3 (EXECUTION_PLAN.md Section 3): permanent Nifty buy-and-hold
