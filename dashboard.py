@@ -58,6 +58,53 @@ def _live_sharpe_and_tax(s):
 
 st.set_page_config(page_title="Strategy Factory Arena", layout="wide", page_icon="🤖")
 
+# --- MODERN / "APPLE-LIKE" STYLING ---
+# Het, 2026-08-26: "I want the home interface to look more apple like and
+# modern... make it like my portfolio so I know if my agents are making
+# money." Streamlit's own chrome (default st.metric, st.container) is
+# functional but plain -- this CSS block restyles just the portfolio hero
+# below into rounded, shadowed cards with a system-font stack, without
+# touching Streamlit's actual widget behavior underneath.
+st.markdown("""
+<style>
+  html, body, [class*="css"] {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+      "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .portfolio-card {
+    background: linear-gradient(165deg, #1c2333 0%, #12151f 100%);
+    border-radius: 20px;
+    padding: 28px 32px;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .portfolio-label {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.4px;
+    color: rgba(255,255,255,0.55); text-transform: uppercase; margin-bottom: 6px;
+  }
+  .portfolio-total { font-size: 44px; font-weight: 700; color: #f5f5f7;
+    letter-spacing: -0.5px; line-height: 1.1; }
+  .portfolio-change { font-size: 18px; font-weight: 600; margin-top: 4px; }
+  .portfolio-change.up { color: #30d158; }
+  .portfolio-change.down { color: #ff453a; }
+  .portfolio-subrow { display: flex; gap: 28px; margin-top: 22px;
+    flex-wrap: wrap; }
+  .portfolio-stat .k { font-size: 12px; color: rgba(255,255,255,0.45);
+    text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
+  .portfolio-stat .v { font-size: 20px; font-weight: 600; color: #f5f5f7; }
+  .real-money-badge {
+    display: inline-block; margin-top: 18px; padding: 6px 12px;
+    background: rgba(255,159,10,0.12); border: 1px solid rgba(255,159,10,0.3);
+    border-radius: 10px; font-size: 13px; color: #ff9f0a; font-weight: 600;
+  }
+  .status-pill { display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+</style>
+""", unsafe_allow_html=True)
+
 # --- SIDEBAR & REFRESH BUTTON ---
 st.sidebar.title("🔄 Controls")
 
@@ -135,76 +182,115 @@ state_json = load_state_json(current_timestamp)
 log_text = _fetch_text("AUTONOMOUS_LOG.md", current_timestamp)
 hr_log_text = _fetch_text(".autonomous/hr_log.md", current_timestamp)
 
-# ======================================================= HEARTBEAT BANNER ===
-# Het: "give me a heartbeat or indicator to see it's working so I can check
-# it every day, and what was done by the AI when." Derived entirely from
-# files already committed to the repo (ledger.json, AUTONOMOUS_LOG.md) --
-# no GitHub Actions API / auth needed, so it works the same for Het as for
-# anyone else loading this page.
-with st.container(border=True):
-    hb1, hb2, hb3 = st.columns([1, 1, 2])
+def _relative_days(date_str):
+    """AUTONOMOUS_LOG.md and ledger.json only record day-level dates (no
+    time-of-day), so this can only ever be honest down to a day -- 'X
+    minutes ago' would be fabricated precision the underlying data doesn't
+    have. 'today'/'Nd ago' is the truthful version of the same idea."""
+    try:
+        d = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return date_str
+    delta = (datetime.now(timezone.utc).date() - d).days
+    if delta == 0:
+        return "today"
+    if delta == 1:
+        return "yesterday"
+    return f"{delta}d ago"
 
-    with hb1:
-        last_update_str = "unknown"
-        days_stale = None
-        if data and "contestants" in data:
-            last_dates = [s["history"][-1][0] for s in data["contestants"].values()
-                          if s.get("history")]
-            if last_dates:
-                last_update_str = max(last_dates)
-                days_stale = (datetime.now(timezone.utc).date()
-                              - datetime.strptime(last_update_str, "%Y-%m-%d").date()).days
-        if days_stale is None:
-            st.metric("💓 Last trading update", last_update_str)
-        elif days_stale <= 3:
-            st.metric("💓 Last trading update", last_update_str, "up to date")
-        else:
-            st.metric("💔 Last trading update", last_update_str,
-                      f"{days_stale} days stale", delta_color="inverse")
-            st.caption("More than a long weekend since the last update -- "
-                      "the daily GitHub Actions run may have stopped firing.")
+_page_loaded_at = datetime.now(timezone.utc)
 
-    with hb2:
-        findings = _run_health_check(data, state_json)
-        if findings is None:
-            st.metric("🩺 Health check", "unavailable")
-        else:
-            real = [f for f in findings if f[0] != "info"]
-            errors = [f for f in real if f[0] == "error"]
-            if errors:
-                st.metric("🔴 Health check", f"{len(errors)} issue(s)")
-            elif real:
-                st.metric("🟡 Health check", f"{len(real)} finding(s)")
+# ======================================================= PORTFOLIO HERO ===
+# Het, 2026-08-26: "make it like my portfolio so I know if my agents are
+# making money or [losing], how much is invested, total profit or loss."
+# Computed from real ledger.json equities -- every number here is PAPER
+# (simulated), never real money; that distinction is the single most
+# important thing on this page not to blur, so it's stated explicitly,
+# not just implied by a caption someone might skip.
+if data and "contestants" in data:
+    con = data["contestants"]
+    reg = data.get("registry", {})
+    live = {n: s for n, s in con.items()
+            if not s.get("retired") and not reg.get(n, {}).get("permanent")}
+    n_live = len(live)
+    total_paper_capital = n_live * PAPER_STARTING_CAPITAL
+    total_paper_pnl = sum((s.get("equity", 1.0) - 1.0) * PAPER_STARTING_CAPITAL
+                          for s in live.values())
+    total_paper_pct = (total_paper_pnl / total_paper_capital * 100) if total_paper_capital else 0.0
+
+    bench = next((s for n, s in con.items() if reg.get(n, {}).get("permanent")), None)
+    bench_pct = (bench.get("equity", 1.0) - 1.0) * 100 if bench else None
+
+    last_dates = [s["history"][-1][0] for s in con.values() if s.get("history")]
+    last_update_str = max(last_dates) if last_dates else None
+    days_stale = ((datetime.now(timezone.utc).date()
+                   - datetime.strptime(last_update_str, "%Y-%m-%d").date()).days
+                  if last_update_str else None)
+    findings = _run_health_check(data, state_json)
+    real_findings = [f for f in (findings or []) if f[0] != "info"]
+    is_online = (days_stale is not None and days_stale <= 3
+                 and not any(f[0] == "error" for f in real_findings))
+
+    change_cls = "up" if total_paper_pnl >= 0 else "down"
+    change_sign = "+" if total_paper_pnl >= 0 else ""
+    status_color = "#30d158" if is_online else "#ff453a"
+    status_text = "System online" if is_online else "System offline"
+    vs_bench = ""
+    if bench_pct is not None:
+        diff = total_paper_pct - bench_pct
+        vs_bench = (f'<div class="portfolio-stat"><div class="k">vs Nifty benchmark</div>'
+                    f'<div class="v">{"+" if diff >= 0 else ""}{diff:.2f}pp</div></div>')
+
+    health_html = "✅ Clear" if not real_findings else f"⚠️ {len(real_findings)} finding(s)"
+    updated_str = _relative_days(last_update_str) if last_update_str else "unknown"
+    # Built as ONE unindented line, not a multi-line indented f-string:
+    # Streamlit's markdown parser treats any line with 4+ leading spaces
+    # as an indented code block (a real CommonMark rule, not a bug) --
+    # a naturally-indented multi-line f-string trips it silently, which
+    # is exactly what happened here the first time (verified via the
+    # actual rendered DOM, not guessed).
+    portfolio_html = (
+        '<div class="portfolio-card">'
+        f'<div class="status-pill"><span class="status-dot" style="background:{status_color}"></span>'
+        f'{status_text} &middot; updated {updated_str}</div>'
+        f'<div class="portfolio-label" style="margin-top:16px;">Total paper P&amp;L &middot; {n_live} active agents</div>'
+        f'<div class="portfolio-total">{change_sign}Rs {total_paper_pnl:,.0f}</div>'
+        f'<div class="portfolio-change {change_cls}">{change_sign}{total_paper_pct:.2f}%</div>'
+        '<div class="portfolio-subrow">'
+        f'<div class="portfolio-stat"><div class="k">Paper capital at play</div><div class="v">Rs {total_paper_capital:,.0f}</div></div>'
+        f'{vs_bench}'
+        f'<div class="portfolio-stat"><div class="k">Health</div><div class="v">{health_html}</div></div>'
+        '</div>'
+        '<div class="real-money-badge">⚠️ All figures above are PAPER / simulated — real capital invested: Rs 0</div>'
+        '</div>'
+    )
+    st.markdown(portfolio_html, unsafe_allow_html=True)
+else:
+    st.warning("Waiting on ledger data to build the portfolio view — see the Arena tab.")
+
+with st.expander("🕘 Recent AI activity"):
+    st.caption(f"Data on this page refreshed {int((datetime.now(timezone.utc) - _page_loaded_at).total_seconds())}s ago "
+              "(cached up to 60s at a time — hit Refresh in the sidebar for the latest).")
+    if log_text:
+        lines = [l for l in log_text.strip().splitlines()
+                 if l.startswith("2")]  # skip header/blank lines
+        recent = lines[-10:][::-1]
+        for line in recent:
+            parts = line.split("|", 4)
+            if len(parts) >= 5:
+                date, commit, qid, outcome, note = [p.strip() for p in parts]
+                note = note if len(note) <= 160 else note[:157] + "..."
+                st.caption(f"**{_relative_days(date)}** ({date}) · {qid} · {outcome} — {note}")
             else:
-                st.metric("🟢 Health check", "all clear")
-        st.caption("Same tools/health_check.py the Healer agent runs — "
-                  "see The Office tab for details.")
-
-    with hb3:
-        st.markdown("**🕘 Recent AI activity**")
-        if log_text:
-            lines = [l for l in log_text.strip().splitlines()
-                     if l.startswith("2")]  # skip header/blank lines
-            recent = lines[-8:][::-1]
-            for line in recent:
-                parts = line.split("|", 4)
-                if len(parts) >= 5:
-                    date, commit, qid, outcome, note = [p.strip() for p in parts]
-                    note = note if len(note) <= 160 else note[:157] + "..."
-                    st.caption(f"**{date}** · {qid} · {outcome} — {note}")
-                else:
-                    st.caption(line.strip())
-        else:
-            st.caption("AUTONOMOUS_LOG.md not fetched.")
+                st.caption(line.strip())
+    else:
+        st.caption("AUTONOMOUS_LOG.md not fetched.")
 
 tab_arena, tab_office = st.tabs(["📊 Arena", "🏢 The Office"])
 
 # ============================================================ ARENA TAB ===
 with tab_arena:
     if data and "contestants" in data:
-        st.title("🤖 Strategy Factory Trading Arena")
-        st.markdown("Tracking algorithmic strategy performance and investment growth in real-time.")
-
         contestants = data["contestants"]
 
         total_strategies = len(contestants)
@@ -255,15 +341,20 @@ with tab_arena:
                     row["Post-tax Expectancy"] = round(pt_mean, 6)
                 metric_cards_data.append(row)
 
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Total Contestants", total_strategies)
-        col2.metric("Active Strategies", active_strategies)
+        # Active-count and total-P&L already live in the portfolio hero above
+        # the tabs -- this row only adds what that hero doesn't cover
+        # (per-contestant detail: who's on top, how many have been retired).
+        st.subheader("📈 Strategy Performance")
+        col1, col2 = st.columns(2)
+        col1.metric("Contestants", total_strategies,
+                    f"{total_strategies - active_strategies} retired" if total_strategies > active_strategies else None,
+                    delta_color="off")
         if metric_cards_data:
             _live_rows = [r for r in metric_cards_data if r["Status"] == "Active"]
             if _live_rows:
                 _best = max(_live_rows, key=lambda r: r["Current Equity"])
                 _best_pct = (_best["Current Equity"] - 1) * 100
-                col3.metric("Top Performer", _best["Strategy"],
+                col2.metric("Top Performer", _best["Strategy"],
                             f"{_best_pct:+.2f}%",
                             help="The live contestant with the highest equity right "
                                  "now, and how far it's moved since it started (not "
@@ -271,17 +362,12 @@ with tab_arena:
                                  f"Rs {PAPER_STARTING_CAPITAL:,} paper baseline, so % "
                                  "move is what actually differs between them).")
             else:
-                col3.metric("Top Performer", "—")
+                col2.metric("Top Performer", "—")
         else:
-            col3.metric("Top Performer", "—")
-
-        if metric_cards_data:
-            avg_equity = pd.DataFrame(metric_cards_data)["Current Equity"].mean()
-            col4.metric("Average Arena Equity Factor", f"{avg_equity:.2f}x")
+            col2.metric("Top Performer", "—")
 
         st.markdown("---")
-        st.subheader("📈 Arena Equity Growth Comparison")
-
+        st.subheader("📈 Equity Growth")
         fig = go.Figure()
         for name, df in all_series.items():
             fig.add_trace(go.Scatter(
