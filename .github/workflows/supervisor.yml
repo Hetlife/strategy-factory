@@ -1,0 +1,31 @@
+name: Strategy Factory - Supervisor
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    # Every 15 minutes. Detection-only, no commits -- pure health_check.py
+    # logic, no Claude session, no extra cost (GitHub Actions free minutes).
+    # GitHub may delay/skip runs on a cron this frequent during high load;
+    # that's a GitHub-side limitation, not something this workflow controls.
+    - cron: "*/15 * * * *"
+
+concurrency:
+  group: strategy-factory-supervisor
+  cancel-in-progress: false
+
+jobs:
+  supervisor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run supervisor check
+        run: python tools/supervisor_check.py
