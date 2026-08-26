@@ -81,3 +81,4 @@ Format: `DATE | directive (summarized) | status`
 - What is "openclaw"? Het wants to run this on his laptop with it in future — need to know what it is before building anything toward that.
 - ~~Master Trader agent merge~~ — RESOLVED, merged via PR #15 (dc5e799) after fresh "Merge everything" confirmation.
 - **"Oversee everything and start programming"** — implemented the bounded/safe version (draft+test infra improvements on branch, never auto-merge, never invent new strategies). Confirm with Het whether that matches what he wanted, or whether he meant something bigger, once he's reachable again.
+- **`health_check.py --live` fix ready for merge review** (commit `963c466`) — first real output of the newly-expanded programming scope. Fixes a genuine recurring false-positive (local branch checkouts falsely flag ledger "drift" that isn't real on main). Tested both modes end-to-end. On branch only, waiting for Het's merge confirmation like everything else.

@@ -169,6 +169,22 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## FIXED
 
+- **FIXED (on branch, not yet merged) | 2026-08-26 | health-check-stale-local-false-positive**
+  — `tools/health_check.py` run against a plain local checkout reliably
+  reported a "registry drift" warning that wasn't real on `main` --
+  because the local checkout tracks the WORKING BRANCH, but
+  `ledger.json` is only ever auto-committed by `factory.yml` to `main`,
+  never the branch. Every Routine prompt already said "fetch fresh,
+  don't trust a stale copy" in English each firing; nothing enforced it
+  in code, so it kept getting silently skipped (including by this
+  session, more than once today). Fixed by adding a `--live` flag
+  (`health_check.py`) and a `live=` param (`healer.report()`) that fetch
+  `ledger.json` fresh from `main`'s raw GitHub content instead of
+  reading the local file. Verified: `--live` shows clean against real
+  main data (which already has the keys); plain local mode still
+  correctly flags the genuinely-stale local copy, proving the flag does
+  real work. Commit `963c466`. Not yet merged -- needs Het's review, per
+  the bounded-programming rule (draft+test on branch, never self-merge).
 - **FIXED | 2026-08-24 | cost-model-understated-3x** — flat `COST_PER_SIDE`
   understated real transaction cost by up to ~3x at small (rung-1) position
   sizes because real Indian equity delivery cost has a FIXED per-scrip
