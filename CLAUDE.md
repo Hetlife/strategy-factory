@@ -115,6 +115,21 @@ or re-litigate them:
   does not carry forward to a new session.
 - Never make the repository public.
 
+## Standing autonomy rule (Het, 2026-08-26)
+
+"Do the free things whichever you want, just ask me if something even
+close to costing comes, otherwise do as you please." This governs
+**cost**, not **risk** — it's a separate axis from the Hard rules above,
+which stay unconditional regardless of this grant (a merge to main
+costs nothing in money but is still never done without a fresh,
+in-session "yes" from Het, every time — see e.g. 2026-08-24's identical
+"give you every permission" grant, guardrails unchanged then for the
+same reason). In practice: free/reversible work (code changes on the
+branch, new GitHub Actions workflows, docs, read-only research, an
+Artifact) — proceed without asking. Anything that spends money, a paid
+Claude session/Routine firing, or is genuinely ambiguous about whether
+it might — ask first, don't guess in Het's favor.
+
 ## Known environment quirks (don't re-derive these — save the tokens)
 
 - Yahoo Finance is unreachable from Claude Code sandbox environments in
