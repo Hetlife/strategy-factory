@@ -16,32 +16,67 @@ Findings still need a human or an LLM session to decide what to DO about
 them -- this script only detects, never fixes.
 
 USAGE:  python tools/health_check.py [path/to/ledger.json] [path/to/state.json]
+        python tools/health_check.py --live
 Exit code 0 = no findings, 1 = findings exist (useful for CI/scripting).
+
+--live fetches factory_state/ledger.json and .autonomous/state.json fresh
+from main's raw GitHub content instead of reading the local checkout.
+Added 2026-08-26 after a real recurring mistake: an interactive session's
+local checkout tracks the WORKING BRANCH, but ledger.json is updated only
+on main by factory.yml's daily cron -- so a plain local run here reliably
+reports a stale/false "registry drift" warning that isn't real on main.
+Every Routine prompt already says "fetch fresh, don't trust a stale local
+copy" in English each time; this flag does that fetch in code instead, so
+it stops needing to be re-said (and re-forgotten) every firing.
 """
 import hashlib
 import json
 import os
 import re
 import sys
+import urllib.request
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO_ROOT)
 
+RAW_BASE = "https://raw.githubusercontent.com/Hetlife/strategy-factory/main"
 
-def check_registry_drift(ledger_path):
+
+def fetch_live_json(repo_relative_path, timeout=15):
+    """Fetches a file fresh from main via GitHub raw content. Returns the
+    parsed JSON, or raises with a clear message on any failure (network,
+    404, bad JSON) rather than letting a session guess at a stack trace."""
+    url = f"{RAW_BASE}/{repo_relative_path}"
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            return json.loads(resp.read())
+    except Exception as e:
+        raise RuntimeError(
+            f"--live fetch failed for {url}: {e}. Falling back to a local "
+            f"path won't give a trustworthy answer for this check -- fix "
+            f"the network issue or fall back to explicit local paths "
+            f"knowing they may be stale.") from e
+
+
+def check_registry_drift(ledger_path=None, ledger_data=None):
     """Catches the exact bug class found 2026-08-25: a seed_registry() key
     that exists in code but never made it into an already-existing ledger,
     because load_state() only seeds a ledger that doesn't exist yet.
     NOTE: as of the fix in load_state(), this drift self-heals on the next
     update() -- this check exists to catch it BEFORE that, or to catch a
-    similar future gap in some other part of the pipeline."""
+    similar future gap in some other part of the pipeline.
+
+    Pass ledger_data (an already-loaded dict, e.g. from --live) to skip the
+    local-file read entirely -- see fetch_live_json()."""
     findings = []
-    if not os.path.exists(ledger_path):
-        return [("info", f"no ledger.json found at {ledger_path} -- "
-                          "skipping registry-drift check (nothing to check yet)")]
+    if ledger_data is None:
+        if not os.path.exists(ledger_path):
+            return [("info", f"no ledger.json found at {ledger_path} -- "
+                              "skipping registry-drift check (nothing to check yet)")]
+        ledger_data = json.load(open(ledger_path))
     import factory
     seed_keys = set(factory.seed_registry().keys())
-    ledger = json.load(open(ledger_path))
+    ledger = ledger_data
     live_keys = set(ledger.get("registry", {}).keys())
     missing = seed_keys - live_keys
     if missing:
@@ -136,14 +171,22 @@ def check_bug_log_state_consistency(bug_log_path, state_path):
     return findings
 
 
-def run_all(ledger_path=None, state_path=None):
+def run_all(ledger_path=None, state_path=None, live=False):
     ledger_path = ledger_path or os.path.join(REPO_ROOT, "factory_state", "ledger.json")
     state_path = state_path or os.path.join(REPO_ROOT, ".autonomous", "state.json")
     bug_log_path = os.path.join(REPO_ROOT, ".autonomous", "bug_log.md")
     claude_md_path = os.path.join(REPO_ROOT, "CLAUDE.md")
 
     findings = []
-    findings += check_registry_drift(ledger_path)
+    if live:
+        ledger_data = fetch_live_json("factory_state/ledger.json")
+        findings += check_registry_drift(ledger_data=ledger_data)
+    else:
+        findings += check_registry_drift(ledger_path=ledger_path)
+    # state.json/CLAUDE.md/bug_log.md aren't subject to the same
+    # branch-vs-main drift (they're not written by factory.yml's
+    # main-only cron) -- local checkout is a trustworthy source for these
+    # regardless of --live.
     findings += check_state_json_wellformed(state_path)
     findings += check_claude_md_sha1(state_path, claude_md_path)
     findings += check_bug_log_state_consistency(bug_log_path, state_path)
@@ -151,9 +194,18 @@ def run_all(ledger_path=None, state_path=None):
 
 
 if __name__ == "__main__":
-    ledger_arg = sys.argv[1] if len(sys.argv) > 1 else None
-    state_arg = sys.argv[2] if len(sys.argv) > 2 else None
-    results = run_all(ledger_arg, state_arg)
+    args = sys.argv[1:]
+    live_mode = "--live" in args
+    if live_mode:
+        args = [a for a in args if a != "--live"]
+        print("health_check: --live mode, fetching factory_state/ledger.json fresh from main...")
+    ledger_arg = args[0] if len(args) > 0 else None
+    state_arg = args[1] if len(args) > 1 else None
+    try:
+        results = run_all(ledger_arg, state_arg, live=live_mode)
+    except RuntimeError as e:
+        print(f"[ERROR] {e}")
+        sys.exit(2)
     if not results:
         print("health_check: no findings.")
         sys.exit(0)
