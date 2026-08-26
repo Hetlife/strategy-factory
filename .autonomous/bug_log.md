@@ -10,7 +10,7 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## OPEN
 
-- **OPEN | 2026-08-24 | autonomous-routine-zero-commits** — the scheduled
+- **CLOSED (accepted, not fixed) | 2026-08-24 | autonomous-routine-zero-commits** — the scheduled
   Routine has fired multiple times, run for real minutes with real token
   spend, and ended cleanly (not crashed) but produced ZERO commits each
   time. Hypothesis: Bash permission-classifier friction that an unattended
@@ -145,6 +145,14 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
   variant) or accepting the unattended loop isn't fixable with tools
   currently available and relying on interactive sessions instead.
   **Do not fire this Routine again without one of those two.**
+  **CLOSED 2026-08-25: asked Het directly -- keep spending on more
+  attempts, or accept manual/interactive check-ins?** He chose manual
+  check-ins. This is not marked FIXED (it isn't) -- it's a deliberate,
+  informed decision to stop investing further debug time/money into
+  unattended operation and rely on interactive sessions + the (working)
+  daily report Routine instead. Reopen only if a genuinely new diagnostic
+  capability becomes available (e.g. real transcript visibility into a
+  Routine-fired session), not on a hunch.
 
 ## FIXED
 
