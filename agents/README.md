@@ -27,6 +27,7 @@ advisory, printed-only layer.
 | Reporter | `reporter/reporter.py` | **New logic**, plain-English translation of `report()`'s output (promotions, demotions, evolutions, births, best/worst performer) — for Het's stated preference for explanation over raw tables. No financial computation of its own. Wired into `factory.report()` the same way, last. |
 | Healer | `healer/healer.py` | Runs `tools/health_check.py`'s deterministic repo-consistency checks (registry drift, state.json well-formedness, CLAUDE.md hash drift, bug_log/state.json contradictions) and prints plain findings. **Never fixes anything itself** — detection only, same as the others. See "Code over tokens" below for why this exists. |
 | HR | `hr/hr.py` | **The one agent allowed to create files outside its own folder** — scaffolds a brand-new `agents/<role>/` (another team-role tooling agent, same read-only/advisory shape as the six above). Never touches trading strategies, never runs unsupervised — see "Hiring" below. |
+| Master Trader | `master_trader/master_trader.py` | Synthesizes Judge/Risk Manager/Researcher's own output into one recommendation. **Not** what Het originally asked for on 2026-08-26 (he wanted it able to adjust RULES, set risk parameters, and self-approve merges) — that was declined explicitly, see `.autonomous/het_directives.md`. This is the safe version: same read-only/advisory tier as everything else here, decides nothing that isn't already decided elsewhere. |
 
 ## Each agent's workspace
 
