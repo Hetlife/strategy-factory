@@ -47,6 +47,9 @@ Format: `DATE | directive (summarized) | status`
 
 - 2026-08-26 | "Yes merge" (market log, free open monsoon data sourcing, crude oil input-cost hypotheses) | **DONE.** Merged via PR #6 (82ef91b). live_market cement/steel crude hypotheses and the market_log.json mother file are now live going forward; monsoon history stays research-only (not wired to sig_monsoon's live path). Branch and main fully in sync.
 
+- 2026-08-26 | "Set up everything to work automatically... give me the dashboard where I can see and keep a heartbeat or indicator... and what was done by the AI when" | **DONE, MERGED.** Verified existing automation (daily/weekly factory.yml, monthly advisor_training.yml, two standing Routines) is already solid, 43/44 successful runs -- nothing new needed. Added a heartbeat banner to dashboard.py (last update date + staleness flag, health_check.py status, live "Recent AI activity" feed from AUTONOMOUS_LOG.md) -- visible immediately, no tab click needed. Merged via PR #7 (ad646ba). Dashboard link given to Het: run locally with `streamlit run dashboard.py` from a clone of this repo (no hosted version exists yet -- see P1-dashboard-auth, running it locally is the working setup for now).
+- 2026-08-26 | "Give me dashboard link" | **ANSWERED.** No hosted URL exists -- dashboard.py is designed to run locally (`streamlit run dashboard.py`), reading live data from GitHub raw URLs. Told Het exactly how to start it. A shareable hosted link (e.g. Streamlit Community Cloud) hasn't been set up and would need its own decision (public visibility of a private repo's data) -- flagged, not built without asking first.
+
 ## NEEDS HET (carry this section into the next daily report / next_session.md)
 
 - dashboard.py private-repo auth — needs Het to check the raw ledger URL in a plain incognito browser (sandbox network can't test this validly, see standing_env_facts).
