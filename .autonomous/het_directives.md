@@ -60,6 +60,8 @@ Format: `DATE | directive (summarized) | status`
 
 - 2026-08-26 | "In future I want to run this office on my laptop which has openclaw so keep that in mind to" | **NOTED, NOT ACTED ON.** "Openclaw" isn't a tool this session recognizes -- didn't guess/build against an assumption. Added to NEEDS HET below; ask him what it is before doing anything laptop-local-specific.
 
+- 2026-08-26 | "Supervise all activities and make periodic adjustments to reach the goal" | **CONFIRMED, already the operating model -- no new infra built.** supervisor.yml (free, 15-min) + IT-guy protocol (the two Routines, event-driven fixes on the branch) + confidence-threshold rule (act above ~75%, queue below) + HR agent (0/10 hires, only on real gaps) already form this loop. Restated the boundary directly rather than silently assume it's understood: "adjustments to reach the goal" means system health (bugs, tooling, code quality) -- never tuning RULES/thresholds/evolution logic to make paper-trading numbers look better faster, which would poison the actual evidence the project exists to produce.
+
 ## NEEDS HET (carry this section into the next daily report / next_session.md)
 
 - dashboard.py private-repo auth — needs Het to check the raw ledger URL in a plain incognito browser (sandbox network can't test this validly, see standing_env_facts).
