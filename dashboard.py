@@ -291,9 +291,6 @@ tab_arena, tab_office = st.tabs(["📊 Arena", "🏢 The Office"])
 # ============================================================ ARENA TAB ===
 with tab_arena:
     if data and "contestants" in data:
-        st.title("🤖 Strategy Factory Trading Arena")
-        st.markdown("Tracking algorithmic strategy performance and investment growth in real-time.")
-
         contestants = data["contestants"]
 
         total_strategies = len(contestants)
@@ -344,15 +341,20 @@ with tab_arena:
                     row["Post-tax Expectancy"] = round(pt_mean, 6)
                 metric_cards_data.append(row)
 
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Total Contestants", total_strategies)
-        col2.metric("Active Strategies", active_strategies)
+        # Active-count and total-P&L already live in the portfolio hero above
+        # the tabs -- this row only adds what that hero doesn't cover
+        # (per-contestant detail: who's on top, how many have been retired).
+        st.subheader("📈 Strategy Performance")
+        col1, col2 = st.columns(2)
+        col1.metric("Contestants", total_strategies,
+                    f"{total_strategies - active_strategies} retired" if total_strategies > active_strategies else None,
+                    delta_color="off")
         if metric_cards_data:
             _live_rows = [r for r in metric_cards_data if r["Status"] == "Active"]
             if _live_rows:
                 _best = max(_live_rows, key=lambda r: r["Current Equity"])
                 _best_pct = (_best["Current Equity"] - 1) * 100
-                col3.metric("Top Performer", _best["Strategy"],
+                col2.metric("Top Performer", _best["Strategy"],
                             f"{_best_pct:+.2f}%",
                             help="The live contestant with the highest equity right "
                                  "now, and how far it's moved since it started (not "
@@ -360,17 +362,12 @@ with tab_arena:
                                  f"Rs {PAPER_STARTING_CAPITAL:,} paper baseline, so % "
                                  "move is what actually differs between them).")
             else:
-                col3.metric("Top Performer", "—")
+                col2.metric("Top Performer", "—")
         else:
-            col3.metric("Top Performer", "—")
-
-        if metric_cards_data:
-            avg_equity = pd.DataFrame(metric_cards_data)["Current Equity"].mean()
-            col4.metric("Average Arena Equity Factor", f"{avg_equity:.2f}x")
+            col2.metric("Top Performer", "—")
 
         st.markdown("---")
-        st.subheader("📈 Arena Equity Growth Comparison")
-
+        st.subheader("📈 Equity Growth")
         fig = go.Figure()
         for name, df in all_series.items():
             fig.add_trace(go.Scatter(
