@@ -49,7 +49,13 @@ workflow has failed recently should:
    session already follows).
 4. Build and test the fix on `claude/scheduled-maintenance-template-d7yufr`
    (the standing branch) -- never main, never a force-push, never
-   skipping a test to make something pass.
+   skipping a test to make something pass. Before finalizing, run
+   `agents.master_trader.master_trader.second_opinion_on_fix(description,
+   files_touched)` -- a cheap keyword-based second check for the most
+   obvious guardrail violations (touching `ledger.json` directly,
+   changing `RULES`/`LADDER`/`COST_PER_SIDE` values). Any warning it
+   returns goes into the report alongside the fix -- it's a flag, not a
+   veto; the session still decides.
 5. Commit and push the fix to the branch. Add it to
    `.autonomous/het_directives.md`'s NEEDS HET section and the day's
    report: what broke, what the fix does, why it's believed correct --
