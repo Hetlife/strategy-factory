@@ -1,11 +1,11 @@
 {
  "schema_version": 1,
- "updated_at": "2026-08-25T11:15:00Z",
- "updated_by_commit": "6caf01c",
+ "updated_at": "2026-08-25T11:45:00Z",
+ "updated_by_commit": "b55b562",
  "branch": "claude/scheduled-maintenance-template-d7yufr",
- "pr_number": 1,
- "pr_status": "MERGED (aa55914, 2026-08-25) -- branch still exists and is still where all further work happens per this repo's git-development-branch requirement; main now has everything through the LADDER raise",
- "claude_md_sha1": "0249acb68911066c84ce711dfaa72d51867fe6f0",
+ "pr_number": 2,
+ "pr_status": "PR #1 merged (aa55914, 2026-08-25). PR #2 merged (b55b562, 2026-08-25) -- nifty_benchmark ledger-backfill fix, discovered by checking whether the tournament was actually trading. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement; main now has everything through the backfill fix.",
+ "claude_md_sha1": "ff10e2bb3d05f3e69aaa5484655bc86beac593b7",
  "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
  "current_phase": "phase_1",
  "current_phase_note": "Phase 0 cleared 2026-08-24 (all 4 deliverables done+tested, see queue P0-1..P0-4 and P0-GATE). Now in Phase 1 (EXECUTION_PLAN.md Section 4): STANDING MODE. Run the daily update()/weekly report() schedule, accumulate real evidence, do NOT start new structural/feature work beyond what's already unfrozen below. The 12-month Phase 1 evidence clock (EXECUTION_PLAN.md Section 5a/5b/6) starts counting meaningfully from here -- don't treat Phase-0-era paper history as part of that clock, the cost/tax model underneath it just changed.",
@@ -55,6 +55,16 @@
    "id": "agents-team-override",
    "summary": "Het explicitly requested a subfolder-based 'team of agents' (judge/researcher/breeder/risk_manager/reporter) despite being warned this isn't Phase 0/1 priority per EXECUTION_PLAN.md; confirmed via AskUserQuestion 'build it anyway, I want the new agents now'. Scoped narrowly: judge/researcher/breeder are read-only wrappers around existing factory.py/advisors.py logic (no duplicated computation, no new write path). risk_manager and reporter are new logic but strictly advisory/printed-only, wired additively into factory.report() after save_state() with a try/except so a bug there can't break the core report. No verdict, RULES/LADDER/COST_PER_SIDE, or ledger-write behavior changed. See agents/README.md.",
    "commit": "a06e392"
+  },
+  {
+   "id": "pr2-merge-nifty-backfill",
+   "summary": "PR #2 (nifty_benchmark ledger-backfill fix) merged 2026-08-25 with Het's fresh explicit AskUserQuestion confirmation, asked specifically because he asked whether the agents were actually trading -- checking the real production ledger surfaced that P0-3's benchmark had never actually been running live.",
+   "commit": "b55b562"
+  },
+  {
+   "id": "healer-agent-code-over-tokens",
+   "summary": "Het asked to shift repeated manual reasoning into code and build a 'Healer' agent that scans for problems between operations and asks permission before fixing. Built tools/health_check.py (pure-code, deterministic: registry drift, state.json well-formedness, CLAUDE.md hash drift, bug_log/state.json contradictions) + agents/healer/healer.py (detection-only wrapper, matches existing agents/ read-only/advisory pattern). Immediately caught 2 real pre-existing issues, both fixed. Wired into the EXISTING daily report Routine (no new paid Routine created). First version -- meant to grow incrementally (new checks added whenever a session catches itself re-deriving the same fact twice), not a one-shot finished system.",
+   "commit": "n/a-tooling-only"
   }
  ],
  "queue": [
