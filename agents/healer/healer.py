@@ -33,11 +33,15 @@ sys.path.insert(0, os.path.join(REPO_ROOT, "tools"))
 import health_check
 
 
-def report(ledger_path=None, state_path=None):
+def report(ledger_path=None, state_path=None, live=False):
     """Runs every deterministic check and prints a plain-language summary.
     Returns the raw findings list too, for a caller that wants to act on
-    it programmatically rather than just read the printout."""
-    findings = health_check.run_all(ledger_path, state_path)
+    it programmatically rather than just read the printout.
+
+    live=True fetches ledger.json fresh from main instead of trusting a
+    local checkout, which may be on the working branch and stale relative
+    to main's daily auto-commits -- see health_check.py's own docstring."""
+    findings = health_check.run_all(ledger_path, state_path, live=live)
     print("\n--- Healer (advisory, read-only, code-only detection) ---")
     if not findings:
         print("  Nothing found. Repo trackers and ledger are internally "

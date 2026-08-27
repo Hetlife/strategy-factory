@@ -5,7 +5,7 @@
   "branch": "claude/scheduled-maintenance-template-d7yufr",
   "pr_number": 5,
   "pr_status": "PR #1 (aa55914), #2 (b55b562), #3 (3df9143), #4 (9f5f30e), #5 (ea877a1) all merged to main, all with Het's fresh explicit confirmation. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement. main now has everything: Phase 0 (P0-1..P0-4), agents/ team, LADDER raise, nifty_benchmark backfill fix, healer agent + health_check tool, dashboard Office tab + factor toggle, paper holding-cost decay, and the shared graveyard anti-repeat guard. No known outstanding branch-vs-main gap as of this update.",
-  "claude_md_sha1": "8f3e393b6340cbbe6dfed704e9087d878f645947",
+  "claude_md_sha1": "a7102000b233b7611321fd416a5cd33ddf198f4a",
   "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
   "current_phase": "phase_1",
   "current_phase_note": "Phase 0 cleared 2026-08-24 (all 4 deliverables done+tested, see queue P0-1..P0-4 and P0-GATE). Now in Phase 1 (EXECUTION_PLAN.md Section 4): STANDING MODE. Run the daily update()/weekly report() schedule, accumulate real evidence, do NOT start new structural/feature work beyond what's already unfrozen below. The 12-month Phase 1 evidence clock (EXECUTION_PLAN.md Section 5a/5b/6) starts counting meaningfully from here -- don't treat Phase-0-era paper history as part of that clock, the cost/tax model underneath it just changed.",
@@ -153,8 +153,8 @@
     {
       "id": "P2-monsoon-csv",
       "priority": "P2",
-      "status": "open_low_priority_standing_mode",
-      "summary": "no monsoon CSV sourced yet, sig_monsoon is a dormant no-op. Needs manual data-pipeline work (IMD / data.gov.in)."
+      "status": "data_sourced_deliberately_not_live",
+      "summary": "UPDATED 2026-08-26: this was stale -- data/imd_rainfall_departure_historical.csv (free community mirror of IMD subdivision rainfall stats, 1901-2017) was actually sourced 2026-08-26 (commit 3cfc2d1, merged to main via PR #6), with tools/build_monsoon_history.py to derive it. sig_monsoon is STILL a dormant no-op, deliberately -- the source data ends in 2017, so wiring it into the live signal would make it forward-fill a 9-year-stale reading forever, worse than staying dormant. Genuine live activation needs a current feed, not a data-pipeline gap; not started, not blocked on this repo's own work."
     },
     {
       "id": "P2-breeding-population-watch",
@@ -171,7 +171,7 @@
     {
       "id": "P3-anti-pattern-visibility-for-new-agents",
       "priority": "P3",
-      "status": "done_pending_merge",
+      "status": "done",
       "summary": "DONE and MERGED 2026-08-26 (commit ea877a1, PR #5, Het's fresh 'Yes merge' confirmation). factory.graveyard(state) lists every retired contestant + why it died; factory.already_failed(candidate_params, state) is a narrow EXACT-match guard wired into propose_evolutions() so it never proposes a literal repeat of an already-failed setup. Deliberately does NOT invent hypotheses from graveyard contents (Law 1 stays intact) -- exact match only, a close-but-different candidate is never blocked. agents/researcher/researcher.py re-exports both; dashboard.py's Office tab shows the graveyard live. Tested (see AUTONOMOUS_LOG.md) including a corrected integration test after catching my own first test's false-pass (EVOLUTION_TOP_N rank filtering masked the real check)."
     },
     {
@@ -253,5 +253,5 @@
     "breeding_unit_tests": "passing -- crossover bounds/categorical integrity (200 draws), cross-family rejection, parent-stat immutability, population cap at zero headroom, all verified in /tmp/factory_test_run/breeding_test.py (not committed, sandbox-local -- rerun logic inline if needed, see commit 1b7d29e message for what was checked)",
     "real_market_data": "never tested -- yfinance blocked in every sandbox this project has used so far"
   },
-  "next_action_hint": "PHASE 0 CLEARED 2026-08-24: P0-1 (38dee23), P0-2 (ba3a0ce), P0-3 (ea5ac0c), P0-4 (verified, no code) all done. current_phase is now phase_1 -- STANDING MODE, don't start new structural work. agents/ team (a06e392) built as a deliberate scoped override, doesn't affect phase gating. Read .autonomous/het_directives.md's NEEDS HET section before reporting to Het. Open items for a session picking this up: (1) the autonomous dev-loop Routine (trig_013GUxs9AwHaRvb1o4eGJRGx) is DISABLED after 3 confirmed zero-commit failures including two targeted fixes -- see queue P0-5 and bug_log.md, needs real root-causing (internal visibility into what the session does, not another prompt tweak) before re-enabling, (2) get Het's fresh PR #1 merge decision when he's back, (3) run standing daily update()/weekly report() cycle, watch for any real PROMOTE (would be the first-ever, treat as significant), (4) never merge/push main without fresh in-session confirmation, never a real fund/pooled-capital structure without a separate explicit conversation (SEBI PMS/AIF registration territory, well beyond this repo)."
+  "next_action_hint": "UPDATED 2026-08-26 -- the version below (referencing PR #1 as unmerged and the dev-loop Routine as needing root-causing) was stale; both resolved long ago, see bug_log.md/het_directives.md for the full trail. Current reality: PR #1, #14, #15, #16 all merged to main. LADDER raised to [0,25k,50k,100k,200k] (Het's fresh sign-off). The old dev-loop Routine (trig_013GUxs9AwHaRvb1o4eGJRGx) stays permanently disabled -- CLOSED (accepted, not fixed) in bug_log.md, not a live investigation. The 5h check-in Routine (trig_01Y9q1Dn98ghLMD4KX7xZfxp) is the standing operation, now with EXPANDED scope (Het, 2026-08-26): may draft+test small tooling/infra improvements proactively, same code-over-tokens bar as healer.py, but NEVER merges to main on its own and NEVER invents new trading strategies on its own initiative -- those two limits are structural, not a setting. health_check.py --live (963c466) is the first output of that expanded scope, on branch, awaiting Het's merge review. Open for a session picking this up: (1) get Het's merge decision on 963c466 when reachable, (2) watch for a first-ever real PROMOTE and flag prominently if it happens, (3) NEEDS HET section in het_directives.md has the standing open questions (openclaw, Streamlit URL, dashboard auth) -- don't re-derive, just carry forward, (4) never merge/push main without fresh in-session confirmation, ever, no exceptions carried forward."
 }

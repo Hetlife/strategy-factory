@@ -37,6 +37,15 @@ from `AUTONOMOUS_LOG.md`'s terse action-by-action record. Check it before
 assuming something is broken (it may already be a known, fixed issue) and
 add to it whenever you find or fix a real bug in this project's own logic.
 
+**`.autonomous/loop_state.json`** — the hourly check-in Routine's
+crash/resume file (Het, 2026-08-26/27). Read it FIRST if this session is a
+Routine firing: `status:"in_progress"` means a previous firing got cut off
+mid-task, and you resume exactly from `resume_instructions`, never restart
+from scratch. Written+pushed at the START of any multi-step task (before
+the risky part), updated again on finish or safe stop. Not relevant to a
+one-off interactive session unless you're specifically continuing a
+Routine's interrupted work.
+
 **`.autonomous/het_directives.md`** — append-only log of Het's own
 instructions/requests over time (summarized intent, never a verbatim
 conversation transcript — same reasoning as `operator_profile.md`'s "What

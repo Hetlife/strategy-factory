@@ -1,0 +1,29 @@
+name: Strategy Factory - Diagnose Event Thresholds
+
+on:
+  workflow_dispatch:
+
+# Manual-only, read-only diagnostic. No schedule, no commits -- checks
+# whether event_drift's leader tickers ever actually cross their
+# threshold in real recent price history (this sandbox can't reach
+# Yahoo Finance, GitHub Actions runners can). See
+# tools/diagnose_event_thresholds.py for the full context.
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install pandas numpy yfinance
+
+      - name: Run diagnostic
+        run: python tools/diagnose_event_thresholds.py
