@@ -10,6 +10,10 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## OPEN
 
+(none currently)
+
+## CLOSED (accepted, not fixed -- distinct from FIXED below, which means an actual code fix landed)
+
 - **CLOSED (accepted, not fixed) | 2026-08-24 | autonomous-routine-zero-commits** — the scheduled
   Routine has fired multiple times, run for real minutes with real token
   spend, and ended cleanly (not crashed) but produced ZERO commits each
