@@ -1,0 +1,471 @@
+{
+ "generated_at": "2026-08-27T07:55:09.455595+00:00",
+ "train_period": "5y",
+ "advisors": [
+  "sharpe",
+  "robustness",
+  "cost_efficiency"
+ ],
+ "bank": {
+  "event_drift": {
+   "cement": [
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "cement",
+      "leader": "ULTRACEMCO.NS",
+      "threshold": 0.06,
+      "hold": 2
+     },
+     "sharpe": -0.648,
+     "robustness": -0.933,
+     "cost_efficiency": -1.1686,
+     "ensemble_rank": 6.83
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "cement",
+      "leader": "ULTRACEMCO.NS",
+      "threshold": 0.06,
+      "hold": 3
+     },
+     "sharpe": -0.649,
+     "robustness": -0.935,
+     "cost_efficiency": -1.1686,
+     "ensemble_rank": 7.5
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "cement",
+      "leader": "ULTRACEMCO.NS",
+      "threshold": 0.06,
+      "hold": 4
+     },
+     "sharpe": -0.65,
+     "robustness": -0.936,
+     "cost_efficiency": -1.1686,
+     "ensemble_rank": 8.33
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "cement",
+      "leader": "ULTRACEMCO.NS",
+      "threshold": 0.06,
+      "hold": 5
+     },
+     "sharpe": -0.65,
+     "robustness": -0.938,
+     "cost_efficiency": -1.1686,
+     "ensemble_rank": 8.67
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "cement",
+      "leader": "ULTRACEMCO.NS",
+      "threshold": 0.04,
+      "hold": 5
+     },
+     "sharpe": -1.547,
+     "robustness": -1.725,
+     "cost_efficiency": -1.1068,
+     "ensemble_rank": 11.33
+    }
+   ],
+   "infra": [
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "infra",
+      "leader": "LT.NS",
+      "threshold": 0.03,
+      "hold": 5
+     },
+     "sharpe": 0.42,
+     "robustness": -0.063,
+     "cost_efficiency": 3.9612,
+     "ensemble_rank": 1.0
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "infra",
+      "leader": "LT.NS",
+      "threshold": 0.03,
+      "hold": 4
+     },
+     "sharpe": 0.223,
+     "robustness": -0.372,
+     "cost_efficiency": 1.8487,
+     "ensemble_rank": 2.33
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "infra",
+      "leader": "LT.NS",
+      "threshold": 0.03,
+      "hold": 2
+     },
+     "sharpe": -0.023,
+     "robustness": -0.336,
+     "cost_efficiency": -0.1317,
+     "ensemble_rank": 2.67
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "infra",
+      "leader": "LT.NS",
+      "threshold": 0.03,
+      "hold": 3
+     },
+     "sharpe": -0.101,
+     "robustness": -0.701,
+     "cost_efficiency": -0.722,
+     "ensemble_rank": 4.33
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "infra",
+      "leader": "LT.NS",
+      "threshold": 0.02,
+      "hold": 4
+     },
+     "sharpe": -0.291,
+     "robustness": -0.945,
+     "cost_efficiency": -1.4649,
+     "ensemble_rank": 7.33
+    }
+   ],
+   "steel": [
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "steel",
+      "leader": "TATASTEEL.NS",
+      "threshold": 0.06,
+      "hold": 3
+     },
+     "sharpe": 0.443,
+     "robustness": 0.409,
+     "cost_efficiency": 7.2754,
+     "ensemble_rank": 1.0
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "steel",
+      "leader": "TATASTEEL.NS",
+      "threshold": 0.06,
+      "hold": 2
+     },
+     "sharpe": 0.434,
+     "robustness": 0.214,
+     "cost_efficiency": 6.0761,
+     "ensemble_rank": 2.0
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "steel",
+      "leader": "TATASTEEL.NS",
+      "threshold": 0.08,
+      "hold": 2
+     },
+     "sharpe": 0.026,
+     "robustness": -0.179,
+     "cost_efficiency": 0.9559,
+     "ensemble_rank": 3.33
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "steel",
+      "leader": "TATASTEEL.NS",
+      "threshold": 0.06,
+      "hold": 4
+     },
+     "sharpe": -0.011,
+     "robustness": -0.107,
+     "cost_efficiency": -0.2504,
+     "ensemble_rank": 3.67
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "steel",
+      "leader": "TATASTEEL.NS",
+      "threshold": 0.06,
+      "hold": 5
+     },
+     "sharpe": -0.06,
+     "robustness": -0.199,
+     "cost_efficiency": -1.5137,
+     "ensemble_rank": 5.33
+    }
+   ]
+  },
+  "momentum": {
+   "cement": [
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "cement",
+      "lookback": 120,
+      "top_frac": 0.34
+     },
+     "sharpe": 0.354,
+     "robustness": -0.22,
+     "cost_efficiency": 2.5969,
+     "ensemble_rank": 1.0
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "cement",
+      "lookback": 30,
+      "top_frac": 0.34
+     },
+     "sharpe": 0.153,
+     "robustness": -0.722,
+     "cost_efficiency": 0.5843,
+     "ensemble_rank": 3.0
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "cement",
+      "lookback": 40,
+      "top_frac": 0.34
+     },
+     "sharpe": 0.031,
+     "robustness": -0.674,
+     "cost_efficiency": 0.1196,
+     "ensemble_rank": 4.0
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "cement",
+      "lookback": 20,
+      "top_frac": 0.34
+     },
+     "sharpe": 0.064,
+     "robustness": -0.896,
+     "cost_efficiency": 0.205,
+     "ensemble_rank": 4.0
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "cement",
+      "lookback": 90,
+      "top_frac": 0.34
+     },
+     "sharpe": 0.01,
+     "robustness": -0.348,
+     "cost_efficiency": 0.0678,
+     "ensemble_rank": 4.0
+    }
+   ],
+   "infra": [
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "infra",
+      "lookback": 60,
+      "top_frac": 0.34
+     },
+     "sharpe": 0.211,
+     "robustness": -0.936,
+     "cost_efficiency": 3.1911,
+     "ensemble_rank": 1.33
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "infra",
+      "lookback": 120,
+      "top_frac": 0.34
+     },
+     "sharpe": -0.06,
+     "robustness": -1.15,
+     "cost_efficiency": -1.1161,
+     "ensemble_rank": 2.67
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "infra",
+      "lookback": 90,
+      "top_frac": 0.34
+     },
+     "sharpe": -0.194,
+     "robustness": -0.748,
+     "cost_efficiency": -3.1153,
+     "ensemble_rank": 3.0
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "infra",
+      "lookback": 40,
+      "top_frac": 0.34
+     },
+     "sharpe": -0.115,
+     "robustness": -0.985,
+     "cost_efficiency": -1.2077,
+     "ensemble_rank": 3.0
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "infra",
+      "lookback": 20,
+      "top_frac": 0.34
+     },
+     "sharpe": -0.605,
+     "robustness": -1.819,
+     "cost_efficiency": -4.1163,
+     "ensemble_rank": 5.33
+    }
+   ],
+   "pipes_tiles": [
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "pipes_tiles",
+      "lookback": 40,
+      "top_frac": 0.34
+     },
+     "sharpe": -0.02,
+     "robustness": -0.431,
+     "cost_efficiency": -0.2074,
+     "ensemble_rank": 1.0
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "pipes_tiles",
+      "lookback": 30,
+      "top_frac": 0.34
+     },
+     "sharpe": -0.257,
+     "robustness": -0.889,
+     "cost_efficiency": -2.3394,
+     "ensemble_rank": 2.0
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "pipes_tiles",
+      "lookback": 120,
+      "top_frac": 0.34
+     },
+     "sharpe": -0.43,
+     "robustness": -1.523,
+     "cost_efficiency": -4.9084,
+     "ensemble_rank": 3.67
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "pipes_tiles",
+      "lookback": 20,
+      "top_frac": 0.34
+     },
+     "sharpe": -1.058,
+     "robustness": -1.301,
+     "cost_efficiency": -5.8488,
+     "ensemble_rank": 4.33
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "pipes_tiles",
+      "lookback": 60,
+      "top_frac": 0.34
+     },
+     "sharpe": -0.528,
+     "robustness": -1.347,
+     "cost_efficiency": -5.999,
+     "ensemble_rank": 4.33
+    }
+   ]
+  },
+  "input_cost": {
+   "cement": [
+    {
+     "params": {
+      "fn": "input_cost",
+      "sector": "cement",
+      "proxy": "TATASTEEL.NS",
+      "lb": 10,
+      "drop": -0.08
+     },
+     "sharpe": -2.088,
+     "robustness": -2.139,
+     "cost_efficiency": -0.555,
+     "ensemble_rank": 5.0
+    },
+    {
+     "params": {
+      "fn": "input_cost",
+      "sector": "cement",
+      "proxy": "TATASTEEL.NS",
+      "lb": 15,
+      "drop": -0.08
+     },
+     "sharpe": -2.291,
+     "robustness": -2.291,
+     "cost_efficiency": -0.555,
+     "ensemble_rank": 6.0
+    },
+    {
+     "params": {
+      "fn": "input_cost",
+      "sector": "cement",
+      "proxy": "TATASTEEL.NS",
+      "lb": 40,
+      "drop": -0.08
+     },
+     "sharpe": -2.229,
+     "robustness": -2.518,
+     "cost_efficiency": -0.555,
+     "ensemble_rank": 6.0
+    },
+    {
+     "params": {
+      "fn": "input_cost",
+      "sector": "cement",
+      "proxy": "TATASTEEL.NS",
+      "lb": 40,
+      "drop": -0.06
+     },
+     "sharpe": -2.64,
+     "robustness": -2.934,
+     "cost_efficiency": -0.555,
+     "ensemble_rank": 7.33
+    },
+    {
+     "params": {
+      "fn": "input_cost",
+      "sector": "cement",
+      "proxy": "TATASTEEL.NS",
+      "lb": 30,
+      "drop": -0.08
+     },
+     "sharpe": -2.638,
+     "robustness": -3.065,
+     "cost_efficiency": -0.555,
+     "ensemble_rank": 7.67
+    }
+   ]
+  }
+ }
+}
