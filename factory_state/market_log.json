@@ -88,5 +88,91 @@
    "close": 24207.75,
    "ret": -0.005211
   }
+ },
+ "2026-08-27": {
+  "AMBUJACEM.NS": {
+   "close": 419.2,
+   "ret": 0.0
+  },
+  "ASTRAL.NS": {
+   "close": 1526.1,
+   "ret": 0.0
+  },
+  "BZ=F": {
+   "close": 88.62,
+   "ret": 0.00888
+  },
+  "CERA.NS": {
+   "close": 5717.0,
+   "ret": 0.0
+  },
+  "DALBHARAT.NS": {
+   "close": 1898.0,
+   "ret": 0.0
+  },
+  "HGINFRA.NS": {
+   "close": 501.9,
+   "ret": 0.0
+  },
+  "IRB.NS": {
+   "close": 19.46,
+   "ret": 0.0
+  },
+  "JINDALSTEL.NS": {
+   "close": 1175.4,
+   "ret": 0.0
+  },
+  "JKCEMENT.NS": {
+   "close": 5277.0,
+   "ret": 0.0
+  },
+  "JSWSTEEL.NS": {
+   "close": 1341.0,
+   "ret": 0.0
+  },
+  "KAJARIACER.NS": {
+   "close": 1209.5,
+   "ret": 0.0
+  },
+  "KNRCON.NS": {
+   "close": 123.42,
+   "ret": 0.0
+  },
+  "LT.NS": {
+   "close": 4038.1001,
+   "ret": 0.0
+  },
+  "PNCINFRA.NS": {
+   "close": 201.32,
+   "ret": 0.0
+  },
+  "RAMCOCEM.NS": {
+   "close": 940.65,
+   "ret": 0.0
+  },
+  "SAIL.NS": {
+   "close": 194.9,
+   "ret": 0.0
+  },
+  "SHREECEM.NS": {
+   "close": 24865.0,
+   "ret": 0.0
+  },
+  "SUPREMEIND.NS": {
+   "close": 3540.0,
+   "ret": 0.0
+  },
+  "TATASTEEL.NS": {
+   "close": 188.01,
+   "ret": 0.0
+  },
+  "ULTRACEMCO.NS": {
+   "close": 11717.0,
+   "ret": 0.0
+  },
+  "^NSEI": {
+   "close": 24207.75,
+   "ret": 0.0
+  }
  }
 }
