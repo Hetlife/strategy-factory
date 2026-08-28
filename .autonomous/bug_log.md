@@ -173,7 +173,8 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## FIXED
 
-- **FIXED (on branch, not yet merged) | 2026-08-26 | health-check-stale-local-false-positive**
+- **FIXED | 2026-08-26 | health-check-stale-local-false-positive** (merged
+  to main 2026-08-27/28, PR #18, `4c9a60b`)
   — `tools/health_check.py` run against a plain local checkout reliably
   reported a "registry drift" warning that wasn't real on `main` --
   because the local checkout tracks the WORKING BRANCH, but

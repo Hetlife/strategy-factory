@@ -146,8 +146,8 @@
     {
       "id": "P1-advisor-training-real-run",
       "priority": "P1",
-      "status": "ready_next_scheduled_run",
-      "summary": "PR #1 merged 2026-08-25 (aa55914) -- advisor_training.yml can now run for real against main. It's a monthly cron; no action needed unless Het wants it triggered manually to sanity-check parameter_bank.json sooner."
+      "status": "done",
+      "summary": "Triggered for real 2026-08-27 (workflow_dispatch, run 33051644818) -- SUCCEEDED, produced a genuine parameter_bank.json on main for the first time (event_drift/momentum/input_cost buckets, 5y train period). First end-to-end validation of the advisor layer against real data, not just synthetic. Will also continue running on its own monthly cron."
     },
     {
       "id": "P2-vectorize",
