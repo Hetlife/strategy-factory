@@ -17,16 +17,30 @@ conditions, growth-lever priority, guardrails) derived from
 `mission_document.txt`/`pivot_document.txt`/`understanding.txt`. Read it
 before doing any substantive work — `state.json.current_phase` tells you
 which phase applies, and `EXECUTION_PLAN.md` tells you what that phase
-means. The project is currently in **Phase 0**: four gating deliverables
-(size-aware cost model, post-tax expectancy metric, Nifty benchmark
-contestant, committed falsification criteria) must ship before any other
-feature work resumes. Only read `AUTONOMOUS_TODO.md` in full when doing
-substantive work; it's prose and costs more tokens per read.
+means. **Phase 0 cleared 2026-08-24** (all four gating deliverables
+shipped: size-aware cost model, post-tax expectancy metric, Nifty
+benchmark contestant, committed falsification criteria). The project is
+now in **Phase 1 — standing mode**: run the daily/weekly schedule, let
+real evidence accumulate over the ~12-month window, and do NOT add new
+structural machinery. `state.json.current_phase` is the live source of
+truth if this line ever disagrees with it. Only read
+`AUTONOMOUS_TODO.md` in full when doing substantive work; it's prose and
+costs more tokens per read.
+
+**`.autonomous/SESSION_PLAYBOOK.md`** — **the step-by-step procedure for
+running a session, start to finish.** Numbered steps, exact commands,
+the decision rules for what to work on, the testing standard, and a
+"things that look broken but aren't" table that will save you from
+re-investigating settled non-issues. Unlike `next_session.md` (a
+snapshot that goes stale), this is a stable procedure. **If you read
+only one file after this one, read that.**
 
 **`AUTONOMOUS_OPERATING_SYSTEM.txt`** is the full session-protocol spec
 (source-of-truth hierarchy, task sizing, code-change protocol, session
-log/state formats, kill-switch discipline). This file (CLAUDE.md) is the
-fast-path summary of it. `.autonomous/next_session.md` is the literal,
+log/state formats, kill-switch discipline) — 800 lines, the exhaustive
+version of what `SESSION_PLAYBOOK.md` covers practically. Reach for it
+only when the playbook doesn't answer something. This file (CLAUDE.md)
+is the fast-path summary. `.autonomous/next_session.md` is the literal,
 spoon-fed handoff for whichever session runs next — read it after
 `state.json`, before doing any work, and rewrite it before ending your
 own session so the one after you doesn't need this conversation's

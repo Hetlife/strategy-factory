@@ -5,7 +5,7 @@
   "branch": "claude/scheduled-maintenance-template-d7yufr",
   "pr_number": 5,
   "pr_status": "PR #1 (aa55914), #2 (b55b562), #3 (3df9143), #4 (9f5f30e), #5 (ea877a1) all merged to main, all with Het's fresh explicit confirmation. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement. main now has everything: Phase 0 (P0-1..P0-4), agents/ team, LADDER raise, nifty_benchmark backfill fix, healer agent + health_check tool, dashboard Office tab + factor toggle, paper holding-cost decay, and the shared graveyard anti-repeat guard. No known outstanding branch-vs-main gap as of this update.",
-  "claude_md_sha1": "a7102000b233b7611321fd416a5cd33ddf198f4a",
+  "claude_md_sha1": "e75e5a5dcd93eeacb7c2b0abad5107fb57b3d7ae",
   "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
   "current_phase": "phase_1",
   "current_phase_note": "Phase 0 cleared 2026-08-24 (all 4 deliverables done+tested, see queue P0-1..P0-4 and P0-GATE). Now in Phase 1 (EXECUTION_PLAN.md Section 4): STANDING MODE. Run the daily update()/weekly report() schedule, accumulate real evidence, do NOT start new structural/feature work beyond what's already unfrozen below. The 12-month Phase 1 evidence clock (EXECUTION_PLAN.md Section 5a/5b/6) starts counting meaningfully from here -- don't treat Phase-0-era paper history as part of that clock, the cost/tax model underneath it just changed.",
@@ -58,8 +58,8 @@
     },
     {
       "id": "event-drift-real-volatility-recalibration",
-      "summary": "Het asked 'how do we make them trade more' about event_drift strategies showing 0 trades, then explicitly authorized 'take a strategic decision and implement it'. The original t30/t40/t50 thresholds (3%/4%/5%) were a pre-data guess; checked against real 1-year price history (tools/diagnose_event_thresholds.py, GH Actions run 2026-08-28) they sit at the 90-95th percentile of each leader's actual daily |return| -- genuinely rare by design, not broken. Did NOT mutate the original 9 entries (Law 2 -- would corrupt ~38 days of real evidence already accumulated under them). Instead added ONE new registry entry per sector at each leader's real 85th percentile (event_cement_t17, event_infra_t20, event_steel_t22) -- a principled, data-grounded 'still genuinely unusual, not just noise' choice, explicitly NOT reverse-engineered from a target trade count (would be Law 1 mining). Same fn/hold/mechanism as the originals. Tested: 40-cycle synthetic regression with injected shock days, new entries load/trade/verdict correctly, originals verified byte-identical/untouched. On branch, not yet merged -- registry-parameter change, still wants Het's merge confirmation same as any other factory.py change.",
-      "commit": "pending"
+      "summary": "Het asked 'how do we make them trade more' about event_drift strategies showing 0 trades, then explicitly authorized 'take a strategic decision and implement it'. The original t30/t40/t50 thresholds (3%/4%/5%) were a pre-data guess; checked against real 1-year price history (tools/diagnose_event_thresholds.py, GH Actions run 2026-08-28) they sit at the 90-95th percentile of each leader's actual daily |return| -- genuinely rare by design, not broken. Did NOT mutate the original 9 entries (Law 2 -- would corrupt ~38 days of real evidence already accumulated under them). Instead added ONE new registry entry per sector at each leader's real 85th percentile (event_cement_t17, event_infra_t20, event_steel_t22) -- a principled, data-grounded 'still genuinely unusual, not just noise' choice, explicitly NOT reverse-engineered from a target trade count (would be Law 1 mining). Same fn/hold/mechanism as the originals. Tested: 40-cycle synthetic regression with injected shock days, new entries load/trade/verdict correctly, originals verified byte-identical/untouched. MERGED to main (f53eac1) after Het's fresh 'Yes' confirmation. Registry backfill will self-heal on the next scheduled factory.yml update() run (same verified mechanism as every prior new registry entry).",
+      "commit": "f53eac1"
     },
     {
       "id": "pr2-merge-nifty-backfill",
@@ -146,8 +146,8 @@
     {
       "id": "P1-advisor-training-real-run",
       "priority": "P1",
-      "status": "ready_next_scheduled_run",
-      "summary": "PR #1 merged 2026-08-25 (aa55914) -- advisor_training.yml can now run for real against main. It's a monthly cron; no action needed unless Het wants it triggered manually to sanity-check parameter_bank.json sooner."
+      "status": "done",
+      "summary": "Triggered for real 2026-08-27 (workflow_dispatch, run 33051644818) -- SUCCEEDED, produced a genuine parameter_bank.json on main for the first time (event_drift/momentum/input_cost buckets, 5y train period). First end-to-end validation of the advisor layer against real data, not just synthetic. Will also continue running on its own monthly cron."
     },
     {
       "id": "P2-vectorize",
