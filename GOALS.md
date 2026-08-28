@@ -80,17 +80,21 @@ it's the one lever that doesn't depend on an edge being real at all.
 
 ## Current status snapshot (update this section, don't let it go stale)
 
-- **Phase:** 0 (instrumentation). See `state.json.current_phase`.
-- **P0-1 (size-aware cost model):** done, commit `38dee23`.
-- **P0-2/P0-3/P0-4:** open.
-- **Live evidence so far:** ~35 days paper trading, zero promotions, no
-  edge demonstrated. This number moves only once Phase 1 actually
-  starts — Phase 0 work doesn't add evidence, it corrects the ruler.
-- **Known open risk:** the scheduled autonomous Routine has fired
-  multiple times without committing anything (see `next_session.md` for
-  the live diagnosis). Until this is confirmed fixed, don't assume
-  unattended overnight progress is happening — verify against
-  `AUTONOMOUS_LOG.md`/`git log`, don't just trust that time passed.
+- **Phase:** 1 (standing mode -- the 12-month evidence window). Phase 0
+  (all 4 deliverables) cleared 2026-08-24. See `state.json.current_phase`.
+- **Live evidence so far:** oldest contestants are ~38 real trading days
+  into the 126-day minimum RULES requires before a verdict even counts
+  (Section 5a) -- roughly 30% of the way through one evaluation window,
+  not the 12-month clock overall. Zero promotions, zero real money
+  deployed, no edge demonstrated either way yet -- both "yes" and "no"
+  remain live possibilities, exactly as expected this early.
+- **LADDER raised** 2026-08-25 (Het's fresh sign-off) to
+  `[0, 25k, 50k, 100k, 200k]` -- fixes the rung-1 cost-friction problem
+  this file used to flag as open.
+- **The old unattended dev-loop Routine is permanently retired** (5
+  confirmed failures, accepted rather than kept debugging, see
+  `bug_log.md`). Standing operation now: an hourly check-in Routine +
+  free 15-min GitHub Actions supervisor, both proven reliable.
 
 ---
 
