@@ -35,6 +35,7 @@ try:
         sector_concentration, aggregate_real_money_exposure,
         portfolio_drawdown_correlation_flag,
     )
+    from agents.master_trader.master_trader import recommend as master_trader_recommend
     AGENTS_AVAILABLE = True
 except Exception as _agents_import_error:
     AGENTS_AVAILABLE = False
@@ -490,7 +491,7 @@ with tab_office:
     else:
         desk1, desk2, desk3 = st.columns(3)
         desk4, desk5, desk6 = st.columns(3)
-        desk7, _sp2, _sp3 = st.columns(3)
+        desk7, desk8, _sp3 = st.columns(3)
 
         # --- Judge ---
         with desk1:
@@ -640,6 +641,34 @@ with tab_office:
                               "real observed gap before scaffolding anything.")
             else:
                 st.caption(".autonomous/hr_log.md not fetched.")
+
+        # --- Master Trader ---
+        with desk8:
+            st.markdown("### 🧑‍💼 Master Trader")
+            st.caption("Synthesizes Judge/Risk Manager/Researcher into one "
+                       "read -- an advisory recommendation, not a trading "
+                       "result. Never distributes capital, never trades: "
+                       "real-money exposure across every strategy is Rs 0, "
+                       "same as every other number on this page.")
+            try:
+                rec = master_trader_recommend(data)
+                if rec["eligible_for_promotion"]:
+                    st.success(f"{len(rec['eligible_for_promotion'])} "
+                              f"strategy(ies) mechanically clear every "
+                              f"PROMOTE threshold right now.")
+                else:
+                    st.info("Nobody currently clears every PROMOTE "
+                           "threshold -- normal, not a problem.")
+                st.metric("Real-money exposure", f"Rs {rec['real_money_exposure']:,}")
+                if rec["correlated_drawdown_flag"]:
+                    st.warning("Correlated drawdown flagged -- see Risk "
+                              "Manager for detail.")
+                if rec["graveyard_size"]:
+                    st.caption(f"{rec['graveyard_size']} setup(s) already "
+                              f"tried and retired -- evolution avoids exact "
+                              f"repeats of these automatically.")
+            except Exception as e:
+                st.caption(f"(couldn't run master_trader.recommend(): {e})")
 
     st.markdown("---")
     st.subheader("📋 Notes")
