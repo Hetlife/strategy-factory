@@ -227,6 +227,30 @@ def seed_registry():
             reg[f"event_{sector}_t{int(thr*1000)}"] = dict(
                 fn="event_drift", sector=sector, leader=leader,
                 threshold=thr, hold=3)
+    # 2026-08-28 (Het: "make sure you take a strategic decision... move
+    # towards the goal", in response to "how do we make them trade more").
+    # The original t30/t40/t50 thresholds (0.03/0.04/0.05) were a guess made
+    # before any real price data existed -- checked against a real year of
+    # each leader's actual daily returns (tools/diagnose_event_thresholds.py,
+    # run on GitHub Actions 2026-08-28), they sit around the 90-95th
+    # percentile, i.e. genuinely rare by design (~13-25 real trading days a
+    # year would cross them). NOT changing the original three per sector --
+    # that would mutate a live contestant's own definition mid-track-record
+    # (Law 2) and corrupt the ~38 days of real evidence already collected
+    # under them. Instead, ONE new, additional variant per sector, at each
+    # leader's real 85th percentile (still a genuinely above-average day,
+    # not just noise -- picked as the honest middle ground between "too rare
+    # to ever see evidence" and "so common it stops meaning anything",
+    # NOT reverse-engineered from a target trade count, which would be the
+    # exact Law 1 mining pattern this project exists to avoid). Same
+    # `fn`/`hold`/mechanism as the originals -- only the numeric definition
+    # of "unusual" changes, grounded in real data instead of a guess.
+    for sector, leader, thr85 in [("cement", "ULTRACEMCO.NS", 0.017),
+                                   ("infra", "LT.NS", 0.020),
+                                   ("steel", "TATASTEEL.NS", 0.022)]:
+        reg[f"event_{sector}_t{int(thr85*1000)}"] = dict(
+            fn="event_drift", sector=sector, leader=leader,
+            threshold=thr85, hold=3)
     for sector in ("cement", "infra", "pipes_tiles"):
         for lb in (40, 60, 90):
             reg[f"mom_{sector}_lb{lb}"] = dict(
