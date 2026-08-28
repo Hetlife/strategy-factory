@@ -57,6 +57,11 @@
       "commit": "a06e392"
     },
     {
+      "id": "event-drift-real-volatility-recalibration",
+      "summary": "Het asked 'how do we make them trade more' about event_drift strategies showing 0 trades, then explicitly authorized 'take a strategic decision and implement it'. The original t30/t40/t50 thresholds (3%/4%/5%) were a pre-data guess; checked against real 1-year price history (tools/diagnose_event_thresholds.py, GH Actions run 2026-08-28) they sit at the 90-95th percentile of each leader's actual daily |return| -- genuinely rare by design, not broken. Did NOT mutate the original 9 entries (Law 2 -- would corrupt ~38 days of real evidence already accumulated under them). Instead added ONE new registry entry per sector at each leader's real 85th percentile (event_cement_t17, event_infra_t20, event_steel_t22) -- a principled, data-grounded 'still genuinely unusual, not just noise' choice, explicitly NOT reverse-engineered from a target trade count (would be Law 1 mining). Same fn/hold/mechanism as the originals. Tested: 40-cycle synthetic regression with injected shock days, new entries load/trade/verdict correctly, originals verified byte-identical/untouched. On branch, not yet merged -- registry-parameter change, still wants Het's merge confirmation same as any other factory.py change.",
+      "commit": "pending"
+    },
+    {
       "id": "pr2-merge-nifty-backfill",
       "summary": "PR #2 (nifty_benchmark ledger-backfill fix) merged 2026-08-25 with Het's fresh explicit AskUserQuestion confirmation, asked specifically because he asked whether the agents were actually trading -- checking the real production ledger surfaced that P0-3's benchmark had never actually been running live.",
       "commit": "b55b562"
