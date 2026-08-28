@@ -2,20 +2,26 @@
 
 ## READ FIRST
 1. CLAUDE.md (auto-loaded — binding rules, architecture, phase pointer)
-2. .autonomous/state.json (structured queue, decisions, test status)
-3. This file
-4. .autonomous/het_directives.md — Het's own recent asks + a standing
+2. **`.autonomous/SESSION_PLAYBOOK.md`** — the step-by-step procedure for
+   running a session start to finish: numbered steps, exact commands,
+   what-to-work-on decision rules, the testing standard, and a "things
+   that look broken but aren't" table. **Read this before doing any
+   work.** This file you're reading now is only the *snapshot* of where
+   things stand; the playbook is *how to operate*.
+3. .autonomous/state.json (structured queue, decisions, test status)
+4. This file
+5. .autonomous/het_directives.md — Het's own recent asks + a standing
    "NEEDS HET" section; carry that section into any report back to him.
-5. .autonomous/loop_state.json — the hourly Routine's crash/resume file.
+6. .autonomous/loop_state.json — the hourly Routine's crash/resume file.
    Read FIRST if this session is a Routine firing: `status:"in_progress"`
    means a previous firing got cut off mid-task, resume exactly from
    `resume_instructions`, never restart from scratch.
-6. .autonomous/bug_log.md — known OPEN/FIXED/CLOSED defects
-7. AUTONOMOUS_LOG.md (tail -40, don't read the whole thing)
-8. .autonomous/operator_profile.md — before writing anything Het will
+7. .autonomous/bug_log.md — known OPEN/FIXED/CLOSED defects
+8. AUTONOMOUS_LOG.md (tail -40, don't read the whole thing)
+9. .autonomous/operator_profile.md — before writing anything Het will
    read: plain language, why not just what, hands-off on code
-9. agents/README.md — the agents/ team, hiring protocol, "code over
-   tokens" pattern
+10. agents/README.md — the agents/ team, hiring protocol, "code over
+    tokens" pattern
 
 ## CURRENT STATE (as of 2026-08-28, commit `92a92da`)
 
