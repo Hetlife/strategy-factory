@@ -1,9 +1,9 @@
 {
  "_doc": "Crash/resume file for the 15-min paid check-in loop (Het, 2026-08-26: 'use it every 15 mins... make sure if you are not left tokens you have a crash file to store what you did before the limit so you can start working again as session resets'). Every firing reads this FIRST. status='idle' means the previous firing finished cleanly or found nothing to do -- start fresh. status='in_progress' means a previous firing got cut off mid-task -- resume from resume_instructions EXACTLY, don't restart from scratch and don't second-guess what's already been committed. Update and push this file at the START of any multi-step task (before doing the risky part) and again when finishing or safely stopping -- see next_session.md and the Routine's own prompt for the full protocol.",
- "status": "idle",
- "task": null,
+ "status": "in_progress",
+ "task": "Wrapping up session near context limit: refresh Progress dashboard artifact with latest data, finalize session-end docs, plan next session",
  "started_at": null,
- "last_updated": "2026-08-29T17:33:47.667900Z",
- "resume_instructions": null,
+ "last_updated": "2026-08-29T20:15:37.103864Z",
+ "resume_instructions": "Session is ending due to context limit, not a crash mid-task -- everything up to this checkpoint is committed and pushed cleanly. In progress when this was written: (1) about to regenerate and republish the Progress Artifact (https://claude.ai/code/artifact/e16ae3c5-4ec1-4ef3-8334-d2cf28e82989) via 'python3 tools/build_progress_dashboard_state.py' -- if that never happened, it's just stale by a few log lines, not broken, republish when convenient. (2) 3 commits sit unmerged on the branch (progress-dashboard-artifact b117c8e + 2 log entries) -- docs/tooling only, no trading logic -- ask Het for a fresh merge confirmation before merging, same as every batch. (3) Full RUNBOOK 5 session-end (health check, NEEDS HET refresh, next_session.md rewrite) should follow this checkpoint -- if this note is still status=in_progress when a new session reads it, that means RUNBOOK 5 did NOT finish; do it now before anything else. In-flight background work: NONE (no backgrounded commands, no unread workflow_dispatch results).",
  "note": "Nifty 100 momentum contestant built, verified for real via GH Actions diagnostic (2 dead tickers found+removed), and merged to main (893670b, 2e15b6c), 2026-08-29. Idle."
 }
