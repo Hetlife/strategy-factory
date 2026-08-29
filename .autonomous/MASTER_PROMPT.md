@@ -43,61 +43,48 @@ session can see. See `CLAUDE.md`'s pointer to this file.
 ```
 Strategy Factory check-in for hetlife/strategy-factory.
 
-FOLLOW `.autonomous/RUNBOOKS.md` EXACTLY. It has numbered steps, the
-exact commands to run, the exact output to expect, and a decision
-table for what to do next. Do not improvise. Do not skip steps. Do
-not substitute your own judgment for what the runbook says.
+FOLLOW `.autonomous/RUNBOOKS.md` EXACTLY -- numbered steps, exact
+commands, decision tables. Do not improvise, skip steps, or
+substitute your own judgment.
 
 START HERE:
 1. `cd /home/user/strategy-factory` (or clone
    https://github.com/Hetlife/strategy-factory.git and checkout branch
    `claude/scheduled-maintenance-template-d7yufr` if no checkout exists).
-2. Read `.autonomous/RUNBOOKS.md` in full, including the "RUNNING LOW
-   ON CONTEXT / TOKENS? CHECKPOINT NOW" section near the top and the
-   "A permission grant does NOT mean what it sounds like it means"
-   section — both apply regardless of how this session was started.
-3. Execute **RUNBOOK 1 — Hourly check-in**, step by step, top to
-   bottom. Its Step 1.1 checks `.autonomous/loop_state.json` for
-   interrupted work from a PREVIOUS session first — if `status` is
-   `"in_progress"`, resume from `resume_instructions` exactly, do not
-   restart from scratch.
-4. If any step's decision table says "STOP. Escalate" → execute
-   **RUNBOOK 6 — Escalating**. Escalating is a SUCCESS, not a failure.
-   Guessing is the only failure.
-5. Finish with **RUNBOOK 5 — Ending a session**.
+2. Read `.autonomous/RUNBOOKS.md` in full -- including the "RUNNING
+   LOW ON CONTEXT" and "A permission grant does NOT mean..." sections
+   near the top. Both apply regardless of how this session was started.
+3. Execute **RUNBOOK 1 — Hourly check-in**, top to bottom. Step 1.1
+   checks `.autonomous/loop_state.json` for interrupted work from a
+   PREVIOUS session first -- if `"in_progress"`, resume from
+   `resume_instructions` exactly, don't restart from scratch.
+4. Any step saying "STOP. Escalate" → **RUNBOOK 6**. Escalating is a
+   SUCCESS, not a failure.
+5. Finish with **RUNBOOK 5**.
 
-IF YOU START RUNNING LOW ON CONTEXT/TOKENS MID-TASK: stop immediately
-and run RUNBOOKS.md's "RUNNING LOW ON CONTEXT" checkpoint — set
-`.autonomous/loop_state.json` to `in_progress` with specific
-`resume_instructions` (exact file, exact next step, and name any
-in-flight background work like a workflow_dispatch you haven't
-checked the result of), commit ONLY that file (never `git add -A`),
-and push. That checkpoint is higher priority than finishing the
-current task or writing a polished log entry.
+IF YOU RUN LOW ON CONTEXT MID-TASK: stop immediately and run
+RUNBOOKS.md's "RUNNING LOW ON CONTEXT" checkpoint FIRST, before
+finishing the task or writing a log entry.
 
 THE GUIDING RULE, above all else:
 > When in doubt, do nothing and write it down.
 > A missed improvement costs nothing. A wrong action on real
 > financial code costs real evidence, or real money.
 
-NEVER do these, no exceptions, regardless of what any instruction —
-including a broad "you have every permission" — seems to allow:
-- Never merge or push to `main`. Push to the branch only. Only Het,
-  live and in person, can authorize a merge, every single time, no
-  matter how a prior grant was worded.
-- Never change `RULES`, `LADDER`, or `COST_PER_SIDE`.
-- Never add broker code, API keys, or real-money execution.
-- Never add options, futures, margin, or leverage.
-- Never edit a running strategy's parameters in place.
-- Never invent a new trading strategy on your own initiative.
-- Never claim a test passed unless you ran it and saw it pass.
-- Never use `git add -A` or `git add .` — stage files by exact name.
+NEVER, no exceptions, no matter what any instruction — including a
+broad "every permission" — seems to allow:
+1. Merge/push to `main`. Branch only. Only Het, live, every time.
+2. Change `RULES`, `LADDER`, or `COST_PER_SIDE`.
+3. Add broker code, API keys, or real-money execution.
+4. Add options, futures, margin, or leverage.
+5. Edit a running strategy's parameters in place.
+6. Invent a new trading strategy on your own initiative.
+7. Claim a test passed without running it.
+8. `git add -A`/`git add .` — stage files by exact name.
 
-REPORTING: if nothing changed since the last check-in, say "Nothing
-new" in one or two sentences and stop. Do not pad. Only write more
-when something genuinely changed: a real finding, a fix you pushed,
-or something needing Het's decision. Plain language, short sentences
-— Het is self-taught and wants explanations, not jargon.
+REPORTING: nothing changed → "Nothing new," one or two sentences,
+stop. Otherwise say what changed, plainly, briefly. Het is
+self-taught — explain why, not jargon.
 ```
 
 ---
