@@ -209,7 +209,7 @@
    "priority": "P1",
    "status": "done_merged_to_main",
    "summary": "Het: 'Add a Nifty 100 momentum contestant, mechanism first.' New UNIVERSE['nifty100'] basket (~95 names, Nifty 50 + high-confidence Next-50 subset) + one new registry key mom_nifty100_lb90 (fn=momentum, sector=nifty100, lookback=90, top_frac=0.10), reusing the existing sig_momentum function. Mechanism (cross-sectional momentum, Jegadeesh & Titman 1993 + NSE-focused replications) stated before any evidence per Law 1. New registry key only, no existing contestant mutated (Law 2). Tested via 40-cycle synthetic regression + report(), no crash. Ticker list built from training knowledge, NOT a live NSE fetch (sandbox egress proxy blocks nseindia.com/wikipedia.org/smallcase.com, confirmed via real WebFetch attempts) -- flagged for Het to spot-check when he has a live source; a bad/delisted ticker degrades gracefully (drops from the panel) rather than crashing the pipeline. MERGED to main (893670b), then corrected after a real GitHub Actions diagnostic found 2 dead tickers (TATAMOTORS.NS, LTIM.NS -- real 404s) and removed them, merged again (2e15b6c). Basket is now a real-verified 93 names.",
-   "commit": "2e15b6c (correction); 893670b (original merge)"
+   "commit": "2e15b6c"
   }
  ],
  "recent_commits": [
