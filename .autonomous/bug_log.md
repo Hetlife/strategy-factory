@@ -255,3 +255,33 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 - **FIXED | 2026-08-24 | stray-pycache-untracked** — a stop-hook flagged
   untracked `__pycache__/` files. Added `.gitignore`, removed the
   directory. Commit `f5c0acd`.
+
+- **FIXED | 2026-08-29 | registry-drift-warning-indistinguishable-from-real-failure** —
+  `tools/health_check.py`'s registry-drift warning fired on essentially
+  every run and the docs told every session to ignore it as
+  "self-healing." That was true most of the time, which is precisely
+  what made it a latent hazard: if `load_state()`'s backfill ever
+  genuinely broke, the warning would have looked **byte-identical** to
+  the benign case, and every session had been trained to wave it
+  through. Nobody would have noticed a new contestant silently never
+  entering the ledger — it would just quietly never collect evidence.
+  Same cry-wolf failure mode as `supervisor-false-pipeline-dead-alarm`
+  above, but inverted: that one cried wolf too often, this one would
+  have stayed silent when it mattered.
+  **How it was caught:** not by a failure — by asking, while
+  front-loading work, why a warning that appears on every single check
+  is worth printing at all if the answer is always "ignore it."
+  **Fix:** added `_ledger_last_update_date()` (contestant `history` is
+  the honest source; `ledger.json` has no top-level timestamp) and the
+  warning now reports the ledger's last `update()` date. That one fact
+  makes the two cases mechanically separable: ledger date NEWER than
+  the key's merge date means an `update()` ran and did not pick the key
+  up → the backfill is broken, a real bug. Older or equal → genuinely
+  just waiting for the next run. The message now instructs the reader
+  to make that comparison rather than asserting everything is fine, and
+  the undated-ledger case gets its own wording instead of referring to
+  a date that doesn't exist. RUNBOOK 1 gained Step 1.3a (an explicit
+  decision table, its git command verified against real state),
+  RUNBOOK 2 no longer counts an unchecked warning as a pass, and
+  SESSION_PLAYBOOK.md was brought in line so a cheaper model can't get
+  contradictory instructions. Commit `62d96f8`, on branch, unmerged.
