@@ -27,6 +27,15 @@ truth if this line ever disagrees with it. Only read
 `AUTONOMOUS_TODO.md` in full when doing substantive work; it's prose and
 costs more tokens per read.
 
+**`.autonomous/RUNBOOKS.md`** — **the fully mechanical version: exact
+commands, exact expected output, explicit decision tables, and "STOP and
+escalate" wherever real judgment is needed.** Written for a session
+running on a smaller/cheaper model, but any session can follow it. If
+you are unsure what to do at any point, this file, not improvisation,
+is the answer. Its guiding rule: *when in doubt, do nothing and write it
+down* — a missed improvement costs nothing, a wrong action on financial
+code costs real evidence.
+
 **`.autonomous/SESSION_PLAYBOOK.md`** — **the step-by-step procedure for
 running a session, start to finish.** Numbered steps, exact commands,
 the decision rules for what to work on, the testing standard, and a

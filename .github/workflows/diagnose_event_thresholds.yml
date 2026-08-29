@@ -21,6 +21,14 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          # Cache pip's download dir so each run stops re-downloading the
+          # same wheels. Measured 2026-08-28: "Install dependencies" was
+          # ~11s of every run (65-79% of total job time) while the actual
+          # work took <2s. Keyed on requirements.txt, which pins the full
+          # superset -- each workflow still installs only the subset it
+          # needs, it just gets the wheels from cache instead of PyPI.
+          cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
 
       - name: Install dependencies
         run: pip install pandas numpy yfinance

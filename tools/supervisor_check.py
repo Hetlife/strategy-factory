@@ -36,12 +36,29 @@ from tools import health_check
 STALE_DAYS_THRESHOLD = 3
 
 
-def check_pipeline_staleness(ledger_path):
-    if not os.path.exists(ledger_path):
-        return [("error", f"no ledger.json found at {ledger_path} -- "
-                 "the daily pipeline has never produced one, or it's missing.")]
-    with open(ledger_path) as f:
-        ledger = json.load(f)
+def check_pipeline_staleness(ledger_path, ledger_data=None):
+    """Pass ledger_data (already loaded, e.g. fetched live from main) to skip
+    the local-file read.
+
+    Why that matters: `ledger.json` is ONLY ever auto-committed to `main` by
+    factory.yml -- never to a feature branch. So reading the local checkout's
+    copy while on a branch reports a days-stale ledger that is perfectly
+    fresh on main, and this function turns that into an ERROR reading "the
+    daily factory.yml run may have stopped firing." That is the single most
+    alarming thing this script can say, and it was firing falsely: caught
+    2026-08-29 by dispatching supervisor.yml against the feature branch,
+    which failed the job with exactly that message while the daily run was
+    in fact healthy and had committed the day before. Same root cause as the
+    health_check.py stale-checkout false positive fixed earlier. A monitor
+    that cries wolf on its own headline alarm trains everyone to ignore it,
+    so the workflow now always runs with --live."""
+    if ledger_data is None:
+        if not os.path.exists(ledger_path):
+            return [("error", f"no ledger.json found at {ledger_path} -- "
+                     "the daily pipeline has never produced one, or it's missing.")]
+        with open(ledger_path) as f:
+            ledger_data = json.load(f)
+    ledger = ledger_data
     dates = [s["history"][-1][0] for s in ledger.get("contestants", {}).values()
              if s.get("history")]
     if not dates:
@@ -58,11 +75,24 @@ def check_pipeline_staleness(ledger_path):
 
 
 def main():
+    live = "--live" in sys.argv[1:]
     ledger_path = os.path.join(REPO_ROOT, "factory_state", "ledger.json")
     state_path = os.path.join(REPO_ROOT, ".autonomous", "state.json")
 
-    findings = health_check.run_all(ledger_path, state_path)
-    findings += check_pipeline_staleness(ledger_path)
+    ledger_data = None
+    if live:
+        print("supervisor_check: --live mode, fetching ledger.json fresh from main...")
+        try:
+            ledger_data = health_check.fetch_live_json("factory_state/ledger.json")
+        except RuntimeError as e:
+            # A failed fetch must NOT be silently downgraded to reading the
+            # stale local copy -- that reintroduces exactly the false
+            # "pipeline stopped firing" alarm this flag exists to prevent.
+            print(f"[ERROR] {e}")
+            sys.exit(2)
+
+    findings = health_check.run_all(ledger_path, state_path, live=live)
+    findings += check_pipeline_staleness(ledger_path, ledger_data=ledger_data)
 
     errors = [f for f in findings if f[0] == "error"]
     others = [f for f in findings if f[0] != "error"]
