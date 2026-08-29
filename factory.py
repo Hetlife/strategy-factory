@@ -42,34 +42,44 @@ UNIVERSE = {
     "steel": ["TATASTEEL.NS", "JSWSTEEL.NS", "JINDALSTEL.NS", "SAIL.NS"],
     # 2026-08-29 (Het: "add a Nifty 100 momentum contestant, mechanism
     # first"). A broad, liquid large/prominent-mid-cap basket -- Nifty 50
-    # (all 50, high confidence, very stable membership) plus a
-    # high-confidence subset (~45) of Nifty Next 50. NOT fetched from a
-    # live authoritative source: this sandbox's egress proxy blocks
-    # nseindia.com, en.wikipedia.org and smallcase.com (confirmed via real
-    # attempted fetches, same restriction class as the documented Yahoo
-    # Finance block) -- built from training knowledge instead, and a
-    # handful of Next-50 names were deliberately dropped rather than
-    # guessed (recent renames/uncertain current membership, e.g.
-    # Zomato/Eternal, Suzlon, Yes Bank). ~95 names, not literally the
-    # current official 100 -- good enough for the momentum mechanism
-    # below (needs a broad, liquid, diversified cross-section, not an
-    # exact index replica), but should be spot-checked against a live
-    # NSE/index source when one is reachable, and any ticker that fails
-    # to resolve via yfinance just drops out of the panel (fetch_prices
-    # doesn't crash on a bad symbol) rather than breaking the pipeline.
+    # (high confidence, very stable membership) plus a high-confidence
+    # subset (~45) of Nifty Next 50. NOT fetched from a live authoritative
+    # source: this sandbox's egress proxy blocks nseindia.com,
+    # en.wikipedia.org and smallcase.com (confirmed via real attempted
+    # fetches, same restriction class as the documented Yahoo Finance
+    # block) -- built from training knowledge instead, and a handful of
+    # Next-50 names were deliberately dropped rather than guessed (recent
+    # renames/uncertain current membership, e.g. Zomato/Eternal, Suzlon,
+    # Yes Bank). ~93 names, not literally the current official 100 --
+    # good enough for the momentum mechanism below (needs a broad, liquid,
+    # diversified cross-section, not an exact index replica).
+    # VERIFIED FOR REAL 2026-08-29 via tools/diagnose_nifty100_tickers.py
+    # on a GitHub Actions runner (real Yahoo Finance access, unlike this
+    # sandbox): 93/95 originally-listed tickers resolve with real data.
+    # TWO REMOVED after that real check -- TATAMOTORS.NS and LTIM.NS both
+    # returned "HTTP 404: Quote not found" (not a sandbox artifact, an
+    # actual failed fetch). Both are real, actively-traded large caps, so
+    # this reads as a ticker-symbol change (e.g. Tata Motors' 2025
+    # commercial/passenger-vehicle demerger) rather than genuine
+    # delisting -- but the correct current replacement symbol wasn't
+    # guessed at; if Het knows it, it can be re-added once independently
+    # verified the same way. Any future ticker that fails to resolve
+    # would just drop out of the panel (fetch_prices doesn't crash on a
+    # bad symbol) rather than break the pipeline, but this is the actual
+    # confirmed state, not an assumption to still spot-check.
     "nifty100": [
         "RELIANCE.NS", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS", "TCS.NS",
         "ITC.NS", "LT.NS", "KOTAKBANK.NS", "AXISBANK.NS", "SBIN.NS",
         "BHARTIARTL.NS", "BAJFINANCE.NS", "HINDUNILVR.NS", "ASIANPAINT.NS",
         "MARUTI.NS", "SUNPHARMA.NS", "TITAN.NS", "ULTRACEMCO.NS",
         "WIPRO.NS", "NESTLEIND.NS", "HCLTECH.NS", "BAJAJFINSV.NS",
-        "POWERGRID.NS", "NTPC.NS", "TATAMOTORS.NS", "TATASTEEL.NS",
+        "POWERGRID.NS", "NTPC.NS", "TATASTEEL.NS",
         "JSWSTEEL.NS", "M&M.NS", "INDUSINDBK.NS", "GRASIM.NS",
         "ADANIENT.NS", "ADANIPORTS.NS", "COALINDIA.NS", "DRREDDY.NS",
         "CIPLA.NS", "EICHERMOT.NS", "BRITANNIA.NS", "HEROMOTOCO.NS",
         "HINDALCO.NS", "SHRIRAMFIN.NS", "TECHM.NS", "UPL.NS",
         "DIVISLAB.NS", "APOLLOHOSP.NS", "BPCL.NS", "ONGC.NS",
-        "SBILIFE.NS", "HDFCLIFE.NS", "BAJAJ-AUTO.NS", "LTIM.NS",
+        "SBILIFE.NS", "HDFCLIFE.NS", "BAJAJ-AUTO.NS",
         "TATACONSUM.NS",
         "ADANIGREEN.NS", "ADANIPOWER.NS", "ADANIENSOL.NS", "AMBUJACEM.NS",
         "DMART.NS", "BANKBARODA.NS", "BEL.NS", "BOSCHLTD.NS", "CANBK.NS",
@@ -311,14 +321,14 @@ def seed_registry():
     # applied to changes. That's the actual point of adding it: the
     # existing mom_* contestants only rank within tiny 4-7 stock sector
     # baskets, a much smaller and more idiosyncratic cross-section than
-    # anything the momentum literature actually studies. A ~95-name
+    # anything the momentum literature actually studies. A ~93-name
     # broad-market basket (UNIVERSE["nifty100"]) gives the same mechanism
     # a cross-section closer to how it's actually documented, diversified
     # across sectors instead of sector-concentrated.
     # PARAMETERS: lookback=90 reuses the longest window already validated
     # in the mom_* family (no new untested horizon), inside the existing
     # PARAM_BOUNDS lookback range (20-120) so future breeding stays
-    # consistent. top_frac=0.10 (top decile, ~9 of 95 names) instead of
+    # consistent. top_frac=0.10 (top decile, ~9 of 93 names) instead of
     # the sector families' 0.34 -- top-third makes sense picking 2 winners
     # from a 4-7 stock basket, but is not a decile and would barely
     # concentrate anything across 93 names; top_frac isn't part of
