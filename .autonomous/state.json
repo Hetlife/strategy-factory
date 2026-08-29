@@ -5,7 +5,7 @@
  "branch": "claude/scheduled-maintenance-template-d7yufr",
  "pr_number": 5,
  "pr_status": "PR #1 (aa55914), #2 (b55b562), #3 (3df9143), #4 (9f5f30e), #5 (ea877a1) all merged to main, all with Het's fresh explicit confirmation. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement. main now has everything: Phase 0 (P0-1..P0-4), agents/ team, LADDER raise, nifty_benchmark backfill fix, healer agent + health_check tool, dashboard Office tab + factor toggle, paper holding-cost decay, and the shared graveyard anti-repeat guard. No known outstanding branch-vs-main gap as of this update.",
- "claude_md_sha1": "d0381c8bb709ff77e326192ed824695897574fac",
+ "claude_md_sha1": "6fa005b1d68f8b6b57b8428fbece59ecef9baa77",
  "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
  "current_phase": "phase_1",
  "current_phase_note": "Phase 0 cleared 2026-08-24 (all 4 deliverables done+tested, see queue P0-1..P0-4 and P0-GATE). Now in Phase 1 (EXECUTION_PLAN.md Section 4): STANDING MODE. Run the daily update()/weekly report() schedule, accumulate real evidence, do NOT start new structural/feature work beyond what's already unfrozen below. The 12-month Phase 1 evidence clock (EXECUTION_PLAN.md Section 5a/5b/6) starts counting meaningfully from here -- don't treat Phase-0-era paper history as part of that clock, the cost/tax model underneath it just changed.",

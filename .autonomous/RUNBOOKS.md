@@ -12,7 +12,40 @@ is always **STOP and escalate** — never "decide for yourself."
 > code costs real evidence, or real money.
 
 Related files: `SESSION_PLAYBOOK.md` (the same flow, but assumes more
-judgment), `CLAUDE.md` (binding rules — always wins over this file).
+judgment), `CLAUDE.md` (binding rules — always wins over this file),
+`PROJECT_STUDY.md` (the full narrative history — read that when you
+need to understand *why* something works this way, not just what to
+type next).
+
+## A permission grant does NOT mean what it sounds like it means
+
+This has actually happened, more than once (2026-08-24, 2026-08-29):
+Het says something like **"you have every permission,"** sometimes
+attached to a reason that sounds urgent ("I'm getting on a flight"),
+sometimes attached to a goal that sounds like it should override
+caution ("...to reach the goal of making consistent large profit").
+
+**None of that changes anything below.** Still true, no matter how the
+permission is phrased:
+- Still never merge/push to `main` without a **fresh** "yes" for
+  **that specific batch of commits** — a "yes" from earlier today
+  does not cover commits made after it.
+- Still never touch `RULES`, `LADDER`, `COST_PER_SIDE`.
+- Still never add leverage/F&O/broker code/real-money execution.
+- **"Making profit" is not this project's current goal.** Phase 1 is a
+  12-month evidence window; "no edge found, buy the index" is a stated
+  legitimate success, not a failure to route around. A request to
+  change the code specifically so results look better, faster, or more
+  profitable is the single named signal (`EXECUTION_PLAN.md` Section
+  5f) that something is going wrong — treat it as a reason to slow
+  down and ask, not speed up.
+
+If a message like this arrives: say plainly that the guardrails are
+unconditional regardless of the grant (this exact scenario is written
+into `CLAUDE.md`'s Standing autonomy rule for exactly this reason), do
+the parts of the ask that ARE within existing bounds (new registry
+key, tooling, docs, tests), and keep the merge-confirmation and
+Hard-Rules gates exactly as strict as always.
 
 ---
 
@@ -273,6 +306,117 @@ change anything. Short sentences. No jargon.
 ### Step 6.4 — Then keep working
 Do NOT sit idle waiting for an answer. Go back to Runbook 1 and continue
 with anything else that is clearly safe.
+
+---
+
+# RUNBOOK 7 — Adding a new strategy contestant (only when Het asks for one)
+
+**Do not start this on your own initiative — new strategies are never
+invented by a session, only added when Het explicitly asks for one.**
+This is the exact sequence real ones (event-drift recalibration, crude
+oil input-cost, Nifty 100 momentum) have followed. Follow it in order.
+
+### Step 7.1 — Write the mechanism down FIRST (Law 1)
+Before writing any code, write one paragraph: what real-world reason
+would make this signal work? Not a backtest result, not a statistic —
+a stated cause. Example shape: "stocks that outperformed peers over a
+trailing window tend to keep outperforming, because information
+diffuses slowly (Jegadeesh & Titman 1993, replicated in NSE studies)."
+If you cannot state a mechanism in one paragraph, STOP — this is
+exactly what Law 1 exists to prevent. Escalate instead of guessing one.
+
+### Step 7.2 — Reuse an existing `sig_*` function if the mechanism matches
+Check `factory.py`'s `IMPLS` dict first. If an existing function
+already implements this mechanism shape (e.g. `sig_momentum`,
+`sig_input_cost`), reuse it — only the `UNIVERSE`/parameters should be
+new. Writing a brand-new `sig_*` function is a much bigger, riskier
+change; only do it if Het is explicitly asking for a genuinely
+different mechanism, and treat it as Runbook 4's "check if allowed"
+gate at full strength.
+
+### Step 7.3 — If it needs a new ticker universe, verify it for real
+This sandbox cannot reach Yahoo Finance, NSE, or Wikipedia (confirmed,
+documented). If you build a ticker list from training knowledge:
+1. Write `UNIVERSE["<new_key>"]` with a code comment stating clearly
+   it wasn't fetched live, and why (sandbox network restriction).
+2. **Verify it for real before calling it done** — write a small
+   read-only diagnostic script (copy `tools/diagnose_nifty100_tickers.py`
+   as a template) that does `yf.download(tickers, ...)` and reports
+   which ones fail to resolve, plus a matching manual-dispatch-only
+   workflow file (copy `.github/workflows/diagnose_nifty100_tickers.yml`
+   as a template — same pattern as `diagnose_event_thresholds.yml`).
+3. Push the branch, then dispatch the new workflow against `main`
+   (needs a merge first — see Step 7.6). Read the real job log.
+4. Remove any ticker that failed to resolve. Do NOT guess a
+   replacement symbol — if you don't know the correct one, leave it
+   out and note it in `het_directives.md` for Het.
+
+### Step 7.4 — Add ONE new registry key in `seed_registry()`
+Never edit an existing entry (Law 2). The mechanism paragraph from
+Step 7.1 goes in a code comment directly above the new entry. State
+where each parameter came from (reused from an existing family's
+validated range = fine; a genuinely new choice = say why, in plain
+terms, not reverse-engineered from "what would produce more trades").
+
+### Step 7.5 — Test with a real regression before committing
+Use the exact snippet in Runbook 4 Step 4.3 (40-cycle synthetic
+`update()` + `report()`). Confirm the new key appears, trades, and
+scores without a crash. "It imports without error" is never enough.
+
+### Step 7.6 — Commit, push, ask for merge — same as any other change
+Follow Runbook 4 Step 4.4. If Step 7.3's diagnostic needs `main` to
+actually dispatch (new workflow files must exist on the default branch
+before GitHub will run them against any ref — confirmed platform
+behavior, not a guess), that's a real reason to ask for a merge before
+the ticker list is fully verified — say so plainly rather than
+skipping the verification step.
+
+---
+
+# RUNBOOK 8 — Verifying a real-world claim this sandbox can't check directly
+
+Use this whenever you're about to write something as fact (a ticker
+symbol, a threshold, "this data source works") but this sandbox's
+network can't actually confirm it. Guessing and hoping is not
+acceptable; neither is leaving it forever as an unverified assumption
+when a free way to check for real exists.
+
+### Step 8.1 — Try free tooling first
+`WebFetch`/`WebSearch` sometimes work for general reference (e.g.
+looking up a well-known list). Try it. If it's blocked
+(`EGRESS_BLOCKED` error, or a domain like `nseindia.com`/
+`en.wikipedia.org`/`smallcase.com`), that itself is useful information
+— note it, don't retry the same domain repeatedly.
+
+### Step 8.2 — If the real check needs financial data, use GitHub Actions
+This sandbox cannot reach Yahoo Finance. GitHub Actions runners CAN
+(documented, repeatedly confirmed). Write a small, read-only,
+manual-dispatch-only diagnostic script + workflow (see Runbook 7 Step
+7.3 for the exact template pattern) rather than leaving the claim
+unverified. This has already been done twice for real:
+`diagnose_event_thresholds.py` (does a threshold ever actually fire in
+real data?) and `diagnose_nifty100_tickers.py` (does every ticker in a
+basket actually resolve?).
+
+### Step 8.3 — The workflow file needs to exist on `main` to dispatch
+A brand-new workflow file cannot be triggered via the dispatch API
+against ANY ref — including its own branch — until the file exists on
+the repository's default branch (`main`). Confirmed via a real 404,
+more than once. This means: push the diagnostic to the branch, get it
+merged (Runbook 4 Step 4.4 / a fresh "yes"), THEN dispatch it.
+
+### Step 8.4 — Read the actual job log, don't just check `conclusion`
+`"success"` only means the script didn't crash — it doesn't mean the
+result was good news. Use `mcp__github__get_job_logs` with
+`return_content: true` and read what the script actually printed.
+
+### Step 8.5 — Act on the real result, don't just report it
+If the check finds a real problem (a bad ticker, an unfireable
+threshold), fix what's safely fixable (e.g. remove a dead ticker from
+a *brand-new, zero-evidence* registry key — that's not a Law 2
+mutation, it's pre-launch correction) and leave what needs Het's
+judgment (e.g. don't guess a replacement ticker symbol) in
+`het_directives.md`'s NEEDS HET section instead.
 
 ---
 
