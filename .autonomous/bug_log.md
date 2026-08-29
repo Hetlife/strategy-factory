@@ -173,6 +173,29 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## FIXED
 
+- **FIXED | 2026-08-29 | supervisor-false-pipeline-dead-alarm** —
+  `tools/supervisor_check.py` read `factory_state/ledger.json` from the
+  local checkout. But `ledger.json` is ONLY ever auto-committed to
+  `main` by `factory.yml`, never to a feature branch — so any run
+  against a branch sees a days-stale ledger and escalates it to an
+  **error**: *"last trading update was N days ago — the daily
+  factory.yml run may have stopped firing."* That is the single most
+  alarming thing this monitor can say, and it was firing falsely while
+  the daily run was completely healthy.
+  **How it was caught:** dispatching `supervisor.yml` against the
+  feature branch to verify an unrelated pip-caching change. The job
+  failed with that exact message. Verified side by side at the same
+  moment: branch checkout ledger dated `2026-08-25`, `main` dated
+  `2026-08-28`; without `--live` exit 1 + false ERROR, with `--live`
+  exit 0 + "1d ago -- fine".
+  **Fix:** `supervisor_check.py` gained a `--live` flag (reusing
+  `health_check.fetch_live_json`) and `supervisor.yml` now always
+  passes it. A failed live fetch exits 2 rather than silently falling
+  back to the stale local copy — falling back would reintroduce the
+  exact false alarm. Same root cause as
+  `health-check-stale-local-false-positive` below; this was the second,
+  higher-severity instance of it.
+
 - **FIXED | 2026-08-26 | health-check-stale-local-false-positive** (merged
   to main 2026-08-27/28, PR #18, `4c9a60b`)
   — `tools/health_check.py` run against a plain local checkout reliably

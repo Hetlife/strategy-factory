@@ -39,4 +39,8 @@ jobs:
         run: pip install pandas numpy
 
       - name: Run supervisor check
-        run: python tools/supervisor_check.py
+        # --live: read ledger.json from main, not the local checkout.
+        # ledger.json is only ever committed to main, so a branch
+        # checkout looks days-stale and triggers a FALSE "the daily
+        # run has stopped firing" error. Caught 2026-08-29.
+        run: python tools/supervisor_check.py --live
