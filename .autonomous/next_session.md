@@ -2,135 +2,114 @@
 
 ## READ FIRST
 1. CLAUDE.md (auto-loaded — binding rules, architecture, phase pointer)
-2. **`.autonomous/SESSION_PLAYBOOK.md`** — the step-by-step procedure for
-   running a session start to finish: numbered steps, exact commands,
-   what-to-work-on decision rules, the testing standard, and a "things
-   that look broken but aren't" table. **Read this before doing any
-   work.** This file you're reading now is only the *snapshot* of where
-   things stand; the playbook is *how to operate*.
-3. .autonomous/state.json (structured queue, decisions, test status)
-4. This file
-5. .autonomous/het_directives.md — Het's own recent asks + a standing
+2. **`.autonomous/RUNBOOKS.md`** — fully mechanical, exact commands,
+   decision tables, "STOP and escalate" wherever judgment is needed.
+   **If you are a smaller/cheaper model, or unsure at any point, this
+   is the answer — not improvisation.** Start at RUNBOOK 1.
+3. **`.autonomous/SESSION_PLAYBOOK.md`** — the same flow but assuming
+   more judgment. Read this if you're operating with more latitude.
+4. .autonomous/state.json (structured queue, decisions, test status)
+5. This file (the snapshot of where things stand right now)
+6. .autonomous/het_directives.md — Het's own recent asks + a standing
    "NEEDS HET" section; carry that section into any report back to him.
-6. .autonomous/loop_state.json — the hourly Routine's crash/resume file.
+7. .autonomous/loop_state.json — the hourly Routine's crash/resume file.
    Read FIRST if this session is a Routine firing: `status:"in_progress"`
    means a previous firing got cut off mid-task, resume exactly from
    `resume_instructions`, never restart from scratch.
-7. .autonomous/bug_log.md — known OPEN/FIXED/CLOSED defects
-8. AUTONOMOUS_LOG.md (tail -40, don't read the whole thing)
-9. .autonomous/operator_profile.md — before writing anything Het will
-   read: plain language, why not just what, hands-off on code
-10. agents/README.md — the agents/ team, hiring protocol, "code over
-    tokens" pattern
+8. .autonomous/bug_log.md — known OPEN/FIXED/CLOSED defects
+9. AUTONOMOUS_LOG.md (tail -40, don't read the whole thing)
+10. .autonomous/operator_profile.md — before writing anything Het will
+    read: plain language, why not just what, hands-off on code
+11. **`PROJECT_STUDY.md`** (new, 2026-08-29) — the full narrative
+    history: why things are the way they are, every declined/bounded
+    request with its reasoning, real bugs found. Read when you need
+    *precedent or understanding*, not for routine task execution.
 
-## CURRENT STATE (as of 2026-08-28, commit `92a92da`)
+## CURRENT STATE (as of 2026-08-29, branch commit `588789c`)
 
-**Phase 1, day ~39 of the 126-day minimum evaluation window** (oldest
-contestants). 26 contestants (23 live on main today, 3 new ones
-backfill on tomorrow's `update()`), all still rung 0 (paper), Rs 0 real
-money anywhere. Zero breeding/evolution yet — both mechanisms require
-`days_on_rung >= 126`, correctly not triggered this early, not a bug.
+**Phase 1, day 40 of the 126-day minimum evaluation window** (oldest
+contestants — verified live, not estimated). All contestants still
+rung 0 (paper), Rs 0 real money anywhere, zero promotions ever. No
+breeding/evolution yet — both mechanisms need `days_on_rung >= 126`,
+correctly not triggered this early, not a bug.
 
-**Branch has 1 commit ahead of main**: `LOCAL_SETUP.md` (a tested local
-Linux deployment guide). Het said "we'll replace it later" about
-something (local vs cloud direction still being worked out) and asked
-to wrap the session — **check het_directives.md for whether he answered
-the "merge LOCAL_SETUP.md now?" question before assuming either way.**
-Everything else built this session is already on `main`.
+**Contestant count, and why two numbers are both right:**
+`seed_registry()` defines **27**; `ledger.json` on main has **26**
+live. The difference is `mom_nifty100_lb90`, merged to main in code
+but not yet backfilled into the ledger. `load_state()` backfills it on
+the next `factory.py update()` run. This gap is exactly what
+`health_check.py --live` reports as its self-healing registry-drift
+warning, and it's why the new contestant does not yet appear on the
+dashboard (which reads the ledger, not the code).
 
-**This session's major work** (chronological):
-- Merged Master Trader (safe/advisory version) + doc sync (PR #15, #16).
-- Found and fixed `health_check.py`'s stale-local-checkout false
-  positive — added `--live` flag / `live=` param, merged (PR #18,
-  `4c9a60b`).
-- Redesigned the check-in loop to fire **hourly** (Het asked for 15-min;
-  platform hard-minimum is 1 hour, confirmed via actual API rejection).
-  Built `.autonomous/loop_state.json` as the crash/resume file Het
-  asked for. Old 5h routine's prompt fully rewritten with a
-  crash/resume protocol, bounded-programming scope, "leave nothing
-  undone," "keep NEEDS HET current" steps.
-- **Declined** (logged, not built): an AI "master trader" that receives
-  real capital and distributes it across strategies — Law 3 / Section
-  5f kill-condition territory, needs its own dedicated conversation.
-- Built the Master Trader dashboard card (advisory-only, explicitly NOT
-  a P&L — it has zero authority to distribute money) after flagging
-  clearly why a fabricated P&L number would be a bright-line violation.
-  Merged (PR #18 batch).
-- **Real strategic decision, executed**: event_drift's 0-trades pattern
-  diagnosed against real price history (not guessed) — confirmed
-  genuinely rare-event thresholds, not a bug. Added 3 new registry
-  entries (`event_cement_t17`, `event_infra_t20`, `event_steel_t22`)
-  calibrated to each leader's real 85th percentile, WITHOUT mutating
-  the original 9 (Law 2 — would corrupt already-collected evidence).
-  Merged (PR #19, `f53eac1`).
-- Full task-log sweep (not just recent entries) — found and fixed two
-  stale status markers in state.json/bug_log.md.
-- Built `LOCAL_SETUP.md` for Het's planned local Linux deployment —
-  every step tested in a fresh clone. On branch only pending his
-  merge call.
-- Verified real advisor training end-to-end for the first time
-  (`parameter_bank.json` now exists on main, 5y real data).
-- All 8 agents individually verified active against real live data,
-  no silent failures anywhere.
+**`factory.yml` cron: Mon-Fri 12:45 UTC, Sun 04:30 UTC.** The Sunday
+run does BOTH `update()` and the weekly `report()`. If you are reading
+this after Sunday 2026-08-30 ~04:30 UTC, that run should have
+backfilled `mom_nifty100_lb90` and produced a weekly report — **verify
+that actually happened** rather than assuming it did.
 
-## WHAT WAS LEARNED
-- **The platform enforces a hard 1-hour minimum between Routine
-  firings** — confirmed via actual API rejection of a 15-min cron.
-  Don't try this again; hourly is the ceiling.
-- **`workflow_dispatch` requires the workflow file to exist on the
-  default branch (`main`) before it can be triggered via API against
-  ANY ref** — confirmed via a real 404 when trying to dispatch a
-  brand-new workflow against the feature branch before it was merged.
-  Once merged once, subsequent dispatches against any ref work fine.
-- Real price-history percentile analysis is genuinely useful for
-  registry-parameter decisions (event thresholds) — grounds a
-  "strategic decision" in actual data instead of a guess, and keeps it
-  clearly distinguishable from Law-1-violating parameter mining (the
-  distinction: calibrating to real volatility vs. reverse-engineering
-  from a target trade count).
-- Het has repeatedly pushed toward "make it learn/trade faster" in
-  different framings (train every hour, compulsory trading, real-time
-  data). Each time the honest answer has been the same underlying fact:
-  the evidence clock runs on real calendar trading days, not compute
-  cycles, and forcing more activity would corrupt the evidence rather
-  than accelerate it. Worth recognizing the pattern quickly if it
-  recurs rather than re-deriving the explanation from scratch each
-  time — but still explain it fresh each time in the actual conversation,
-  don't just link back to an old answer.
+**Branch is 7 commits ahead of main**, all docs/tooling, no trading
+logic, no `RULES`/`LADDER`/`COST_PER_SIDE`:
+`f08890d` (merge records), `0f877b9` (fix: malformed commit field in
+state.json), `c6e2bd9` (log), `856c439` (PROJECT_STUDY.md + RUNBOOK
+7/8 + permission-grant section), `56abf31` (log), `e357ae8` (dashboard
+verification log), `588789c` (study-file correction). Het was offered
+the merge and had not answered as of session end — **ask fresh, don't
+assume either way.**
+
+## WHAT WAS LEARNED (2026-08-29 session)
+
+- **A merge to main does not make a new contestant visible.** The code
+  change and the ledger are separate; only a scheduled `update()` run
+  bridges them. Verified end-to-end by actually rendering the dashboard
+  headlessly, not by assuming.
+- **Verify unfetchable claims via GitHub Actions instead of leaving
+  them as human TODOs.** The Nifty 100 ticker basket was built from
+  training knowledge (sandbox blocks NSE/Wikipedia/smallcase), then
+  actually checked by a manual-dispatch diagnostic on a runner with
+  real network access — which found 2 genuinely dead tickers
+  (`TATAMOTORS.NS`, `LTIM.NS`, real HTTP 404s, likely a corporate-action
+  symbol change). Removed rather than guessing replacements. This is
+  now RUNBOOK 8.
+- **A new workflow file must exist on `main` before it can be
+  dispatched against any ref** — including its own branch. Confirmed
+  again via a real 404.
+- **"You have every permission" does not relax any guardrail.** Het
+  said this again (framed around reaching "consistent large profit").
+  Declined the implied authorization to touch RULES/LADDER/
+  COST_PER_SIDE or self-merge, citing CLAUDE.md's own precedent and
+  GOALS.md's actual goal. This is now an explicit section at the top of
+  RUNBOOKS.md so a smaller model recognizes the pattern mechanically.
+- **`pkill -f "streamlit run dashboard.py"` matches its own shell** and
+  kills the command mid-execution (exit 144, silently losing later
+  steps in the same invocation). If you background streamlit for a
+  dashboard test, verify afterward that anything you chained after the
+  kill actually ran.
 
 ## WHAT REMAINS
-- **LOCAL_SETUP.md merge decision** — check het_directives.md, may
-  already be answered by the time you read this.
-- **"openclaw"** — Het confirmed it's a real specific tool but hasn't
-  named it yet. Still don't guess. Ask directly if it comes up again.
-- P1-dashboard-auth — blocked_on_human, needs Het with a real browser
-  (dashboard's public visibility was separately confirmed fine 2026-08-28,
-  this is a different, still-open question about private-repo raw-URL auth).
-- Future capital-allocation automation — parked, needs its own
-  dedicated conversation if Het still wants it later.
-- P2/P3 items — unchanged, low-priority/frozen per Phase 1 discipline,
-  see state.json queue for exact status per item.
+
+Nothing structural. Phase 1 standing mode: run the schedule, let the
+evidence clock run, don't add machinery. Open items are all either
+blocked on Het, permanently gated, or passive watches — see
+state.json's queue. The genuinely valuable next event is **the
+calendar**, not a commit.
 
 ## EXACT NEXT TASK
-1. `git fetch` + re-read `het_directives.md`'s NEEDS HET section — this
-   file is a snapshot, that's live.
-2. If this is a Routine firing: follow its own prompt exactly (crash/
-   resume check first, health check via `--live`, bounded programming,
-   leave-nothing-undone, keep NEEDS HET current).
-3. If interactive with Het: normal operation, AskUserQuestion before
-   anything ambiguous/costly/risky, test thoroughly, never merge
-   without fresh confirmation for THAT specific change.
-4. Watch for the first-ever real PROMOTE (day ~87 is the earliest any
-   contestant could hit 126 days on rung from today) — flag prominently
-   if it happens.
+
+Run **RUNBOOK 1** (hourly check-in). If it comes back clean and
+nothing changed, say "Nothing new" in one or two sentences and stop —
+do not manufacture work. Two things specifically worth confirming on
+the next run after Sunday 2026-08-30 04:30 UTC:
+1. Did `mom_nifty100_lb90` actually land in `ledger.json` on main?
+   (`health_check.py --live` should go fully clean when it does.)
+2. Did the Sunday weekly `report()` run and commit? It's the first
+   report since the new contestant merged.
 
 ## FILES TO OPEN
-- `.autonomous/state.json`, `.autonomous/het_directives.md`,
-  `.autonomous/bug_log.md`, `.autonomous/loop_state.json` — living
-  trackers.
-- `agents/README.md` — the team, hiring protocol, "code over tokens."
-- `factory.py` only if there's an actual bug to fix or a Het-confirmed
-  feature to build.
+- `.autonomous/RUNBOOKS.md` — the mechanical procedures (start here)
+- `.autonomous/state.json` — queue and decisions
+- `PROJECT_STUDY.md` — why things are the way they are
+- `factory.py` — only if making a real code change (see RUNBOOK 4/7)
 
 ## FILES NOT TO OPEN UNLESS NEEDED
 - understanding.txt / pivot_document.txt / mission_document.txt —
@@ -138,38 +117,41 @@ Everything else built this session is already on `main`.
 - AUTONOMOUS_TODO.md — narrative decision rationale only.
 
 ## TEST COMMANDS
-- `python3 tools/health_check.py --live` — always use `--live` in an
-  interactive session (avoids the stale-local-checkout false positive).
-- Synthetic regression pattern (used for the LADDER raise and the
-  event_drift recalibration): copy `factory_state/` + `factory.py` into
-  an isolated scratch dir, monkeypatch `fetch_prices()` with synthetic
-  data (inject occasional shock days if testing event_drift-family
-  changes), run N `update()` cycles + `report()`, assert no crash and
-  check new/changed entries behave correctly.
+- `python3 tools/health_check.py --live` — always use `--live`
+  (avoids the stale-local-checkout false positive; this bug class has
+  bitten twice).
+- Synthetic regression pattern: copy `factory_state/` + `factory.py`
+  into an isolated scratch dir, monkeypatch `fetch_prices()` with
+  synthetic data (inject shock days if testing event_drift-family
+  changes), run 40 `update()` cycles + `report()`, assert no crash and
+  check new/changed entries behave correctly. Exact snippet in
+  RUNBOOK 4 Step 4.3.
 - Dashboard changes: `streamlit run dashboard.py`, then verify via a
   real headless-browser screenshot (Playwright, pre-installed at
   `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`) — don't just
   check for import errors.
 - For any GitHub Actions workflow change: `workflow_dispatch` it for
-  real and read the actual job logs (`mcp__github__get_job_logs`) —
-  don't trust "the YAML looks right."
+  real and read the actual job logs (`mcp__github__get_job_logs`,
+  `return_content: true`) — `conclusion: "success"` only means it
+  didn't crash, not that the result was good news.
 
 ## EXPECTED RESULT
 Phase 1 standing mode continues. Nothing should meaningfully change
 session to session except accumulated ledger history, real registry-
-parameter refinements grounded in real data (like the event_drift
-recalibration), and genuine tooling fixes. A session wanting to
-accelerate the evidence clock itself, or build toward AI-controlled
-capital allocation, is violating this project's own stated discipline
-— stop and flag it, don't build it.
+parameter refinements grounded in real data, and genuine tooling
+fixes. A session wanting to accelerate the evidence clock itself, or
+build toward AI-controlled capital allocation, is violating this
+project's own stated discipline — stop and flag it, don't build it.
 
 ## STOP IF
 - You find yourself wanting to change RULES, LADDER, or COST_PER_SIDE's
   underlying risk appetite beyond what's already confirmed.
 - You're about to merge anything to main without a fresh, specific
-  confirmation for THAT change.
+  confirmation for THAT batch of commits.
 - You're about to build toward AI-controlled real capital allocation —
   declined explicitly, twice, needs its own dedicated conversation.
+- You're about to add options/futures/margin/leverage — declined
+  2026-08-29, logged, needs its own conversation.
 - You're about to mutate an existing live registry entry's parameters
   in place instead of adding a new one — Law 2, corrupts accumulated
   evidence.
@@ -177,14 +159,19 @@ capital allocation, is violating this project's own stated discipline
   remainder verifying and rewriting state.json/log/this file.
 
 ## OPERATOR AUTHORIZATION REQUIRED
-- Any merge to main, every time, no exceptions carried forward.
+- Any merge to main, every time, no exceptions carried forward, no
+  matter how broad a permission grant sounds.
 - Confirming dashboard.py's private-repo raw-URL auth (needs Het, real
   browser) — separate from the public-visibility question already answered.
 - Any request implying pooled/outside capital, or AI-controlled capital
   allocation.
+- Options/futures/leverage of any kind.
 - Deciding whether to replace cloud automation with local-only (Het is
   planning local deployment — LOCAL_SETUP.md deliberately does NOT set
   up a competing local cron, see its Section 6).
+- The correct current NSE symbols for Tata Motors and LTIMindtree, if
+  he knows them — both were removed from `UNIVERSE["nifty100"]` after
+  real 404s; re-add only after verifying the same real way (RUNBOOK 8).
 
 ## DO NOT RE-DERIVE
 - EXECUTION_PLAN.md Section 2 (Settled Facts) and Section 9 (Strategic
@@ -192,22 +179,25 @@ capital allocation, is violating this project's own stated discipline
 - The Three Laws and their authorized overrides — see state.json
   `decisions` for the full list with commit references.
 - Why the event_drift recalibration added new entries instead of
-  editing the originals (Law 2) — settled, see state.json's
-  `event-drift-real-volatility-recalibration` decision.
+  editing the originals (Law 2) — settled.
 - Why "make it trade/learn faster" keeps getting the same answer
   (evidence clock runs on calendar days, not compute) — settled
   reasoning, re-explain fresh each time it comes up, don't silently
   ignore a new instance of the ask.
 - The platform's 1-hour Routine minimum and the workflow_dispatch
-  main-branch-first requirement — both confirmed via real API errors,
-  not worth re-testing.
+  main-branch-first requirement — both confirmed via real API errors.
+- That the sandbox cannot reach Yahoo Finance, nseindia.com,
+  en.wikipedia.org, or smallcase.com — all confirmed by real attempts.
+  Use a GitHub Actions diagnostic instead (RUNBOOK 8).
 
-## IMPORTANT NEW KNOWLEDGE
-- The hourly loop is proven reliable now (unlike the old 5h dev-loop,
-  which stays permanently disabled) — it fires, checks in, and can push
-  real tested tooling fixes to the branch.
-- Real advisor training has now actually run once against real data —
-  `parameter_bank.json` exists on main for the first time.
-- All 8 agents individually verified active against real data this
-  session — if one seems broken later, that's a regression worth
-  investigating, not an assumption to make lightly.
+## IMPORTANT KNOWLEDGE
+- The hourly loop is proven reliable (unlike the old 5h dev-loop, which
+  stays permanently disabled after 5 confirmed failures).
+- Real advisor training has run against real data — `parameter_bank.json`
+  exists on main.
+- All 8 agents verified active against real data — if one seems broken
+  later, that's a regression worth investigating, not an assumption.
+- `report()`'s output includes a non-fatal `[warn] agents/ advisory
+  layer failed ... No module named 'agents'` when run from an isolated
+  scratch dir that doesn't have `agents/` copied in. That's a testing
+  artifact, not a real failure.
