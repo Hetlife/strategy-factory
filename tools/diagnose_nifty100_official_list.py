@@ -41,10 +41,12 @@ import factory
 NSE_URL = "https://nsearchives.nseindia.com/content/indices/ind_nifty100list.csv"
 
 
-def fetch_official_symbols():
-    """Returns a set of bare NSE symbols (no .NS suffix) from NSE's own
-    published Nifty 100 constituent CSV. Raises on any failure -- callers
-    must not silently treat a failed fetch as 'the list is empty'."""
+def fetch_official_rows():
+    """Returns {bare NSE symbol (no .NS suffix): company name} from NSE's
+    own published Nifty 100 constituent CSV. Raises on any failure --
+    callers must not silently treat a failed fetch as 'the list is empty'.
+    Company name comes straight from NSE's own CSV column -- no second
+    network call (e.g. to yfinance) needed just to identify a symbol."""
     req = urllib.request.Request(
         NSE_URL,
         headers={
@@ -58,16 +60,22 @@ def fetch_official_symbols():
     with urllib.request.urlopen(req, timeout=30) as resp:
         raw = resp.read().decode("utf-8-sig")  # NSE CSVs often have a BOM
     reader = csv.DictReader(io.StringIO(raw))
-    if "Symbol" not in (reader.fieldnames or []):
+    fields = reader.fieldnames or []
+    if "Symbol" not in fields:
         raise ValueError(
-            f"unexpected CSV format, columns were: {reader.fieldnames} "
-            f"-- NSE may have changed the file layout, don't assume the "
-            f"symbol column is still called 'Symbol'.")
-    return {row["Symbol"].strip() for row in reader if row.get("Symbol")}
+            f"unexpected CSV format, columns were: {fields} -- NSE may "
+            f"have changed the file layout, don't assume the symbol "
+            f"column is still called 'Symbol'.")
+    name_col = "Company Name" if "Company Name" in fields else None
+    return {
+        row["Symbol"].strip(): (row.get(name_col, "") or "").strip() if name_col else ""
+        for row in reader if row.get("Symbol")
+    }
 
 
 def main():
-    official = fetch_official_symbols()
+    official_rows = fetch_official_rows()
+    official = set(official_rows)
     print(f"Fetched {len(official)} symbols from NSE's official Nifty 100 list.\n")
 
     ours_with_ns = set(factory.UNIVERSE["nifty100"])
@@ -82,7 +90,8 @@ def main():
     if missing_from_ours:
         print(f"IN NSE'S OFFICIAL LIST BUT NOT IN OURS ({len(missing_from_ours)}):")
         for s in missing_from_ours:
-            print(f"  {s}")
+            name = official_rows.get(s, "")
+            print(f"  {s}" + (f"  ({name})" if name else ""))
     else:
         print("Nothing in NSE's official list is missing from ours.")
 
