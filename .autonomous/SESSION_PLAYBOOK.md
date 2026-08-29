@@ -71,9 +71,16 @@ warning, because your local checkout tracks the working branch but
 Interpreting the result:
 - `no findings` → healthy, continue.
 - A **registry-drift warning naming newly-added `seed_registry()`
-  entries** → EXPECTED and self-healing. It clears on the next daily
-  `factory.yml` run via `load_state()`'s backfill. Not a bug. Do not
-  "fix" it.
+  entries** → usually expected and self-healing (it clears on the next
+  daily `factory.yml` run via `load_state()`'s backfill), but **confirm
+  that rather than assuming it.** The warning prints the ledger's last
+  update date; compare it against when those keys reached `main`
+  (`git log -1 --format=%cs --all -S"<key>" -- factory.py`). Ledger
+  date older → benign, ignore. Ledger date **newer** → an `update()`
+  already ran and did NOT pick the key up, meaning the backfill is
+  broken; that is a real bug, investigate it. See RUNBOOKS.md Step
+  1.3a. This distinction matters because the benign and broken cases
+  print an otherwise identical warning.
 - Anything **error**-level, or a warning you don't recognise → real.
   Investigate before doing other work.
 
@@ -220,6 +227,26 @@ against real data and confirmed correct.
 
 ## SETTLED — DO NOT RE-DERIVE OR RE-LITIGATE
 
+- **The GitHub REST API is NOT reachable by `curl` in this session.**
+  Confirmed 2026-08-29: `api.github.com` returns **403** with *"GitHub
+  access is not enabled for this session."* Don't try to build a
+  lightweight status checker around `curl`/`requests` — it cannot work.
+  The `mcp__github__*` tools are the only path to GitHub data.
+- **`mcp__github__actions_list` ignores `per_page`.** Observed
+  repeatedly 2026-08-29 (asked for 5, got 20; asked for 2, got 22) — it
+  returns the workflow's whole run list, each entry carrying the full
+  commit message. So a single workflow-status check costs on the order
+  of thousands of tokens no matter what you request. Budget for it:
+  call it once per workflow per check-in, never in a loop, and don't
+  re-call it to "double-check" something you already read.
+  **Partial cheap alternative, with a real limitation:**
+  `python3 tools/supervisor_check.py --live` answers *"has the daily
+  pipeline gone stale?"* locally for free (it reads the ledger's newest
+  date). But it CANNOT see a run that failed **today** — the ledger
+  would still show yesterday's date and read as "1d ago, fine." So it
+  complements the Actions check, it does not replace it. Don't drop the
+  MCP call to save tokens; losing same-day failure detection on a
+  financial-evidence pipeline is the worse trade.
 - **Platform enforces a hard 1-hour minimum between Routine firings.**
   Confirmed by a real API rejection of a 15-min cron. Hourly is the
   ceiling. The free 15-min `supervisor.yml` covers the gap.

@@ -189,6 +189,16 @@ project's own stated discipline — stop and flag it, don't build it.
 - That the sandbox cannot reach Yahoo Finance, nseindia.com,
   en.wikipedia.org, or smallcase.com — all confirmed by real attempts.
   Use a GitHub Actions diagnostic instead (RUNBOOK 8).
+- That `curl https://api.github.com/...` returns **403** ("GitHub access
+  is not enabled for this session"). The `mcp__github__*` tools are the
+  only path to GitHub data — don't try to build a cheaper checker on
+  curl, it cannot work.
+- That `mcp__github__actions_list` **ignores `per_page`** and returns the
+  full run list with full commit messages, so each workflow-status check
+  costs thousands of tokens. Call it once per workflow per check-in.
+  `tools/supervisor_check.py --live` answers the staleness half for free
+  but cannot see a run that failed *today* — it complements the MCP
+  check, it does not replace it.
 
 ## IMPORTANT KNOWLEDGE
 - The hourly loop is proven reliable (unlike the old 5h dev-loop, which

@@ -78,6 +78,8 @@ Format: `DATE | directive (summarized) | status`
 
 ## NEEDS HET (carry this section into the next daily report / next_session.md)
 
+- ~~9 docs/tooling commits waiting on branch~~ — RESOLVED 2026-08-29. Het: "Merge all 9 to main." Merged via `0eeb2fe` (PROJECT_STUDY.md, RUNBOOK 7/8, permission-grant section, rewritten next_session.md, state.json commit-field fix, session logs). Clean no-conflict merge; CLAUDE.md sha1 verified self-consistent on the merged result and all three new docs confirmed serving live from main.
+
 - dashboard.py private-repo auth — needs Het to check the raw ledger URL in a plain incognito browser (sandbox network can't test this validly, see standing_env_facts).
 - ~~Streamlit Community Cloud hosting~~ — RESOLVED, he already hosted it himself (URL ends `...f95mqbuoetyoeebdj.streamlit.app`). 2026-08-28: confirmed explicitly he's fine with it being public (no login) -- it's paper-only data, Rs 0 real money, no real risk.
 - Any future request that implies pooling outside money / running a fund — needs its own dedicated conversation (SEBI registration territory), not something to build incrementally by default.

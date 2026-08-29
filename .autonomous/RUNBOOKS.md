@@ -77,9 +77,28 @@ python3 tools/health_check.py --live
 | Output | Meaning | Do this |
 |---|---|---|
 | `health_check: no findings.` | Healthy | Go to Step 1.4 |
-| `[WARNING] seed_registry() defines [...] but the ledger's registry doesn't have them` | Normal, self-healing. A new strategy was added and the daily run hasn't picked it up yet. | Ignore. Go to Step 1.4 |
+| `[WARNING] seed_registry() defines [...] but the ledger's registry doesn't have them` | A new strategy was added and the daily run may not have picked it up yet. **Usually benign, but NOT automatically** | Do the 3-line check in Step 1.3a below. Do not skip it. |
 | Any line starting `[ERROR]` | Real problem | **STOP. Escalate** (Runbook 6) |
 | Any other `[WARNING]` you don't see listed here | Unknown | **STOP. Escalate** (Runbook 6) |
+
+### Step 1.3a — ONLY if you saw the registry-drift warning above
+
+This warning is benign most of the time, which is exactly why it's
+dangerous to wave through: if the backfill ever genuinely breaks, the
+message looks identical. The warning itself now prints the ledger's
+last update date — use it.
+
+1. Read the date in the warning ("The ledger's last update() was ...").
+2. Find when those keys reached `main`:
+   ```bash
+   git log -1 --format=%cs --all -S"<the missing key name>" -- factory.py
+   ```
+   (prints the date that key's line was added, e.g. `2026-08-29`)
+
+| Comparison | Meaning | Do this |
+|---|---|---|
+| Ledger date is **older than or equal to** the key's merge date | Benign — no update() has run since the key landed. It will clear on the next run. | Go to Step 1.4 |
+| Ledger date is **newer than** the key's merge date | **The backfill ran and did NOT pick the key up. This is a real bug.** | **STOP. Escalate** (Runbook 6) |
 
 ### Step 1.4 — Check the free supervisor
 Use the GitHub tool:
@@ -133,7 +152,9 @@ Run these three checks. All three must pass.
 # 1. Health
 python3 tools/health_check.py --live
 ```
-Pass = `no findings`, or only the known self-healing registry warning.
+Pass = `no findings`, or the registry-drift warning **after** you have
+run Step 1.3a's date comparison and it came back benign. An
+unchecked registry warning is not a pass.
 
 ```bash
 # 2. All 8 agents respond
@@ -429,7 +450,7 @@ Never "fix" these. Each was investigated against real data.
 | Most strategies show **0 trades** | They wait for a rare price shock (~3% single-day move), which happens ~13-25 days a year. |
 | **No strategy has ever bred or evolved** | Both need `days_on_rung >= 126`. Nothing is close yet. |
 | `monsoon_cement` never trades | Deliberately switched off. Its data ends in 2017. |
-| Registry warning after a new strategy is added | Fixes itself on the next daily run. |
+| Registry warning after a new strategy is added | Fixes itself on the next daily run -- **but confirm that with Runbook 1 Step 1.3a's date check first.** If an update() already ran after the key landed and it is still missing, the backfill is broken and it is NOT normal. |
 | Everything says Rs 0 real money | Correct. Nothing has earned real capital yet. |
 | Health check complains when run without `--live` | You forgot `--live`. Always use it. |
 
