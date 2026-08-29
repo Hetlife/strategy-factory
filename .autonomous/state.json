@@ -153,7 +153,7 @@
    "id": "P2-vectorize",
    "priority": "P2",
    "status": "open_low_priority_standing_mode",
-   "summary": "vectorize update()/report() per-contestant loop + yf.download(threads=True). Must not change signal logic or promotion math. Low urgency at ~20-40 contestants. Phase 1 standing mode says don't add machinery beyond what's needed -- only pick this up if contestant count growth actually makes it necessary."
+   "summary": "vectorize update()/report() per-contestant loop + yf.download(threads=True). Must not change signal logic or promotion math. MEASURED, not just assumed low-priority (2026-08-29, cProfile against real ledger size): update() takes 32ms for all 26 contestants -- the actual per-run cost was dependency reinstallation (65-79% of total job time), not this loop, which is why pip caching was done instead (see AUTONOMOUS_LOG perf-pip-cache-measured). Vectorizing this loop would optimize roughly 0.2% of a job's real time. Correctly deprioritized on real evidence, not guesswork -- only revisit if contestant count grows enough (tens of thousands, not the current ~26-40) to change that math, which Phase 1 standing mode's MAX_CONTESTANTS=40 cap makes unlikely for now."
   },
   {
    "id": "P2-monsoon-csv",
@@ -207,9 +207,9 @@
   {
    "id": "P1-nifty100-momentum-contestant",
    "priority": "P1",
-   "status": "done_merged_to_main",
-   "summary": "Het: 'Add a Nifty 100 momentum contestant, mechanism first.' New UNIVERSE['nifty100'] basket (~95 names, Nifty 50 + high-confidence Next-50 subset) + one new registry key mom_nifty100_lb90 (fn=momentum, sector=nifty100, lookback=90, top_frac=0.10), reusing the existing sig_momentum function. Mechanism (cross-sectional momentum, Jegadeesh & Titman 1993 + NSE-focused replications) stated before any evidence per Law 1. New registry key only, no existing contestant mutated (Law 2). Tested via 40-cycle synthetic regression + report(), no crash. Ticker list built from training knowledge, NOT a live NSE fetch (sandbox egress proxy blocks nseindia.com/wikipedia.org/smallcase.com, confirmed via real WebFetch attempts) -- flagged for Het to spot-check when he has a live source; a bad/delisted ticker degrades gracefully (drops from the panel) rather than crashing the pipeline. MERGED to main (893670b), then corrected after a real GitHub Actions diagnostic found 2 dead tickers (TATAMOTORS.NS, LTIM.NS -- real 404s) and removed them, merged again (2e15b6c). Basket is now a real-verified 93 names.",
-   "commit": "2e15b6c"
+   "status": "done_fully_verified_merged",
+   "summary": "Het: 'Add a Nifty 100 momentum contestant, mechanism first.' New registry key mom_nifty100_lb90 (fn=momentum, sector=nifty100, lookback=90, top_frac=0.10), reusing the existing sig_momentum function unchanged. Mechanism (cross-sectional momentum, Jegadeesh & Titman 1993 + NSE-focused replications) stated before any evidence per Law 1. New registry key only, no existing contestant mutated (Law 2). Tested via 40-cycle synthetic regression + report(), no crash. TICKER LIST FULLY RESOLVED (2026-08-29, 3-stage process): (1) initial ~93-95 names from training knowledge, since this sandbox can't reach nseindia.com; (2) verified against real Yahoo Finance data via a GitHub Actions diagnostic, found+removed 2 dead tickers (TATAMOTORS.NS/LTIM.NS, real 404s) -> 93 names; (3) verified against NSE's own official Nifty 100 constituent CSV (tools/diagnose_nifty100_official_list.py, real GitHub Actions fetch to nsearchives.nseindia.com, confirmed via NSE's own company-name column) and fully synced -> now a BYTE-EXACT 100-symbol match to NSE's real current list. Confirmed TATAMOTORS.NS's real successors are TMCV.NS/TMPV.NS (2025 Tata Motors demerger); confirmed LTIM.NS/LTIMindtree is genuinely absent from the current index, not a rename. MERGED to main across 3 commits: 893670b (initial), 2e15b6c (Yahoo-verified 93), d788988 (NSE-official-verified 100, final). No further ticker verification needed unless NSE reconstitutes the index (semi-annually) -- re-run the diagnostic, don't hand-edit.",
+   "commit": "d788988"
   }
  ],
  "recent_commits": [
