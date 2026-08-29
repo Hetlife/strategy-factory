@@ -207,7 +207,12 @@ Do all of these before stopping:
 7. Commit and push everything.
 
 **Stop early and do all of the above if you drop below ~20-30% of usable
-context.** A clean handoff beats one more half-finished change.
+context.** A clean handoff beats one more half-finished change. See
+`RUNBOOKS.md`'s "RUNNING LOW ON CONTEXT / TOKENS? CHECKPOINT NOW"
+section for the exact minimal script if you need the fast path instead
+of the full 7 steps above — `loop_state.json` pushed with clear
+`resume_instructions` matters far more than a polished log entry, and
+matters more than finishing the current task.
 
 ---
 
