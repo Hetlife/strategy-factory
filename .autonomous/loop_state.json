@@ -3,7 +3,7 @@
  "status": "idle",
  "task": null,
  "started_at": null,
- "last_updated": "2026-08-29T17:07:57.118371Z",
+ "last_updated": "2026-08-29T17:33:47.667900Z",
  "resume_instructions": null,
- "note": "Nifty 100 momentum contestant (mom_nifty100_lb90) added and pushed to branch (83c74d9), 2026-08-29. Idle again."
+ "note": "Nifty 100 momentum contestant built, verified for real via GH Actions diagnostic (2 dead tickers found+removed), and merged to main (893670b, 2e15b6c), 2026-08-29. Idle."
 }

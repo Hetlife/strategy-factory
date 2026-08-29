@@ -44,6 +44,18 @@ re-investigating settled non-issues. Unlike `next_session.md` (a
 snapshot that goes stale), this is a stable procedure. **If you read
 only one file after this one, read that.**
 
+**`PROJECT_STUDY.md`** — **the full narrative history: everything done
+so far, why, and what it means, organized by theme (Phase 0 buildout,
+the autonomous-loop failure and how it was resolved, monitoring bugs
+fixed, dashboard evolution, the pattern for adding a new contestant,
+every declined/bounded request and the reasoning, real bugs found).
+Read this when you need the *why* behind a decision or precedent for a
+request that rhymes with something asked before — not for routine
+task execution, which is what `SESSION_PLAYBOOK.md`/`RUNBOOKS.md` are
+for.** Distinct from `AUTONOMOUS_TODO.md` (shorter, only the most
+load-bearing decisions) and `AUTONOMOUS_LOG.md` (terse, one line per
+action, the primary source this file was built from).
+
 **`AUTONOMOUS_OPERATING_SYSTEM.txt`** is the full session-protocol spec
 (source-of-truth hierarchy, task sizing, code-change protocol, session
 log/state formats, kill-switch discipline) — 800 lines, the exhaustive
