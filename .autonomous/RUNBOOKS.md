@@ -49,6 +49,81 @@ Hard-Rules gates exactly as strict as always.
 
 ---
 
+## RUNNING LOW ON CONTEXT / TOKENS? CHECKPOINT NOW — don't wait
+
+**There is no automatic checkpoint.** Nothing saves your progress for
+you when a session resets or runs out of budget. If you notice you are
+getting low — roughly below 20-30% of what you started with, or your
+own token-remaining indicator is dropping fast — **stop whatever you
+are doing right now and run this**, before finishing the current
+sentence of work, before writing one more log entry, before anything
+else:
+
+```bash
+cd /home/user/strategy-factory && git status --short
+```
+**Look at that output before staging anything.** Then:
+```bash
+python3 - <<'PY'
+import json, datetime
+p = ".autonomous/loop_state.json"
+d = json.load(open(p))
+d["status"] = "in_progress"
+d["task"] = "SHORT DESCRIPTION OF WHAT YOU WERE DOING"
+d["resume_instructions"] = (
+    "EXACTLY what the next session should do first -- specific enough "
+    "that a fresh session with zero memory of this conversation can "
+    "pick it up correctly. Name the exact file, the exact next step, "
+    "and anything already tested/verified so it isn't redone. "
+    "ALSO name any IN-FLIGHT BACKGROUND WORK that hasn't finished or "
+    "hasn't been read yet: a workflow_dispatch you fired and haven't "
+    "checked the result of (name the workflow and run, or its URL), a "
+    "backgrounded Bash command still running, a merge you started but "
+    "didn't push. Say what it is and what to do about it -- check its "
+    "result, wait for it, or it's safe to ignore/re-run. Do NOT leave "
+    "it unmentioned; the next session has no way to know it exists "
+    "otherwise, and re-dispatching a workflow that's already running "
+    "wastes a run for nothing."
+)
+d["last_updated"] = datetime.datetime.utcnow().isoformat() + "Z"
+json.dump(d, open(p, "w"), indent=1)
+PY
+git add .autonomous/loop_state.json
+git commit -m "wip: checkpoint, context running low"
+git push -u origin claude/scheduled-maintenance-template-d7yufr
+```
+**Only stage other files by name if `git status --short` showed real,
+finished, tested work** worth keeping (e.g. a file you already fully
+edited and tested this turn) — `git add <exact filename>`, never a
+blind `git add -A`/`git add .`, which can sweep in stray scratch files
+or a half-broken mid-edit file this project's own discipline says
+should never be committed untested. If what's uncommitted is
+half-written or untested, leave it uncommitted and describe it in
+`resume_instructions` instead — the next session redoing a clean edit
+beats inheriting a broken one.
+
+That is the whole minimum. It takes seconds and it is the single
+highest-priority thing you can do at that point — higher priority than
+finishing the task, higher priority than a polished log entry. **If the
+session ends before that push completes, nothing survives except what
+was already pushed.** A half-written `resume_instructions` that
+actually got pushed is worth infinitely more than a perfect one that
+didn't.
+
+If you still have a little budget left after that:
+1. Add one line to `AUTONOMOUS_LOG.md` saying where you stopped and why.
+2. Only if there's genuinely more room: do Runbook 5's full session-end
+   (NEEDS HET refresh, `next_session.md` update). **Do not spend your
+   last budget on this if step 0 above hasn't been pushed yet.**
+
+**When the next session starts:** Runbook 1 Step 1.1 already checks
+`loop_state.json` first, for exactly this reason. `status: "in_progress"`
+means resume from `resume_instructions` exactly — don't restart from
+scratch, don't re-verify what the note says was already tested, don't
+second-guess it without a real reason to.
+
+---
+
 # RUNBOOK 1 — Hourly check-in (the most common job)
 
 ### Step 1.1 — Check for interrupted work
@@ -293,10 +368,22 @@ needs his decision.
 finished, or has accurate `resume_instructions` if you stopped partway.
 
 ```bash
-# 5. Push everything
-git add -A && git commit -m "docs: session log update"
+# 5. Check what actually changed, then push it
+git status --short
+```
+Look at the output. If it's only the doc/state files this runbook just
+told you to touch (`AUTONOMOUS_LOG.md`, `het_directives.md`,
+`loop_state.json`, maybe `state.json`/`next_session.md`), stage those
+by name:
+```bash
+git add AUTONOMOUS_LOG.md .autonomous/het_directives.md .autonomous/loop_state.json
+git commit -m "docs: session log update"
 git push -u origin claude/scheduled-maintenance-template-d7yufr
 ```
+If `git status --short` shows anything else, that's worth a second
+look before staging it — either genuine finished work from this
+session (fine to add by name) or something unexpected (STOP, don't
+blindly commit it — see Runbook 6).
 
 ---
 
