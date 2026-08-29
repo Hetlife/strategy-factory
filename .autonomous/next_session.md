@@ -129,6 +129,11 @@ adding contestants actively makes the false-positive problem worse
 
 - **Phase 1, day 40 of 126.** 26 live contestants, all rung 0 (paper),
   **Rs 0 real money**, zero promotions ever.
+- **Crossover breeding is NOT 126-day-gated** (found 2026-08-29, see
+  `docs/research/Q6_breeding_overfitting.md`). It needs only
+  `equity > 1.0` AND `trades >= 10`, and could fire within weeks.
+  `mom_cement_lb60` (13 trades) needs only to turn profitable. This
+  contradicts what the docs said in three places, now corrected.
 - `seed_registry()` defines **27**, `ledger.json` has **26** — the gap
   is `mom_nifty100_lb90`, backfilled by the next `update()` run. Both
   numbers are correct; this is the registry-drift warning, not a bug.
