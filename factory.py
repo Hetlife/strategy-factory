@@ -41,56 +41,60 @@ UNIVERSE = {
     "pipes_tiles": ["ASTRAL.NS", "SUPREMEIND.NS", "KAJARIACER.NS", "CERA.NS"],
     "steel": ["TATASTEEL.NS", "JSWSTEEL.NS", "JINDALSTEL.NS", "SAIL.NS"],
     # 2026-08-29 (Het: "add a Nifty 100 momentum contestant, mechanism
-    # first"). A broad, liquid large/prominent-mid-cap basket -- Nifty 50
-    # (high confidence, very stable membership) plus a high-confidence
-    # subset (~45) of Nifty Next 50. NOT fetched from a live authoritative
-    # source: this sandbox's egress proxy blocks nseindia.com,
-    # en.wikipedia.org and smallcase.com (confirmed via real attempted
-    # fetches, same restriction class as the documented Yahoo Finance
-    # block) -- built from training knowledge instead, and a handful of
-    # Next-50 names were deliberately dropped rather than guessed (recent
-    # renames/uncertain current membership, e.g. Zomato/Eternal, Suzlon,
-    # Yes Bank). ~93 names, not literally the current official 100 --
-    # good enough for the momentum mechanism below (needs a broad, liquid,
-    # diversified cross-section, not an exact index replica).
-    # VERIFIED FOR REAL 2026-08-29 via tools/diagnose_nifty100_tickers.py
-    # on a GitHub Actions runner (real Yahoo Finance access, unlike this
-    # sandbox): 93/95 originally-listed tickers resolve with real data.
-    # TWO REMOVED after that real check -- TATAMOTORS.NS and LTIM.NS both
-    # returned "HTTP 404: Quote not found" (not a sandbox artifact, an
-    # actual failed fetch). Both are real, actively-traded large caps, so
-    # this reads as a ticker-symbol change (e.g. Tata Motors' 2025
-    # commercial/passenger-vehicle demerger) rather than genuine
-    # delisting -- but the correct current replacement symbol wasn't
-    # guessed at; if Het knows it, it can be re-added once independently
-    # verified the same way. Any future ticker that fails to resolve
-    # would just drop out of the panel (fetch_prices doesn't crash on a
-    # bad symbol) rather than break the pipeline, but this is the actual
-    # confirmed state, not an assumption to still spot-check.
+    # first"). Originally built from training knowledge (~93 names) since
+    # this sandbox's egress proxy blocks nseindia.com/wikipedia.org/
+    # smallcase.com -- then VERIFIED AND CORRECTED FOR REAL the same day
+    # via tools/diagnose_nifty100_official_list.py on a GitHub Actions
+    # runner, which fetched NSE's own official published Nifty 100
+    # constituent CSV directly (nsearchives.nseindia.com, NSE's own
+    # domain, not a third-party mirror or a Yahoo Finance inference).
+    # This is now a BYTE-EXACT match to that real fetch (100 symbols),
+    # not an approximation: the diagnostic's diff (20 real constituents
+    # missing from the training-knowledge guess, 13 the guess had that
+    # have since dropped out of the index) was applied in full, with
+    # each addition confirmed against NSE's own company-name column --
+    # not just resolved-or-not on Yahoo Finance. Two corrections worth
+    # recording explicitly because they overturned an earlier guess:
+    # TATAMOTORS.NS (real 404 on Yahoo, flagged earlier as an assumed
+    # demerger) is CONFIRMED replaced by two real, currently-listed
+    # entities from Tata Motors' 2025 split -- TMCV.NS ("Tata Motors
+    # Ltd.") and TMPV.NS ("Tata Motors Passenger Vehicles Ltd."), both
+    # added. LTIM.NS/LTIMindtree is CONFIRMED genuinely absent from the
+    # current Nifty 100 (not a ticker rename -- likely dropped out by
+    # market-cap ranking) -- LTM.NS turned up in the official list but
+    # its NSE company name is "LTM Ltd.", an unrelated company, so it
+    # was NOT used as a substitute; it's included here only because it's
+    # a real, separate, current Nifty 100 constituent in its own right.
+    # Since this is a byte-exact, dated snapshot of a market-cap-ranked
+    # index, it WILL drift again as NSE reconstitutes the index
+    # (typically semi-annually) -- re-run the same diagnostic to refresh
+    # it rather than hand-editing entries, and don't assume this list is
+    # still exactly current more than a few months after 2026-08-29.
     "nifty100": [
-        "RELIANCE.NS", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS", "TCS.NS",
-        "ITC.NS", "LT.NS", "KOTAKBANK.NS", "AXISBANK.NS", "SBIN.NS",
-        "BHARTIARTL.NS", "BAJFINANCE.NS", "HINDUNILVR.NS", "ASIANPAINT.NS",
-        "MARUTI.NS", "SUNPHARMA.NS", "TITAN.NS", "ULTRACEMCO.NS",
-        "WIPRO.NS", "NESTLEIND.NS", "HCLTECH.NS", "BAJAJFINSV.NS",
-        "POWERGRID.NS", "NTPC.NS", "TATASTEEL.NS",
-        "JSWSTEEL.NS", "M&M.NS", "INDUSINDBK.NS", "GRASIM.NS",
-        "ADANIENT.NS", "ADANIPORTS.NS", "COALINDIA.NS", "DRREDDY.NS",
-        "CIPLA.NS", "EICHERMOT.NS", "BRITANNIA.NS", "HEROMOTOCO.NS",
-        "HINDALCO.NS", "SHRIRAMFIN.NS", "TECHM.NS", "UPL.NS",
-        "DIVISLAB.NS", "APOLLOHOSP.NS", "BPCL.NS", "ONGC.NS",
-        "SBILIFE.NS", "HDFCLIFE.NS", "BAJAJ-AUTO.NS",
-        "TATACONSUM.NS",
-        "ADANIGREEN.NS", "ADANIPOWER.NS", "ADANIENSOL.NS", "AMBUJACEM.NS",
-        "DMART.NS", "BANKBARODA.NS", "BEL.NS", "BOSCHLTD.NS", "CANBK.NS",
-        "CHOLAFIN.NS", "DLF.NS", "GODREJCP.NS", "HAVELLS.NS", "HAL.NS",
-        "HINDZINC.NS", "ICICIGI.NS", "ICICIPRULI.NS", "IOC.NS",
-        "INDUSTOWER.NS", "INDIGO.NS", "JINDALSTEL.NS", "JIOFIN.NS",
-        "LICI.NS", "MARICO.NS", "MOTHERSON.NS", "MUTHOOTFIN.NS",
-        "NAUKRI.NS", "PIDILITIND.NS", "PFC.NS", "PNB.NS", "RECLTD.NS",
-        "SBICARD.NS", "SIEMENS.NS", "TATAPOWER.NS", "TORNTPHARM.NS",
-        "TVSMOTOR.NS", "VEDL.NS", "TRENT.NS", "VBL.NS", "ZYDUSLIFE.NS",
-        "GAIL.NS", "IRFC.NS", "POLYCAB.NS", "UBL.NS",
+        "ABB.NS", "ADANIENSOL.NS", "ADANIENT.NS", "ADANIGREEN.NS",
+        "ADANIPORTS.NS", "ADANIPOWER.NS", "AMBUJACEM.NS", "APOLLOHOSP.NS",
+        "ASIANPAINT.NS", "AXISBANK.NS", "BAJAJ-AUTO.NS", "BAJAJFINSV.NS",
+        "BAJAJHLDNG.NS", "BAJFINANCE.NS", "BANKBARODA.NS", "BEL.NS",
+        "BHARTIARTL.NS", "BOSCHLTD.NS", "BPCL.NS", "BRITANNIA.NS",
+        "CANBK.NS", "CGPOWER.NS", "CHOLAFIN.NS", "CIPLA.NS",
+        "COALINDIA.NS", "CUMMINSIND.NS", "DIVISLAB.NS", "DLF.NS",
+        "DMART.NS", "DRREDDY.NS", "EICHERMOT.NS", "ENRIN.NS",
+        "ETERNAL.NS", "GAIL.NS", "GODREJCP.NS", "GRASIM.NS", "HAL.NS",
+        "HCLTECH.NS", "HDFCAMC.NS", "HDFCBANK.NS", "HDFCLIFE.NS",
+        "HINDALCO.NS", "HINDUNILVR.NS", "HINDZINC.NS", "HYUNDAI.NS",
+        "ICICIBANK.NS", "INDHOTEL.NS", "INDIGO.NS", "INFY.NS", "IOC.NS",
+        "IRFC.NS", "ITC.NS", "JINDALSTEL.NS", "JIOFIN.NS", "JSWSTEEL.NS",
+        "KOTAKBANK.NS", "LODHA.NS", "LT.NS", "LTM.NS", "M&M.NS",
+        "MARUTI.NS", "MAXHEALTH.NS", "MAZDOCK.NS", "MOTHERSON.NS",
+        "MUTHOOTFIN.NS", "NESTLEIND.NS", "NTPC.NS", "ONGC.NS", "PFC.NS",
+        "PIDILITIND.NS", "PNB.NS", "POWERGRID.NS", "RECLTD.NS",
+        "RELIANCE.NS", "SBILIFE.NS", "SBIN.NS", "SHREECEM.NS",
+        "SHRIRAMFIN.NS", "SIEMENS.NS", "SOLARINDS.NS", "SUNPHARMA.NS",
+        "TATACAP.NS", "TATACONSUM.NS", "TATAPOWER.NS", "TATASTEEL.NS",
+        "TCS.NS", "TECHM.NS", "TITAN.NS", "TMCV.NS", "TMPV.NS",
+        "TORNTPHARM.NS", "TRENT.NS", "TVSMOTOR.NS", "ULTRACEMCO.NS",
+        "UNIONBANK.NS", "UNITDSPR.NS", "VBL.NS", "VEDL.NS", "WIPRO.NS",
+        "ZYDUSLIFE.NS",
     ],
 }
 # Macro cost proxies (not tradeable sectors -- fetched alongside the
@@ -321,17 +325,17 @@ def seed_registry():
     # applied to changes. That's the actual point of adding it: the
     # existing mom_* contestants only rank within tiny 4-7 stock sector
     # baskets, a much smaller and more idiosyncratic cross-section than
-    # anything the momentum literature actually studies. A ~93-name
+    # anything the momentum literature actually studies. A byte-exact 100-name
     # broad-market basket (UNIVERSE["nifty100"]) gives the same mechanism
     # a cross-section closer to how it's actually documented, diversified
     # across sectors instead of sector-concentrated.
     # PARAMETERS: lookback=90 reuses the longest window already validated
     # in the mom_* family (no new untested horizon), inside the existing
     # PARAM_BOUNDS lookback range (20-120) so future breeding stays
-    # consistent. top_frac=0.10 (top decile, ~9 of 93 names) instead of
+    # consistent. top_frac=0.10 (top decile, ~10 of 100 names) instead of
     # the sector families' 0.34 -- top-third makes sense picking 2 winners
     # from a 4-7 stock basket, but is not a decile and would barely
-    # concentrate anything across 93 names; top_frac isn't part of
+    # concentrate anything across 100 names; top_frac isn't part of
     # PARAM_BOUNDS/breeding for this family (spawn_children only varies
     # lookback), so this is a one-time structural choice, not a
     # per-generation grid search.
