@@ -71,9 +71,16 @@ warning, because your local checkout tracks the working branch but
 Interpreting the result:
 - `no findings` → healthy, continue.
 - A **registry-drift warning naming newly-added `seed_registry()`
-  entries** → EXPECTED and self-healing. It clears on the next daily
-  `factory.yml` run via `load_state()`'s backfill. Not a bug. Do not
-  "fix" it.
+  entries** → usually expected and self-healing (it clears on the next
+  daily `factory.yml` run via `load_state()`'s backfill), but **confirm
+  that rather than assuming it.** The warning prints the ledger's last
+  update date; compare it against when those keys reached `main`
+  (`git log -1 --format=%cs --all -S"<key>" -- factory.py`). Ledger
+  date older → benign, ignore. Ledger date **newer** → an `update()`
+  already ran and did NOT pick the key up, meaning the backfill is
+  broken; that is a real bug, investigate it. See RUNBOOKS.md Step
+  1.3a. This distinction matters because the benign and broken cases
+  print an otherwise identical warning.
 - Anything **error**-level, or a warning you don't recognise → real.
   Investigate before doing other work.
 

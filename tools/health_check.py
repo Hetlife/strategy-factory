@@ -58,6 +58,29 @@ def fetch_live_json(repo_relative_path, timeout=15):
             f"knowing they may be stale.") from e
 
 
+def _ledger_last_update_date(ledger_data):
+    """Newest date recorded in any contestant's history -- i.e. the last day
+    an update() run actually executed and committed. ledger.json has no
+    top-level timestamp, so contestant history is the honest source for
+    this. Returns None if nothing dated is present (a brand-new ledger, or
+    a malformed one) -- callers must handle that rather than assume a date.
+    Deliberately tolerant of odd/short history rows: a monitoring helper
+    must never be the thing that raises."""
+    dates = []
+    for c in (ledger_data.get("contestants") or {}).values():
+        if not isinstance(c, dict):
+            continue
+        hist = c.get("history") or []
+        if not hist:
+            continue
+        row = hist[-1]
+        if isinstance(row, (list, tuple)) and row:
+            dates.append(str(row[0]))
+        elif isinstance(row, dict) and row.get("date"):
+            dates.append(str(row["date"]))
+    return max(dates) if dates else None
+
+
 def check_registry_drift(ledger_path=None, ledger_data=None):
     """Catches the exact bug class found 2026-08-25: a seed_registry() key
     that exists in code but never made it into an already-existing ledger,
@@ -80,11 +103,27 @@ def check_registry_drift(ledger_path=None, ledger_data=None):
     live_keys = set(ledger.get("registry", {}).keys())
     missing = seed_keys - live_keys
     if missing:
+        last = _ledger_last_update_date(ledger_data)
+        if last:
+            detail = (
+                f"The ledger's last update() was {last}. BENIGN if that date "
+                f"is BEFORE these keys reached main -- load_state() backfills "
+                f"them on the next update() run, so it clears itself. A REAL "
+                f"BUG if an update() has run since they reached main and they "
+                f"are STILL missing, because that means the backfill silently "
+                f"failed. To tell which: compare {last} against the date those "
+                f"keys were merged to main. Do not reflexively dismiss this "
+                f"without doing that check.")
+        else:
+            detail = (
+                "The ledger has no dated contestant history, so this check "
+                "cannot tell whether an update() has run since these keys "
+                "reached main. That is itself unusual for a ledger that has "
+                "been trading -- treat an undated ledger as worth a human "
+                "look rather than assuming the drift is benign.")
         findings.append(("warning",
             f"seed_registry() defines {sorted(missing)} but the ledger's "
-            f"registry doesn't have them -- will self-heal on next update() "
-            f"via load_state()'s backfill, but flagging in case that fix "
-            f"regresses or a different pipeline stage bypasses it."))
+            f"registry doesn't have them. {detail}"))
     orphans = live_keys - seed_keys
     # orphans are EXPECTED (bred/evolved children aren't in seed_registry) --
     # only flag if something looks like a seed-style name with no lineage,
