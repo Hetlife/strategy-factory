@@ -40,6 +40,48 @@ UNIVERSE = {
     "infra": ["LT.NS", "IRB.NS", "KNRCON.NS", "PNCINFRA.NS", "HGINFRA.NS"],
     "pipes_tiles": ["ASTRAL.NS", "SUPREMEIND.NS", "KAJARIACER.NS", "CERA.NS"],
     "steel": ["TATASTEEL.NS", "JSWSTEEL.NS", "JINDALSTEL.NS", "SAIL.NS"],
+    # 2026-08-29 (Het: "add a Nifty 100 momentum contestant, mechanism
+    # first"). A broad, liquid large/prominent-mid-cap basket -- Nifty 50
+    # (all 50, high confidence, very stable membership) plus a
+    # high-confidence subset (~45) of Nifty Next 50. NOT fetched from a
+    # live authoritative source: this sandbox's egress proxy blocks
+    # nseindia.com, en.wikipedia.org and smallcase.com (confirmed via real
+    # attempted fetches, same restriction class as the documented Yahoo
+    # Finance block) -- built from training knowledge instead, and a
+    # handful of Next-50 names were deliberately dropped rather than
+    # guessed (recent renames/uncertain current membership, e.g.
+    # Zomato/Eternal, Suzlon, Yes Bank). ~95 names, not literally the
+    # current official 100 -- good enough for the momentum mechanism
+    # below (needs a broad, liquid, diversified cross-section, not an
+    # exact index replica), but should be spot-checked against a live
+    # NSE/index source when one is reachable, and any ticker that fails
+    # to resolve via yfinance just drops out of the panel (fetch_prices
+    # doesn't crash on a bad symbol) rather than breaking the pipeline.
+    "nifty100": [
+        "RELIANCE.NS", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS", "TCS.NS",
+        "ITC.NS", "LT.NS", "KOTAKBANK.NS", "AXISBANK.NS", "SBIN.NS",
+        "BHARTIARTL.NS", "BAJFINANCE.NS", "HINDUNILVR.NS", "ASIANPAINT.NS",
+        "MARUTI.NS", "SUNPHARMA.NS", "TITAN.NS", "ULTRACEMCO.NS",
+        "WIPRO.NS", "NESTLEIND.NS", "HCLTECH.NS", "BAJAJFINSV.NS",
+        "POWERGRID.NS", "NTPC.NS", "TATAMOTORS.NS", "TATASTEEL.NS",
+        "JSWSTEEL.NS", "M&M.NS", "INDUSINDBK.NS", "GRASIM.NS",
+        "ADANIENT.NS", "ADANIPORTS.NS", "COALINDIA.NS", "DRREDDY.NS",
+        "CIPLA.NS", "EICHERMOT.NS", "BRITANNIA.NS", "HEROMOTOCO.NS",
+        "HINDALCO.NS", "SHRIRAMFIN.NS", "TECHM.NS", "UPL.NS",
+        "DIVISLAB.NS", "APOLLOHOSP.NS", "BPCL.NS", "ONGC.NS",
+        "SBILIFE.NS", "HDFCLIFE.NS", "BAJAJ-AUTO.NS", "LTIM.NS",
+        "TATACONSUM.NS",
+        "ADANIGREEN.NS", "ADANIPOWER.NS", "ADANIENSOL.NS", "AMBUJACEM.NS",
+        "DMART.NS", "BANKBARODA.NS", "BEL.NS", "BOSCHLTD.NS", "CANBK.NS",
+        "CHOLAFIN.NS", "DLF.NS", "GODREJCP.NS", "HAVELLS.NS", "HAL.NS",
+        "HINDZINC.NS", "ICICIGI.NS", "ICICIPRULI.NS", "IOC.NS",
+        "INDUSTOWER.NS", "INDIGO.NS", "JINDALSTEL.NS", "JIOFIN.NS",
+        "LICI.NS", "MARICO.NS", "MOTHERSON.NS", "MUTHOOTFIN.NS",
+        "NAUKRI.NS", "PIDILITIND.NS", "PFC.NS", "PNB.NS", "RECLTD.NS",
+        "SBICARD.NS", "SIEMENS.NS", "TATAPOWER.NS", "TORNTPHARM.NS",
+        "TVSMOTOR.NS", "VEDL.NS", "TRENT.NS", "VBL.NS", "ZYDUSLIFE.NS",
+        "GAIL.NS", "IRFC.NS", "POLYCAB.NS", "UBL.NS",
+    ],
 }
 # Macro cost proxies (not tradeable sectors -- fetched alongside the
 # equity panel purely so sig_input_cost can read them as `proxy`).
@@ -255,6 +297,36 @@ def seed_registry():
         for lb in (40, 60, 90):
             reg[f"mom_{sector}_lb{lb}"] = dict(
                 fn="momentum", sector=sector, lookback=lb, top_frac=0.34)
+    # 2026-08-29 (Het: "add a Nifty 100 momentum contestant, mechanism
+    # first"). MECHANISM (stated before this contestant sees a single day
+    # of evidence, per Law 1): cross-sectional momentum -- stocks that have
+    # outperformed their peers over a trailing window tend to keep
+    # outperforming over the subsequent one. This is one of the most
+    # widely replicated anomalies in equity markets (Jegadeesh & Titman
+    # 1993 for the US; multiple NSE-focused academic studies find the same
+    # effect in Indian equities), generally attributed to slow/underreacted
+    # diffusion of information rather than an efficient repricing. Reuses
+    # the SAME sig_momentum function already live in mom_* above --
+    # nothing new is being tested mechanically, only the universe it's
+    # applied to changes. That's the actual point of adding it: the
+    # existing mom_* contestants only rank within tiny 4-7 stock sector
+    # baskets, a much smaller and more idiosyncratic cross-section than
+    # anything the momentum literature actually studies. A ~95-name
+    # broad-market basket (UNIVERSE["nifty100"]) gives the same mechanism
+    # a cross-section closer to how it's actually documented, diversified
+    # across sectors instead of sector-concentrated.
+    # PARAMETERS: lookback=90 reuses the longest window already validated
+    # in the mom_* family (no new untested horizon), inside the existing
+    # PARAM_BOUNDS lookback range (20-120) so future breeding stays
+    # consistent. top_frac=0.10 (top decile, ~9 of 95 names) instead of
+    # the sector families' 0.34 -- top-third makes sense picking 2 winners
+    # from a 4-7 stock basket, but is not a decile and would barely
+    # concentrate anything across 93 names; top_frac isn't part of
+    # PARAM_BOUNDS/breeding for this family (spawn_children only varies
+    # lookback), so this is a one-time structural choice, not a
+    # per-generation grid search.
+    reg["mom_nifty100_lb90"] = dict(
+        fn="momentum", sector="nifty100", lookback=90, top_frac=0.10)
     reg["input_cost_lag"] = dict(fn="input_cost", sector="cement",
                                  proxy="TATASTEEL.NS", lb=20, drop=-0.05)
     # 2026-08-26 (Het): crude oil as an energy-cost proxy. Reuses the same
