@@ -93,9 +93,18 @@ number will be stale). All docs/tooling/analysis — no trading logic,
 no `RULES`/`LADDER`/`COST_PER_SIDE`. Includes the Q5 analysis, the
 Progress Artifact tooling, `MASTER_PLAN.md`, `MASTER_PROMPT.md`.
 
-Ask Het fresh before merging. A prior session's "yes" never carries
-forward, no matter how small the batch or how broad a permission grant
-sounded.
+**Het was asked on 2026-08-29 and said NO — leave them on the branch.**
+That is a deliberate, recorded choice, not an oversight. Nothing breaks:
+the daily runs, the automation and the hourly Routine are unaffected,
+and future sessions read this branch anyway. **Do not re-ask on your
+first check-in** — it would just be nagging. Only raise it again if
+something actually changes (he asks, or a merge becomes genuinely
+necessary for a specific task, e.g. dispatching a brand-new workflow,
+which requires the file to exist on `main` first).
+
+When it does come up again: ask fresh. A prior session's "yes" never
+carries forward, no matter how small the batch or how broad a
+permission grant sounded.
 
 ---
 
