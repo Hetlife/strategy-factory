@@ -36,6 +36,14 @@ is the answer. Its guiding rule: *when in doubt, do nothing and write it
 down* — a missed improvement costs nothing, a wrong action on financial
 code costs real evidence.
 
+**`.autonomous/MASTER_PROMPT.md`** — **standing behavior: a bare,
+short message from Het in an interactive session on this project ("hi",
+"continue", "check", "status," or anything similarly generic) means run
+this file's prompt** (follow `RUNBOOKS.md` starting at RUNBOOK 1), not
+"ask him what he meant." This holds for every future session, not just
+whichever one is reading this right now — don't require him to re-paste
+the full prompt each time.
+
 **`.autonomous/SESSION_PLAYBOOK.md`** — **the step-by-step procedure for
 running a session, start to finish.** Numbered steps, exact commands,
 the decision rules for what to work on, the testing standard, and a
