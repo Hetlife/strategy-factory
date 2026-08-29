@@ -383,10 +383,23 @@ almost always: let time pass, run the schedule, don't add machinery.
 - LADDER: `[0, 25_000, 50_000, 100_000, 200_000]` (raised from
   `[0, 10_000, 25_000, 50_000, 100_000]` 2026-08-25, Het's fresh
   sign-off, fixes a real rung-1 cost-friction problem).
-- ~27 contestants in the registry (well under `MAX_CONTESTANTS=40`),
-  spanning event_drift, momentum (including the new broad-market
-  `mom_nifty100_lb90`), input_cost, monsoon (dormant), and the
-  permanent Nifty benchmark.
+- **27 defined in `seed_registry()`, 26 actually live in `ledger.json`
+  — and that gap is normal, not a bug.** Spanning event_drift,
+  momentum (including the new broad-market `mom_nifty100_lb90`),
+  input_cost, monsoon (dormant), and the permanent Nifty benchmark;
+  well under `MAX_CONTESTANTS=40`. **Learn this distinction — it
+  causes real confusion:** merging a new key into `seed_registry()`
+  does NOT put it in the ledger. `load_state()` backfills it only when
+  `factory.py update()` next runs, so between a merge and the next
+  scheduled run, `seed_registry()` and the ledger legitimately
+  disagree by exactly the new keys. That gap is what `health_check.py`
+  reports as its self-healing registry-drift warning, and it's also
+  why a brand-new contestant does not appear on the dashboard (which
+  reads the ledger, not the code) until the next run. On 2026-08-29
+  this was verified end to end by actually rendering the dashboard
+  headlessly — the new contestant was correctly absent, and the daily
+  run's schedule (`factory.yml`: Mon-Fri 12:45 UTC, Sun 04:30 UTC) is
+  what determines when it shows up.
 - The old unattended dev-loop Routine is permanently retired.
   Standing operation: an hourly check-in Routine (platform's tightest
   allowed interval) + a free 15-min GitHub Actions supervisor.
