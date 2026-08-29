@@ -44,6 +44,14 @@ research questions. Does NOT replace `EXECUTION_PLAN.md` (settled
 facts, gates, kill conditions, guardrails — that still wins); this
 is the sequence, that is the rules.
 
+**`.autonomous/HET_AUTONOMY_DIRECTIVE.md`** — Het's standing autonomy
+directive (stored at his request 2026-08-29), distilled to its operating
+principles: optimize for outcomes, act autonomously on reversible work,
+tool-first, don't stop while meaningful unblocked work remains. Read it
+before starting a session. It explicitly does NOT loosen any hard rule —
+its own Tier 3 preserves them, and a session citing it as authorization
+to merge, change RULES, or add leverage is misreading it.
+
 **`.autonomous/MASTER_PROMPT.md`** — **standing behavior: a bare,
 short message from Het in an interactive session on this project ("hi",
 "continue", "check", "status," or anything similarly generic) means run

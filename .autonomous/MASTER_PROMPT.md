@@ -22,6 +22,15 @@ one-time instruction; carry it forward into every future session on this
 project regardless of how much of this specific conversation a given
 session can see. See `CLAUDE.md`'s pointer to this file.
 
+**Het's standing autonomy directive** is stored in
+`.autonomous/HET_AUTONOMY_DIRECTIVE.md` (his request, 2026-08-29:
+"store this prompt in your master prompt and use it every time before
+you start a new session"). Read it alongside this file. It shapes
+*how* to work — outcomes over responses, tool-first, act on reversible
+work without asking, don't stop while meaningful work remains. It
+explicitly does **not** loosen any guardrail; its own Tier 3 preserves
+them.
+
 **How to use it:**
 - In the Claude Code app/CLI: start a new conversation and paste the
   block below as your first message — or just say "hi" / "continue" /
@@ -54,6 +63,10 @@ START HERE:
 2. Read `.autonomous/RUNBOOKS.md` in full -- including the "RUNNING
    LOW ON CONTEXT" and "A permission grant does NOT mean..." sections
    near the top. Both apply regardless of how this session was started.
+2b. Read `.autonomous/HET_AUTONOMY_DIRECTIVE.md` -- Het's standing
+   operating principles (outcomes over responses, tool-first, act
+   on reversible work without asking, don't stop while meaningful
+   work remains). It changes NO guardrail.
 3. Execute **RUNBOOK 1 — Hourly check-in**, top to bottom. Step 1.1
    checks `.autonomous/loop_state.json` for interrupted work from a
    PREVIOUS session first -- if `"in_progress"`, resume from
