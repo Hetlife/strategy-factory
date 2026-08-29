@@ -1,9 +1,9 @@
 {
-  "_doc": "Crash/resume file for the 15-min paid check-in loop (Het, 2026-08-26: 'use it every 15 mins... make sure if you are not left tokens you have a crash file to store what you did before the limit so you can start working again as session resets'). Every firing reads this FIRST. status='idle' means the previous firing finished cleanly or found nothing to do -- start fresh. status='in_progress' means a previous firing got cut off mid-task -- resume from resume_instructions EXACTLY, don't restart from scratch and don't second-guess what's already been committed. Update and push this file at the START of any multi-step task (before doing the risky part) and again when finishing or safely stopping -- see next_session.md and the Routine's own prompt for the full protocol.",
-  "status": "idle",
-  "task": null,
-  "started_at": null,
-  "last_updated": "2026-08-26T19:20:00Z",
-  "resume_instructions": null,
-  "note": "Initialized 2026-08-26 alongside the 15-min cadence change. No task in progress."
+ "_doc": "Crash/resume file for the 15-min paid check-in loop (Het, 2026-08-26: 'use it every 15 mins... make sure if you are not left tokens you have a crash file to store what you did before the limit so you can start working again as session resets'). Every firing reads this FIRST. status='idle' means the previous firing finished cleanly or found nothing to do -- start fresh. status='in_progress' means a previous firing got cut off mid-task -- resume from resume_instructions EXACTLY, don't restart from scratch and don't second-guess what's already been committed. Update and push this file at the START of any multi-step task (before doing the risky part) and again when finishing or safely stopping -- see next_session.md and the Routine's own prompt for the full protocol.",
+ "status": "in_progress",
+ "task": "Add Nifty 100 momentum contestant (Het request, mechanism-first, new registry key via existing momentum sig fn + new nifty100 universe basket)",
+ "started_at": null,
+ "last_updated": "2026-08-29T17:06:19.718639Z",
+ "resume_instructions": "New registry entry not yet added to factory.py. If interrupted: add UNIVERSE['nifty100'] (broad NSE basket) and one seed_registry() entry using fn='momentum', sector='nifty100', lookback=90, top_frac=0.10, with mechanism comment. Test via 40-cycle synthetic regression + report() before committing. Never mutate existing registry entries -- new key only.",
+ "note": "Initialized 2026-08-26 alongside the 15-min cadence change. No task in progress."
 }
