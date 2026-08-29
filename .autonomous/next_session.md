@@ -27,6 +27,9 @@
     the way they are, every declined/bounded request with its
     reasoning, real bugs found. Read for *precedent or understanding*,
     not for routine task execution.
+12. **`.autonomous/MASTER_PROMPT.md`** — the single ready-to-paste
+    prompt for starting any session (same rules as the hourly Routine).
+    A bare "hi"/"continue"/anything short from Het means run it.
 
 ## CURRENT STATE (as of 2026-08-29, branch commit `66ae914`)
 
@@ -66,12 +69,42 @@ backfilled `mom_nifty100_lb90` and produced the first weekly report
 since the contestant merged — **verify that actually happened**
 (RUNBOOK 1 Steps 1.3a/1.5/1.6), don't assume it did.
 
-**Branch is 4 commits ahead of main**, all docs/tooling, no trading
-logic, no `RULES`/`LADDER`/`COST_PER_SIDE`:
-`c498385` (merge-record log), `b117c8e` (Progress Artifact + its
-data-generator script), `6e5ecb4` (log), `66ae914` (this session's own
-low-context checkpoint). **Ask Het fresh before merging** — a prior
-session's "yes" never carries forward, no matter how small the batch.
+**Branch is 11 commits ahead of main** as of `git log`, all
+docs/tooling, no trading logic, no `RULES`/`LADDER`/`COST_PER_SIDE`
+(Progress Artifact script, session checkpoint/wrap-up docs,
+`MASTER_PROMPT.md` + its token-trimmed prompt, backlog sweep). **Ask
+Het fresh before merging** — a prior session's "yes" never carries
+forward, no matter how small the batch. Run `git log --oneline
+origin/main..HEAD` to get the exact current list rather than trusting
+this number, which will already be stale by the time you read it.
+
+**`.autonomous/MASTER_PROMPT.md` now exists — read it.** It's the
+single ready-to-paste prompt (same rules as the hourly Routine, kept in
+sync in substance) for starting any session. **Standing behavior, also
+in `CLAUDE.md`: a bare "hi"/"continue"/"check"/anything short from Het
+in an interactive session means run that prompt — RUNBOOK 1 — not ask
+him to paste it.** This holds for you too, not just whichever session
+first implemented it.
+
+**Model routing (Het's request, 2026-08-29, only partly executable by
+a session):** the hourly Routine's model is now explicitly set to
+`claude-sonnet-5` (done, via `update_trigger`) for standing
+runbook/check-in work. Het separately asked for the *next* session to
+use "the max model and fable" for one deep review/efficiency pass
+before returning to Sonnet for ongoing work — this could not be
+executed from inside a session (model choice for a fresh interactive
+session is his to set via `/model` when he starts it, not something a
+running session can force). If you're that next session and were
+started on a stronger model, that's likely what this refers to — do
+the deep review thoroughly; if not, this is just informational, not
+something to act on yourself.
+
+**A generic "MASTER AUTONOMOUS EXECUTION PROMPT" template was pasted
+twice this session and explicitly declined by Het** (via
+AskUserQuestion) — framed around proving real revenue/profit as the
+primary goal, missing this project's Hard Rules, would have introduced
+a duplicate tracking system. Settled, logged in `het_directives.md` —
+don't re-litigate if it resurfaces.
 
 **A new, third visual surface now exists: the Progress Artifact**
 (`https://claude.ai/code/artifact/e16ae3c5-4ec1-4ef3-8334-d2cf28e82989`)
