@@ -3,7 +3,7 @@
  "status": "idle",
  "task": null,
  "started_at": null,
- "last_updated": "2026-08-29T20:17:59.166412Z",
+ "last_updated": "2026-08-29T23:15:50.265912Z",
  "resume_instructions": null,
- "note": "Session ended cleanly at context limit, 2026-08-29. Full RUNBOOK 5 session-end completed: next_session.md rewritten, NEEDS HET refreshed, Progress Artifact refreshed and republished. 4 commits pending merge (Progress Artifact + logs). NSE ticker question fully resolved this session -- UNIVERSE[nifty100] is now a byte-exact 100-symbol match to NSE's official list."
+ "note": "Session ended cleanly 2026-08-29 with full RUNBOOK 5 wrap-up. Biggest outcome: Q5 answered -- the promotion gate cannot separate skill from luck at 126 days (~85% false-positive rate). MASTER_PLAN.md written; fixing that bar is STEP 1 and blocks everything else. Needs Het's decision (touches RULES). next_session.md has the step-by-step. 14+ commits unmerged, all docs/tooling/analysis."
 }
