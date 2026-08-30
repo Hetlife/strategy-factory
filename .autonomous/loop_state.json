@@ -3,7 +3,7 @@
  "status": "idle",
  "task": null,
  "started_at": null,
- "last_updated": "2026-08-29T23:31:41.919380Z",
+ "last_updated": "2026-08-30T07:40:00Z",
  "resume_instructions": null,
- "note": "Session ended cleanly 2026-08-29 ~23:30 UTC. Q5 AND Q6 both answered this session -- two real findings about the measuring instrument, both needing Het's decision, both flagged in NEEDS HET. Het said he's going to sleep; the hourly Routine is the thing that runs overnight, not a session. Nothing in progress."
+ "note": "Check-in 2026-08-30 ~07:40 UTC. Container restart earlier this session lost two background-wait tasks (pip-cache timing verification) -- confirmed nothing was actually lost, that work was already merged+logged before the restart, re-verified with a fresh measurement (5s install step, better than the logged 8s). RUNBOOK 1 run clean: 18 commits still on branch (Het said leave them), no promotions, day 40/126. One real observation: the Sunday 04:30 UTC weekly report cron was still 3+ hours late as of this check -- does NOT cross RUNBOOK 1's own 3-day escalation threshold, logged as a watch item (AUTONOMOUS_LOG.md sunday-report-run-delayed-watch), not escalated. Q5/Q6 still queued, top NEEDS HET items. Nothing in progress."
 }
