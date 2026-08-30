@@ -43,7 +43,18 @@ run, and refuse to deploy real money until a promotion means something.**
 
 ## Critical path — in strict order
 
-### STEP 1 (blocking, needs Het) — Fix the promotion bar
+### STEP 1 — Fix the promotion bar — **DONE 2026-08-30 (on branch, unmerged)**
+
+Het chose the recommended combination below and authorized it explicitly.
+The bar now requires beating `nifty_benchmark` on date-paired excess
+returns AND clearing a multiplicity-corrected Sharpe floor. Implemented,
+tested, and committed *before* anyone looked at which contestants it
+would promote — the ordering this section demanded. **Still needs a
+separate merge decision to reach `main`**; until then the live runs use
+the old bar. The original framing is kept below because the reasoning
+still explains why this had to come first.
+
+#### (original, for the record) Fix the promotion bar
 
 **Why first:** every day of evidence collected under a broken bar is
 evidence that can't be trusted later. This is cheap to fix now and
@@ -126,13 +137,13 @@ answered 2026-08-29.** Remaining, in the order I'd do them:
 
 | Q | Question | Why it matters | Cost |
 |---|---|---|---|
-| **Q4** | Does any contestant beat Nifty net of real cost+tax? | Directly the Phase 1→2 gate. Currently "insufficient data," but becomes answerable as days accumulate. | Free, analysis only |
-| **Q6** | Do the 3 evolution mechanisms increase overfitting risk at this sample size? | Same failure family as Q5. Three breeding mechanisms sitting on 40 days of noise is exactly the overfitting risk Q5 quantified. Possibly the second-most-important open question. | Free, analysis only |
+| **Q4** | Does any contestant beat Nifty net of real cost+tax? | Directly the Phase 1→2 gate. **Now unblocked and next up** — it was deliberately held until after STEP 1 landed, because knowing the answer first would have contaminated the choice of promotion bar with hindsight. | Free, analysis only |
+| ~~Q6~~ | **ANSWERED + FIXED 2026-08-30.** Do the 3 evolution mechanisms increase overfitting risk at this sample size? | Same failure family as Q5. Three breeding mechanisms sitting on 40 days of noise is exactly the overfitting risk Q5 quantified. Possibly the second-most-important open question. | Free, analysis only |
 | **Q3** | Minimum viable position size per family | Feeds LADDER sizing. Partly answered by the P0-1 cost model. | Free |
 | **Q8** | Full 10-year closed-loop model | Tests Fact 8 (contribution rate dominates return rate at this capital). Would tell Het where his effort is actually best spent — possibly *not* on trading at all. | Free |
 | Q7 | Capacity ceiling per family | Almost certainly far above anything this project reaches. Confirm once, then stop worrying. | Free |
 | Q9 | SEBI RIA/RA/PMS/AIF requirements | Only relevant Phase 4+. Partly researched already. | Free |
-| Q10 | Highest-value change right now | **Currently answered by this document: fix the bar (STEP 1), then wait.** | — |
+| Q10 | Highest-value change right now | **As of 2026-08-30: the bar is fixed (STEP 1 done, unmerged). The highest-value remaining action is merging it, then Q4, then waiting.** | — |
 
 Q6 is the one I'd pick up next unprompted — it's the same class of
 error as Q5, it's free, and the answer could mean disabling a breeding

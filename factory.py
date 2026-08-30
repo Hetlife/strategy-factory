@@ -12,7 +12,8 @@ USAGE:  python factory.py update   (daily, after market close - cron/Actions)
         python factory.py report   (weekly scoreboard + auto promotions)
 State lives in ./factory_state/ledger.json
 """
-import json, sys, os, random
+import json, sys, os, random, math
+from statistics import NormalDist
 import numpy as np
 import pandas as pd
 
@@ -120,7 +121,20 @@ LADDER = [0, 25_000, 50_000, 100_000, 200_000]    # rupees per rung (0 = paper)
                                    # 6-name basket. At Rs 25,000 the same fixed
                                    # cost drag drops to roughly ~0.6% RT.
 RULES = dict(min_days_on_rung=126, min_trades=10, min_expectancy=0.0005,
-             max_drawdown=-0.12, min_sharpe=0.4, max_paper_failures=2)
+             max_drawdown=-0.12, min_sharpe=0.4, max_paper_failures=2,
+             # Added 2026-08-30 with Het's fresh, explicit, in-session
+             # authorization, in response to the Q5 finding
+             # (docs/research/Q5_statistical_power.md): the gate above, on
+             # its own, hands a PROMOTE to a PURE-NOISE contestant ~85% of
+             # the time at 126 days with 26 competitors. The two keys below
+             # are the fix Het chose ("beat Nifty + stats correction").
+             # They only ever ADD conditions -- nothing above was loosened,
+             # which matters because EXECUTION_PLAN.md Section 5f names
+             # "loosening RULES to make results look better" as a kill
+             # condition. This is the opposite: a strictly higher bar,
+             # chosen while deliberately blind to how any current
+             # contestant would fare under it.
+             require_beat_benchmark=True, promotion_alpha=0.05)
 MIN_SHARPE_SAMPLE_DAYS = 20   # below this, the variance estimate behind Sharpe
                                # is unreliable (a few near-identical returns can
                                # floor variance near zero and blow Sharpe up to
@@ -703,7 +717,9 @@ def attempt_breeding(reg, con):
     Ranked among paper-tier (rung 0) contestants only, by equity; a
     real-money-rung contestant is never part of this ranking or pool.
     Eligibility: profitable (equity > 1.0) with real evidence (enough
-    trades), not already retired/evolved-out this round. Within each
+    trades AND at least RULES["min_days_on_rung"] days on rung -- see the
+    Q6 note at the eligibility filter), not already retired/evolved-out
+    this round. Within each
     (family, sector) bucket the two fittest eligible parents mate --
     crossover requires a shared mechanism, see crossover_breed(). Bounded
     by MAX_CONTESTANTS and BREEDING_MAX_NEW_PER_ROUND so a lucky week
@@ -713,7 +729,17 @@ def attempt_breeding(reg, con):
                   and not reg.get(n, {}).get("permanent")]
     paper_live.sort(key=lambda ns: ns[1]["equity"], reverse=True)
     eligible = [n for n, s in paper_live[:BREEDING_TOP_N]
-                if s["equity"] > 1.0 and s["trades"] >= BREEDING_MIN_TRADES]
+                if s["equity"] > 1.0 and s["trades"] >= BREEDING_MIN_TRADES
+                # Q6 fix, added 2026-08-30 with Het's fresh explicit
+                # authorization (docs/research/Q6_breeding_overfitting.md).
+                # Without this, crossover could fire at ~day 40, where a
+                # ZERO-EDGE contestant looks "profitable" 43% of the time --
+                # so "equity > 1.0" was close to a coin flip and breeding
+                # propagated luck into children. propose_evolutions() has
+                # always had this same gate; the docs claimed breeding did
+                # too, and it did not. This makes the code match the
+                # documented, intended behaviour.
+                and s["days_on_rung"] >= RULES["min_days_on_rung"]]
 
     buckets = {}
     for name in eligible:
@@ -780,11 +806,131 @@ def update_advisor_trust(con, adv_state):
     adv_state["history"] = adv_state["history"][-100:]
     return adv_state
 
+# ---------------- promotion test (Q5 fix, one shared implementation) ------
+# Why this lives in one function instead of being written out inline in
+# report(): agents/judge/judge.py independently re-implemented the old
+# inline check, so the two could silently drift apart and disagree about
+# who deserves real money. Both now call promotion_check().
+#
+# Evidence level for the reasoning behind these gates: LEVEL 1
+# (theoretical/simulated -- see docs/research/Q5_statistical_power.md).
+# The gates themselves are live code; the *justification* is simulation.
+
+def benchmark_returns(reg, con):
+    """{date: daily_net_return} for the permanent benchmark contestant
+    (nifty_benchmark, P0-3), or None if the arena has no benchmark.
+
+    None is deliberately treated as "cannot verify" -> no promotion, NOT
+    as "no benchmark to beat, so anything passes". Failing closed is the
+    correct direction for a gate whose entire purpose is withholding real
+    money until an edge is demonstrated."""
+    for name, s in con.items():
+        if reg.get(name, {}).get("permanent") and s.get("history"):
+            return {row[0]: row[1] for row in s["history"]}
+    return None
+
+
+def excess_return_stats(hist, bench_map):
+    """Pair a contestant's daily net returns against the benchmark's BY
+    DATE and summarise the difference (the classic information ratio).
+
+    Pairing day-by-day is the whole point: contestant and benchmark ride
+    the same market, so subtracting the benchmark cancels most of the
+    common factor that Q5 showed was manufacturing false positives. A
+    contestant that merely rose with the index nets out to ~0 here.
+
+    Returns (n_paired, mean_excess, annualised_excess_sharpe). Sharpe is
+    NaN below MIN_SHARPE_SAMPLE_DAYS paired days, matching report()'s
+    existing treatment of an under-sampled variance estimate."""
+    if not bench_map:
+        return 0, float("nan"), float("nan")
+    diffs = [row[1] - bench_map[row[0]] for row in hist if row[0] in bench_map]
+    n = len(diffs)
+    if n < MIN_SHARPE_SAMPLE_DAYS:
+        return n, float("nan"), float("nan")
+    mean = sum(diffs) / n
+    var = max(sum(d * d for d in diffs) / n - mean ** 2, 1e-12)
+    return n, mean, mean / math.sqrt(var) * math.sqrt(252)
+
+
+def multiplicity_sharpe_floor(n_days, n_tests, alpha):
+    """The annualised Sharpe a ZERO-EDGE contestant would clear only
+    alpha/n_tests of the time, given n_days of daily observations.
+
+    The maths (same model Q5 verified two independent ways): with no real
+    edge, an annualised Sharpe estimated from n daily returns is
+    approximately Normal(0, 252/n), so its standard deviation is
+    sqrt(252/n). Requiring z_(1 - alpha/K) standard deviations is the
+    standard Bonferroni correction for running K comparisons at once --
+    which is exactly what a 26-contestant tournament does every week.
+
+    n_tests is the number of contestants competing THIS round. Q6
+    (docs/research/Q6_breeding_overfitting.md) showed the population
+    churns, so the number of distinct hypotheses tested over the
+    project's life exceeds the number alive at any instant -- meaning
+    this correction is a FLOOR, not a ceiling. Documented rather than
+    silently over-corrected."""
+    if n_days < MIN_SHARPE_SAMPLE_DAYS or n_tests < 1:
+        return float("inf")     # cannot certify -> cannot promote
+    per_test = alpha / n_tests
+    return NormalDist().inv_cdf(1 - per_test) * math.sqrt(252.0 / n_days)
+
+
+def promotion_check(s, mean, sharpe, bench_map, n_tests, R=None):
+    """Every condition a contestant must clear for PROMOTE, in one place.
+
+    Returns (passed, checks) where checks is a list of
+    (label, have, need, ok) suitable for printing verbatim to a human --
+    judge.py renders exactly these, so the explanation a human reads can
+    never disagree with the decision the machine made."""
+    R = R or RULES
+    checks = [
+        ("days_on_rung", s["days_on_rung"], R["min_days_on_rung"]),
+        ("trades", s["trades"], R["min_trades"]),
+        ("expectancy (mean daily net return)", round(mean, 6),
+         R["min_expectancy"]),
+        ("sharpe", sharpe, R["min_sharpe"]),
+    ]
+    if R.get("require_beat_benchmark"):
+        n_paired, ex_mean, ex_sharpe = excess_return_stats(
+            s.get("history", []), bench_map)
+        floor = multiplicity_sharpe_floor(n_paired, n_tests,
+                                          R.get("promotion_alpha", 0.05))
+        checks.append(("excess return vs benchmark (mean daily)",
+                       round(ex_mean, 6) if not _isnan(ex_mean) else ex_mean,
+                       0.0))
+        checks.append((f"excess sharpe vs benchmark, corrected for "
+                       f"{n_tests} simultaneous contestant"
+                       f"{'' if n_tests == 1 else 's'}",
+                       ex_sharpe, floor))
+    scored = [(label, have, need,
+               isinstance(have, (int, float)) and not _isnan(have)
+               and have >= need)
+              for label, have, need in checks]
+    return all(ok for *_, ok in scored), scored
+
+
+def _isnan(x):
+    return isinstance(x, float) and math.isnan(x)
+
+
 # ---------------- weekly tournament ----------------
 def report():
     state = load_state()
     reg, con = state["registry"], state["contestants"]
     R = RULES
+    # The benchmark to beat, and how many contestants are competing for a
+    # promotion this round -- both needed by promotion_check() below, and
+    # both computed BEFORE the loop so every contestant is judged against
+    # the same arena size rather than a count that shifts mid-loop.
+    bench_map = benchmark_returns(reg, con)
+    n_tests = sum(1 for n, c in con.items()
+                  if not c["retired"] and not reg.get(n, {}).get("permanent"))
+    if R.get("require_beat_benchmark") and not bench_map:
+        print("[WARNING] no benchmark contestant with history found -- the "
+              "beat-the-benchmark gate cannot be evaluated, so NO contestant "
+              "can be promoted this round. This fails closed on purpose "
+              "(see benchmark_returns()); it is not a silent pass.")
     rows = []
     for name, s in con.items():
         if s["retired"]:
@@ -807,10 +953,11 @@ def report():
             verdict = "BENCHMARK"
         elif dd < R["max_drawdown"]:
             verdict = "DEMOTE"
-        elif (s["days_on_rung"] >= R["min_days_on_rung"]
-              and s["trades"] >= R["min_trades"]
-              and mean >= R["min_expectancy"]
-              and sharpe >= R["min_sharpe"]):   # NaN >= anything is False
+        elif promotion_check(s, mean, sharpe, bench_map, n_tests, R)[0]:
+            # Single shared implementation -- see promotion_check(). Since
+            # 2026-08-30 this also requires beating nifty_benchmark by more
+            # than luck would produce across n_tests simultaneous
+            # contestants (Q5 fix, authorized by Het).
             verdict = "PROMOTE"
         paper_pnl = s["equity"] * PAPER_STARTING_CAPITAL - PAPER_STARTING_CAPITAL
         pt_mean, tax_basis = post_tax_expectancy(mean, s["days_in_market"],

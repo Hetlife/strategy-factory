@@ -1,5 +1,14 @@
 # Q6 — Does the evolution system increase overfitting risk?
 
+**RESOLVED 2026-08-30 — the gate is now live in `factory.py`.** Het gave
+fresh, explicit, in-session authorization to add
+`days_on_rung >= RULES["min_days_on_rung"]` to `attempt_breeding()`'s
+eligibility filter, exactly as recommended below. Verified both
+directions with a real test: contestants past the day bar still breed;
+contestants at day 40 are blocked entirely, even when profitable with 50
+trades. Finding 1 below is therefore now historical — the code and the
+docs finally agree.
+
 **Status:** ANSWERED, 2026-08-29. **Yes, materially.** Reproduce with
 `python3 tools/analyze_breeding_overfitting.py` (seeded, deterministic).
 

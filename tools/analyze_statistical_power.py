@@ -154,8 +154,92 @@ def main():
         fp, _ = false_positive_rate(k, R["min_days_on_rung"], 0.5, R, rng)
         print(f"  K={k:>3} contestants (corr 0.5): false-positive rate {fp:>6.1%}")
 
+    verify_corrected_gate(R)
+
     print("\nRead the writeup in docs/research/ for what this means and what it")
     print("does NOT mean. This script changes nothing and decides nothing.")
+
+
+def _simulate_ledger_shaped(k, n_days, vol, corr, rng, alpha=0.0):
+    """Build k ledger-shaped contestant dicts plus a benchmark, so the REAL
+    factory.promotion_check() can judge them. Contestants are
+    beta*market + idiosyncratic noise, with `alpha` of genuine daily edge
+    (alpha=0 is the zero-edge null)."""
+    dates = [f"d{i:05d}" for i in range(n_days)]
+    market = rng.standard_normal(n_days) * vol
+    bench_hist = [[d, float(r), 1.0] for d, r in zip(dates, market)]
+    idio = rng.standard_normal((n_days, k)) * vol * np.sqrt(1 - corr)
+    rets = market[:, None] * np.sqrt(corr) + idio + alpha
+
+    contestants = []
+    for j in range(k):
+        col = rets[:, j]
+        eq, peak, hist = 1.0, 1.0, []
+        for d, r in zip(dates, col):
+            eq *= (1 + r)
+            peak = max(peak, eq)
+            hist.append([d, float(r), eq])
+        contestants.append(dict(
+            days_on_rung=n_days, trades=999, equity=eq, peak=peak,
+            days_in_market=n_days, sum_ret=float(col.sum()),
+            sum_sq=float((col ** 2).sum()), history=hist,
+            rung=0, retired=False))
+    return contestants, {row[0]: row[1] for row in bench_hist}
+
+
+def _promotes(contestants, bench_map, k, R):
+    """True if ANY contestant clears the real promotion gate."""
+    for s in contestants:
+        n = max(s["days_in_market"], 1)
+        mean = s["sum_ret"] / n
+        var = max(s["sum_sq"] / n - mean ** 2, 1e-12)
+        sharpe = mean / np.sqrt(var) * np.sqrt(252)
+        if s["equity"] / s["peak"] - 1 < R["max_drawdown"]:
+            continue
+        if factory.promotion_check(s, mean, sharpe, bench_map, k, R)[0]:
+            return True
+    return False
+
+
+def verify_corrected_gate(R, trials=400, k=26, corr=0.5):
+    """Measures the CORRECTED gate (Q5 fix, live since 2026-08-30) by
+    running factory.promotion_check() itself -- not a copy of its logic --
+    so this cannot drift from what report() actually does.
+
+    Two numbers matter: the false-positive rate must fall well under the
+    ~85% the old gate produced, and a genuinely skilled contestant must
+    still be able to pass (a bar nothing can clear is not a fix).
+
+    Deliberately fewer trials than the tables above (400 vs 20,000):
+    this section drives the real code path, building full ledger-shaped
+    history arrays per contestant, so it is ~50x costlier per trial. 400
+    trials resolves a ~5% rate to roughly +/-2%, which is ample to tell
+    "well under 10%" from "still ~85%" -- and keeping the whole script
+    runnable in a couple of minutes matters more here than a third
+    decimal place, because a tool nobody waits for is a tool nobody
+    re-runs."""
+    print("\n\nCORRECTED GATE (require_beat_benchmark + multiplicity correction)")
+    print("=" * 78)
+    print(f"Driving the REAL factory.promotion_check(). K={k}, corr={corr}, "
+          f"{trials} trials/cell, alpha={R.get('promotion_alpha')}.")
+    print(f"{'days':>8} | {'FALSE-POSITIVE (zero edge)':>27} | "
+          f"{'POWER (real alpha 0.15%/day)':>29}")
+    print("-" * 78)
+    for n_days in (R["min_days_on_rung"], 252, 504):
+        rng = np.random.default_rng(SEED)
+        fp = sum(_promotes(*_simulate_ledger_shaped(k, n_days, REAL_DAILY_VOL,
+                                                    corr, rng), k, R)
+                 for _ in range(trials)) / trials
+        rng = np.random.default_rng(SEED + 1)
+        pw = sum(_promotes(*_simulate_ledger_shaped(k, n_days, REAL_DAILY_VOL,
+                                                    corr, rng, alpha=0.0015),
+                           k, R)
+                 for _ in range(trials)) / trials
+        print(f"{n_days:>8} | {fp:>26.1%} | {pw:>28.1%}")
+    print("-" * 78)
+    print("Compare the left column against the ~85% the ORIGINAL gate produced")
+    print("at 126 days (table above). The right column is the sanity check that")
+    print("the bar is demanding, not impossible.")
 
 
 def _norm_cdf(x):

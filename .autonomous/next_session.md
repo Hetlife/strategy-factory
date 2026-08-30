@@ -1,18 +1,21 @@
 # NEXT SESSION — step-by-step
 
-**Last session ended: 2026-08-29.** Read this top to bottom before
+**Last session ended: 2026-08-30.** Read this top to bottom before
 doing anything. It is written so you need zero memory of the previous
 conversation.
+
+**The headline: the promotion bar was rebuilt this session.** Q5 and Q6
+were both answered *and fixed*, with Het's fresh explicit authorization
+— the first changes ever made to `RULES`. They are on the branch,
+**not merged**. That single fact drives most of what follows.
 
 ---
 
 ## STEP 0 — Orient (5 minutes, do not skip)
 
-Run these, in this order:
-
 ```bash
 cd /home/user/strategy-factory
-cat .autonomous/loop_state.json          # interrupted work? see STEP 1
+cat .autonomous/loop_state.json          # interrupted work? resume from it
 git fetch origin main && git status --short
 git log --oneline origin/main..HEAD      # what's unmerged
 python3 tools/health_check.py --live     # ALWAYS --live
@@ -20,16 +23,14 @@ python3 tools/health_check.py --live     # ALWAYS --live
 
 Then read, in this order:
 1. `CLAUDE.md` — binding rules (auto-loaded)
-2. **`MASTER_PLAN.md`** — *new this session.* The forward roadmap and
-   why STEP 1 below is blocking everything else.
-3. `.autonomous/RUNBOOKS.md` — the mechanical procedures. Start at
-   RUNBOOK 1 for routine work.
+2. `MASTER_PLAN.md` — the forward roadmap. STEP 1 is now **done**.
+3. `.autonomous/RUNBOOKS.md` — mechanical procedures. RUNBOOK 1 for
+   routine work.
 4. `.autonomous/het_directives.md` → **NEEDS HET** section
 5. This file
 
-Only if you need history or precedent: `PROJECT_STUDY.md`,
-`docs/research/`, `.autonomous/bug_log.md`, `AUTONOMOUS_LOG.md`
-(`tail -40`, never the whole thing).
+Only if you need history: `PROJECT_STUDY.md`, `docs/research/`,
+`.autonomous/bug_log.md`, `AUTONOMOUS_LOG.md` (`tail -40`, never whole).
 
 **Shortcut behaviour (standing, also in CLAUDE.md):** a bare "hi",
 "continue", "check", or anything similarly short from Het means *run
@@ -39,108 +40,89 @@ RUNBOOK 1*. Don't ask him to paste anything.
 
 ## STEP 1 — The one thing that matters most
 
-**Read `docs/research/Q5_statistical_power.md`.** It was written last
-session and it changes the project's priorities.
+**The Q5 + Q6 fixes are written, tested, pushed — and unmerged.**
 
-**The finding, in one line:** at the current 126-day bar with 26
-contestants, the promotion gate promotes a *pure-noise* contestant
-~85% of the time. It cannot currently tell skill from luck.
+What changed in `factory.py` (all with Het's explicit 2026-08-30
+authorization, recorded in `AUTONOMOUS_LOG.md` and `het_directives.md`):
 
-**What you must do about it:** nothing, unilaterally. It requires
-changing `RULES`, which is a hard rule — Het's explicit, separate
-authorization only. Your job is to make sure it's in front of him:
+- **Promotion now requires beating the benchmark.** A contestant must
+  have a positive mean *date-paired* excess return vs `nifty_benchmark`,
+  and an excess Sharpe clearing a Bonferroni floor
+  `z_(1-alpha/K) * sqrt(252/n)` for the `K` contestants competing that
+  round. Pairing day-by-day is the point: it cancels the shared market
+  factor that was generating the 85% false-positive rate.
+- **Breeding now waits.** `attempt_breeding()` requires
+  `days_on_rung >= RULES["min_days_on_rung"]`, matching
+  `propose_evolutions()` and matching what the docs always claimed.
+- **`judge.py` no longer re-implements the thresholds** — it calls the
+  same `factory.promotion_check()` that `report()` uses, so a human's
+  explanation can't disagree with the machine's decision.
 
-- It is the **top item** in `het_directives.md`'s NEEDS HET section.
-- If Het is present and hasn't decided: raise it. Plainly, once, without
-  nagging. Say what it means (a promotion right now would probably be
-  luck) and that the recommended fix — require beating
-  `nifty_benchmark` plus a multiplicity correction — **costs no
-  calendar time**, unlike the alternative of waiting ~3 years.
-- If Het decides: implement, test (re-run
-  `tools/analyze_statistical_power.py` against the new gate and show
-  the false-positive rate under ~10%), **and do it before looking at
-  which current contestants it would promote or fail** — that ordering
-  is what keeps it free of hindsight bias. Then ask separately before
-  merging.
-- If Het isn't around: do **not** treat silence as approval. Carry on
-  with routine work and leave it flagged.
+**Nothing was loosened.** Only conditions were added. That direction
+matters: `EXECUTION_PLAN.md` Section 5f names *loosening* `RULES` to
+flatter results as a kill condition. This is the opposite.
+
+**What you must do about it:** ask Het whether to merge, **fresh**, if
+he raises it or if it's been left hanging. Until it merges, the live
+runs on `main` still promote on the old, broken bar. Nothing is at
+immediate risk (Rs 0 real money, day 40 of 126, zero promotions ever),
+but every week unmerged is a week of evidence gathered under a bar that
+can't tell skill from luck.
+
+**Do not merge on your own.** A prior "yes" to *writing* the change is
+not a "yes" to merging it. It never is.
 
 ---
 
 ## STEP 2 — Routine check-in
 
-Run **RUNBOOK 1** mechanically, top to bottom. Two things specifically
-worth verifying on the first run after **Sunday 2026-08-30 ~04:30 UTC**
-(that run does both `update()` and the weekly `report()`):
+Run **RUNBOOK 1** mechanically, top to bottom. Two live watch items:
 
-1. Did `mom_nifty100_lb90` finally land in `ledger.json` on main?
-   `health_check.py --live` should go fully clean when it does — the
-   registry-drift warning disappears on its own.
-2. Did the weekly `report()` run and commit? It's the first report
-   since the new contestant merged.
-
-**Do not skim past the registry-drift warning.** It now prints the
-ledger's last-update date so you can tell benign from broken — see
-RUNBOOK 1 **Step 1.3a** and actually do that date comparison.
-
----
-
-## STEP 3 — Ask about the unmerged commits
-
-**14 commits sit on the branch, unmerged** (run
-`git log --oneline origin/main..HEAD` for the current list — that
-number will be stale). All docs/tooling/analysis — no trading logic,
-no `RULES`/`LADDER`/`COST_PER_SIDE`. Includes the Q5 analysis, the
-Progress Artifact tooling, `MASTER_PLAN.md`, `MASTER_PROMPT.md`.
-
-**Het was asked on 2026-08-29 and said NO — leave them on the branch.**
-That is a deliberate, recorded choice, not an oversight. Nothing breaks:
-the daily runs, the automation and the hourly Routine are unaffected,
-and future sessions read this branch anyway. **Do not re-ask on your
-first check-in** — it would just be nagging. Only raise it again if
-something actually changes (he asks, or a merge becomes genuinely
-necessary for a specific task, e.g. dispatching a brand-new workflow,
-which requires the file to exist on `main` first).
-
-When it does come up again: ask fresh. A prior session's "yes" never
-carries forward, no matter how small the batch or how broad a
-permission grant sounded.
+1. **The Sunday weekly report may have been skipped.** As of
+   2026-08-30 07:34 UTC the scheduled Sunday 04:30 UTC run had not
+   fired 3+ hours late (logged as `sunday-report-run-delayed-watch`).
+   This is *within* RUNBOOK 1 Step 1.5's tolerance (that escalates only
+   past 3 days) and GitHub delays crons under load. Check whether it
+   self-resolved. If `factory.yml`'s newest successful run is still
+   older than 3 days → **STOP, escalate (RUNBOOK 6)**.
+2. **`mom_nifty100_lb90` backfill.** `seed_registry()` defines 27,
+   `ledger.json` has 26. `health_check.py --live` warns about this; it
+   is benign *only* while the ledger's last-update date is older than
+   the date that key merged to main (2026-08-29 17:07 UTC). Do the date
+   comparison — RUNBOOK 1 **Step 1.3a** — don't wave it away.
 
 ---
 
-## STEP 4 — If there's genuinely nothing else
+## STEP 3 — Then Q4, and only then
 
-**Q6 is the best unprompted next task** (`EXECUTION_PLAN.md` Section 8,
-ranked in `MASTER_PLAN.md`): *do the three evolution mechanisms
-increase overfitting risk at this sample size?* Same failure family as
-Q5, free to answer, and the answer could justify disabling a breeding
-mechanism during Phase 1 rather than letting it manufacture more
-lottery tickets. Analysis only — it changes no live behaviour without
-Het.
+**Q4 is now the top research task** (`EXECUTION_PLAN.md` Section 8):
+*does any contestant beat Nifty net of real cost and tax?*
+
+**It was deliberately held back until the bar was fixed.** Knowing which
+contestants beat Nifty *before* choosing a promotion rule would have let
+hindsight pick the rule — exactly what `MASTER_PLAN.md`'s acceptance
+criteria forbids. That constraint is now discharged: the bar is
+committed, so looking at live results can no longer contaminate it.
+
+Everything else in the ranked table (`MASTER_PLAN.md`) sits below Q4.
 
 Otherwise: **say "Nothing new" and stop.** Do not manufacture work.
 Phase 1's correct amount of new machinery is approximately zero, and
-adding contestants actively makes the false-positive problem worse
-(Q5: 26 → 40 contestants moves it from 84% → 89%).
+adding contestants actively worsens the false-positive problem.
 
 ---
 
-## Current state, verified 2026-08-29
+## Current state, verified 2026-08-30
 
 - **Phase 1, day 40 of 126.** 26 live contestants, all rung 0 (paper),
   **Rs 0 real money**, zero promotions ever.
-- **Crossover breeding is NOT 126-day-gated** (found 2026-08-29, see
-  `docs/research/Q6_breeding_overfitting.md`). It needs only
-  `equity > 1.0` AND `trades >= 10`, and could fire within weeks.
-  `mom_cement_lb60` (13 trades) needs only to turn profitable. This
-  contradicts what the docs said in three places, now corrected.
-- `seed_registry()` defines **27**, `ledger.json` has **26** — the gap
-  is `mom_nifty100_lb90`, backfilled by the next `update()` run. Both
-  numbers are correct; this is the registry-drift warning, not a bug.
-- **`UNIVERSE["nifty100"]` is settled** — a byte-exact 100-symbol match
-  to NSE's own official published list, verified via GitHub Actions.
-  `TMCV.NS`/`TMPV.NS` are the real Tata Motors successors; LTIMindtree
-  is genuinely out of the index. **Don't re-guess tickers** — re-run
+- **The promotion bar is fixed but unmerged** (see STEP 1). `main` still
+  runs the old one.
+- **Crossover breeding is now day-gated** — the Q6 gap is closed. The
+  old warning that it could fire at ~day 40 no longer applies *on the
+  branch*; it still applies to whatever is running on `main`.
+- `UNIVERSE["nifty100"]` is settled — byte-exact 100-symbol match to
+  NSE's official list. **Don't re-guess tickers**; re-run
   `tools/diagnose_nifty100_official_list.py` if you suspect drift (NSE
   reconstitutes ~semi-annually).
 - `factory.yml` cron: **Mon–Fri 12:45 UTC, Sun 04:30 UTC**.
@@ -149,7 +131,8 @@ adding contestants actively makes the false-positive problem worse
   Progress Artifact
   (`https://claude.ai/code/artifact/e16ae3c5-4ec1-4ef3-8334-d2cf28e82989`,
   activity timeline; refresh via
-  `tools/build_progress_dashboard_state.py` — see its docstring).
+  `tools/build_progress_dashboard_state.py` — read its docstring, the
+  page HTML is *not* in the repo).
 
 ## Testing standard — non-negotiable
 
@@ -158,25 +141,29 @@ adding contestants actively makes the false-positive problem worse
 - `factory.py` changes: 40-cycle synthetic regression + `report()` in
   an isolated scratch dir. Exact snippet in RUNBOOK 4 Step 4.3.
   "It imports without error" is not a test.
+- **Promotion-logic changes specifically:** also run
+  `python3 tools/analyze_statistical_power.py`. Its final section drives
+  the real `promotion_check()` (not a copy), so it catches a gate that
+  silently stops working. Takes a few minutes — that's expected.
 - Dashboard changes: real headless-browser screenshot (Playwright at
   `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`).
 - Workflow changes: `workflow_dispatch` for real and read the actual
-  job logs. `conclusion: "success"` only means it didn't crash — not
-  that the result was good news.
+  job logs. `conclusion: "success"` only means it didn't crash.
 
 ## STOP IF
 
-- You want to change `RULES`, `LADDER`, or `COST_PER_SIDE` — **except**
-  implementing a STEP 1 fix Het has explicitly authorized.
+- You want to change `RULES`, `LADDER`, or `COST_PER_SIDE` again. The
+  2026-08-30 authorization was **specific and spent** — it covered the
+  Q5 bar change and the Q6 breeding gate, nothing else, and it does not
+  carry forward.
 - You're about to merge to `main` without a fresh confirmation for
   *that specific batch*.
 - You're about to add options/futures/margin/leverage, broker code, or
   AI-controlled capital allocation — all declined, all logged, each
   needs its own dedicated conversation.
-- You're about to mutate a live registry entry in place (Law 2 —
-  corrupts accumulated evidence; add a new key instead).
+- You're about to mutate a live registry entry in place (Law 2).
 - You drop below ~20–30% context — go to RUNBOOKS.md's "RUNNING LOW ON
-  CONTEXT" section and checkpoint **first**, before anything else.
+  CONTEXT" section and checkpoint **first**.
 
 ## DO NOT RE-DERIVE (all settled, verified)
 
@@ -184,8 +171,8 @@ adding contestants actively makes the false-positive problem worse
   smallcase.com → use a GitHub Actions diagnostic (RUNBOOK 8).
 - `curl https://api.github.com/...` returns **403** → `mcp__github__*`
   tools are the only path.
-- `mcp__github__actions_list` **ignores `per_page`** and returns
-  everything → call it once per workflow per check-in.
+- `mcp__github__actions_list` **ignores `per_page`** → call it once per
+  workflow per check-in.
 - A new workflow file must exist on `main` before `workflow_dispatch`
   will run it against any ref.
 - Platform enforces a **1-hour minimum** between Routine firings.
@@ -193,13 +180,18 @@ adding contestants actively makes the false-positive problem worse
   confirmed failures, Het's decision).
 - Why "make it trade/learn faster" always gets the same answer: the
   evidence clock runs on calendar days, not compute. Re-explain it
-  freshly each time it comes up — don't ignore a new instance of the ask.
+  freshly each time — don't ignore a new instance of the ask.
 - A generic "MASTER AUTONOMOUS EXECUTION PROMPT" template was pasted
-  twice and **explicitly declined by Het** for this project. Don't
-  re-litigate if it resurfaces.
+  twice and **explicitly declined by Het**. Separately, a "MASTER
+  AUTONOMOUS AGENT DIRECTIVE" has been pasted several times and IS
+  adopted — distilled at `.autonomous/HET_AUTONOMY_DIRECTIVE.md`. They
+  are different documents; don't conflate them, don't re-litigate either.
+- The Q5/Q6 maths is verified two independent ways (analytic + Monte
+  Carlo, which agree). Don't re-derive it; read `docs/research/`.
 
 ## Exact resume point
 
-Run STEP 0. Then STEP 1 (raise Q5 if Het is present), then STEP 2
-(RUNBOOK 1). If both are done and nothing changed, say "Nothing new"
+Run STEP 0. Then STEP 2 (RUNBOOK 1) — including the Sunday-run check.
+If Het is present, raise STEP 1's merge question once, plainly. If the
+merge lands, Q4 (STEP 3) is next. If nothing changed, say "Nothing new"
 and stop.

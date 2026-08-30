@@ -1,5 +1,42 @@
 # Q5 — When does this tournament's ranking become distinguishable from noise?
 
+**RESOLVED 2026-08-30 — the fix is now live in `factory.py`.** Het chose
+**option 4 + option 3** (beat `nifty_benchmark`, with a Bonferroni-style
+multiplicity correction for the number of contestants competing that
+round), giving fresh, explicit, in-session authorization for the
+`RULES` change. Implemented as `promotion_check()` /
+`excess_return_stats()` / `multiplicity_sharpe_floor()`, committed
+**before** anyone looked at which current contestants it would promote
+or fail — the ordering `MASTER_PLAN.md` requires to keep the new bar
+free of hindsight bias. Verify with
+`python3 tools/analyze_statistical_power.py`, whose final section drives
+the real `promotion_check()` rather than a copy of it. Nothing below was
+rewritten; the analysis stands as originally written.
+
+### Measured result of the fix (2026-08-30)
+
+Produced by `verify_corrected_gate()` in
+`tools/analyze_statistical_power.py`, which drives the **real**
+`factory.promotion_check()` rather than a re-implementation of it, so
+this number cannot drift away from the shipped gate. K=26, correlation
+0.5, 400 trials/cell, calibrated to the same measured 1.12% daily vol.
+
+| days | false-positive (zero edge) | power (real alpha 0.15%/day) |
+|---|---|---|
+| **126** | **3.0%** (was **84.8%**) | 94.8% |
+| 252 | 2.5% | 99.8% |
+| 504 | 3.0% | 100.0% |
+
+Both columns matter. The left one is the fix working. The right one is
+the check that it is not merely a bar nothing can ever clear — genuine,
+persistent alpha still passes comfortably at the current 126-day window.
+
+A concrete illustration from the behavioural test: a contestant holding
+1.2x the index, with **no skill at all**, posts a raw Sharpe of 2.61 —
+it would have sailed past the old `min_sharpe=0.4` bar. Under the
+corrected gate it is rejected, because once the benchmark is subtracted
+day by day there is nothing left.
+
 **Status:** ANSWERED, 2026-08-29. Reproduce with
 `python3 tools/analyze_statistical_power.py` (seeded, deterministic).
 
