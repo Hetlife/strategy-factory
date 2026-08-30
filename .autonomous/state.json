@@ -216,14 +216,14 @@
    "priority": "P0",
    "status": "done",
    "summary": "RESOLVED 2026-08-30. Het gave fresh explicit in-session authorization and chose option 4+3 from docs/research/Q5_statistical_power.md: a promoted contestant must now beat nifty_benchmark on DATE-PAIRED excess returns (information ratio, which cancels the shared market factor that was manufacturing false positives) AND clear a Bonferroni-corrected Sharpe floor for the number of contestants competing that round. Implemented in factory.py as promotion_check()/excess_return_stats()/multiplicity_sharpe_floor(); agents/judge/judge.py now DELEGATES to promotion_check() instead of re-implementing the thresholds, removing a real drift risk where the explanation a human read could disagree with the decision report() made. RULES gained require_beat_benchmark + promotion_alpha; NOTHING existing was loosened (only added conditions -- the opposite of the Section 5f kill condition). Fails CLOSED if no benchmark history is available. Committed BEFORE looking at live contestant results, per MASTER_PLAN.md's hindsight-bias requirement. ON BRANCH, UNMERGED.",
-   "commit": "see branch 2026-08-30"
+   "commit": "27fe0a9"
   },
   {
    "id": "P1-gate-crossover-breeding-on-days",
    "priority": "P1",
    "status": "done",
    "summary": "RESOLVED 2026-08-30. Het authorized the one-condition fix from docs/research/Q6_breeding_overfitting.md: attempt_breeding()'s eligibility filter now also requires days_on_rung >= RULES['min_days_on_rung'], mirroring what propose_evolutions() always had. Closes the gap where crossover could fire at ~day 40, where a ZERO-EDGE contestant looks 'profitable' 43% of the time -- i.e. breeding was selecting luck and copying it into children. Tested both directions (past-the-bar parents still breed; day-40 parents fully blocked even when profitable with 50 trades). ON BRANCH, UNMERGED.",
-   "commit": "see branch 2026-08-30"
+   "commit": "27fe0a9"
   }
  ],
  "recent_commits": [
