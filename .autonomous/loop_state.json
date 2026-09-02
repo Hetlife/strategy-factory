@@ -3,7 +3,7 @@
  "status": "idle",
  "task": null,
  "started_at": null,
- "last_updated": "2026-08-30T07:58:26Z",
+ "last_updated": "2026-09-02T15:50:22Z",
  "resume_instructions": null,
- "note": "Q5 + Q6 fixes IMPLEMENTED, TESTED and PUSHED 2026-08-30 (commit 27fe0a9, ON BRANCH, UNMERGED). Het authorized writing them; merging to main is a SEPARATE decision that still needs its own fresh yes -- do not assume it. Measured result: false-positive rate at 126 days fell 84.8% -> 3.0%, power 94.8%. The 2026-08-30 RULES authorization was specific and is now SPENT; it does not cover any further RULES/LADDER/COST_PER_SIDE change. Q4 is now unblocked and is the next research task (it was deliberately held until the bar was fixed, to avoid hindsight bias). Also still open: the Sunday weekly report cron looked delayed on 2026-08-30 -- within tolerance, logged as a watch item, confirm it self-resolved. Nothing in progress."
+ "note": "MERGED to main 2026-09-02 (PR #21, merge commit bc4b07f). Het's fresh explicit merge confirmation given in-session. health_check.py --live is FULLY CLEAN post-merge (no findings at all -- the registry-drift warning also cleared, mom_nifty100_lb90 backfilled by an automated run while this was in progress). The new promotion bar (beat nifty_benchmark + multiplicity correction) and the breeding day-gate are now LIVE on main -- next Sunday's report() run will use them for real. Q4 (does anything beat Nifty net of cost/tax) is the next research task, now unblocked. Nothing in progress."
 }
