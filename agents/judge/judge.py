@@ -43,23 +43,30 @@ def explain_verdict(name, ledger_state=None):
         return f"{name}: retired, no longer eligible for any verdict."
     R = f.RULES
     row = _row_for(name, s, R)
+    # Delegate to factory.promotion_check() rather than re-deriving the
+    # thresholds here. This file used to re-implement them, which meant the
+    # explanation a human read could silently disagree with the decision
+    # report() actually made -- exactly the drift the Q5 rewrite removed.
+    reg = state["registry"]
+    bench_map = f.benchmark_returns(reg, con)
+    n_tests = sum(1 for n, c in con.items()
+                  if not c["retired"] and not reg.get(n, {}).get("permanent"))
+    passed, scored = f.promotion_check(s, row["mean"], row["sharpe"],
+                                       bench_map, n_tests, R)
     reasons = []
-    checks = [
-        ("days_on_rung", s["days_on_rung"], R["min_days_on_rung"], ">="),
-        ("trades", s["trades"], R["min_trades"], ">="),
-        ("expectancy (mean daily net return)", round(row["mean"], 6),
-         R["min_expectancy"], ">="),
-        ("sharpe", round(row["sharpe"], 3) if not np.isnan(row["sharpe"])
-         else "NaN (under min sample)", R["min_sharpe"], ">="),
-    ]
-    for label, have, need, op in checks:
-        ok = (isinstance(have, (int, float)) and not
-              (isinstance(have, float) and np.isnan(have)) and have >= need)
-        reasons.append(f"  {label}: have {have}, need {op} {need} -> "
+    for label, have, need, ok in scored:
+        shown = have
+        if isinstance(have, float):
+            shown = "NaN (under min sample)" if np.isnan(have) else round(have, 3)
+        need_shown = ("inf (cannot certify -- too few paired days "
+                      "against the benchmark)"
+                      if isinstance(need, float) and np.isinf(need)
+                      else round(need, 3) if isinstance(need, float) else need)
+        reasons.append(f"  {label}: have {shown}, need >= {need_shown} -> "
                         f"{'OK' if ok else 'NOT MET'}")
     if row["dd"] < R["max_drawdown"]:
         verdict = "DEMOTE (drawdown breach)"
-    elif all("OK" in r for r in reasons):
+    elif passed:
         verdict = "PROMOTE"
     else:
         verdict = "hold"
@@ -75,16 +82,18 @@ def who_is_eligible_for_promotion(ledger_state=None):
     not a second opinion to act on directly."""
     state = ledger_state or f.load_state()
     con = state["contestants"]
+    reg = state["registry"]
     R = f.RULES
+    bench_map = f.benchmark_returns(reg, con)
+    n_tests = sum(1 for n, c in con.items()
+                  if not c["retired"] and not reg.get(n, {}).get("permanent"))
     eligible = []
     for name, s in con.items():
-        if s["retired"]:
+        if s["retired"] or reg.get(name, {}).get("permanent"):
             continue
         row = _row_for(name, s, R)
         if (row["dd"] >= R["max_drawdown"]
-                and s["days_on_rung"] >= R["min_days_on_rung"]
-                and s["trades"] >= R["min_trades"]
-                and row["mean"] >= R["min_expectancy"]
-                and row["sharpe"] >= R["min_sharpe"]):
+                and f.promotion_check(s, row["mean"], row["sharpe"],
+                                      bench_map, n_tests, R)[0]):
             eligible.append(name)
     return eligible

@@ -5,7 +5,7 @@
  "branch": "claude/scheduled-maintenance-template-d7yufr",
  "pr_number": 5,
  "pr_status": "PR #1 (aa55914), #2 (b55b562), #3 (3df9143), #4 (9f5f30e), #5 (ea877a1) all merged to main, all with Het's fresh explicit confirmation. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement. main now has everything: Phase 0 (P0-1..P0-4), agents/ team, LADDER raise, nifty_benchmark backfill fix, healer agent + health_check tool, dashboard Office tab + factor toggle, paper holding-cost decay, and the shared graveyard anti-repeat guard. No known outstanding branch-vs-main gap as of this update.",
- "claude_md_sha1": "6fa005b1d68f8b6b57b8428fbece59ecef9baa77",
+ "claude_md_sha1": "9ddebb19dd5c01bdb000b28ad63f9bcb6dd31849",
  "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
  "current_phase": "phase_1",
  "current_phase_note": "Phase 0 cleared 2026-08-24 (all 4 deliverables done+tested, see queue P0-1..P0-4 and P0-GATE). Now in Phase 1 (EXECUTION_PLAN.md Section 4): STANDING MODE. Run the daily update()/weekly report() schedule, accumulate real evidence, do NOT start new structural/feature work beyond what's already unfrozen below. The 12-month Phase 1 evidence clock (EXECUTION_PLAN.md Section 5a/5b/6) starts counting meaningfully from here -- don't treat Phase-0-era paper history as part of that clock, the cost/tax model underneath it just changed.",
@@ -153,7 +153,7 @@
    "id": "P2-vectorize",
    "priority": "P2",
    "status": "open_low_priority_standing_mode",
-   "summary": "vectorize update()/report() per-contestant loop + yf.download(threads=True). Must not change signal logic or promotion math. Low urgency at ~20-40 contestants. Phase 1 standing mode says don't add machinery beyond what's needed -- only pick this up if contestant count growth actually makes it necessary."
+   "summary": "vectorize update()/report() per-contestant loop + yf.download(threads=True). Must not change signal logic or promotion math. MEASURED, not just assumed low-priority (2026-08-29, cProfile against real ledger size): update() takes 32ms for all 26 contestants -- the actual per-run cost was dependency reinstallation (65-79% of total job time), not this loop, which is why pip caching was done instead (see AUTONOMOUS_LOG perf-pip-cache-measured). Vectorizing this loop would optimize roughly 0.2% of a job's real time. Correctly deprioritized on real evidence, not guesswork -- only revisit if contestant count grows enough (tens of thousands, not the current ~26-40) to change that math, which Phase 1 standing mode's MAX_CONTESTANTS=40 cap makes unlikely for now."
   },
   {
    "id": "P2-monsoon-csv",
@@ -207,9 +207,23 @@
   {
    "id": "P1-nifty100-momentum-contestant",
    "priority": "P1",
-   "status": "done_merged_to_main",
-   "summary": "Het: 'Add a Nifty 100 momentum contestant, mechanism first.' New UNIVERSE['nifty100'] basket (~95 names, Nifty 50 + high-confidence Next-50 subset) + one new registry key mom_nifty100_lb90 (fn=momentum, sector=nifty100, lookback=90, top_frac=0.10), reusing the existing sig_momentum function. Mechanism (cross-sectional momentum, Jegadeesh & Titman 1993 + NSE-focused replications) stated before any evidence per Law 1. New registry key only, no existing contestant mutated (Law 2). Tested via 40-cycle synthetic regression + report(), no crash. Ticker list built from training knowledge, NOT a live NSE fetch (sandbox egress proxy blocks nseindia.com/wikipedia.org/smallcase.com, confirmed via real WebFetch attempts) -- flagged for Het to spot-check when he has a live source; a bad/delisted ticker degrades gracefully (drops from the panel) rather than crashing the pipeline. MERGED to main (893670b), then corrected after a real GitHub Actions diagnostic found 2 dead tickers (TATAMOTORS.NS, LTIM.NS -- real 404s) and removed them, merged again (2e15b6c). Basket is now a real-verified 93 names.",
-   "commit": "2e15b6c"
+   "status": "done_fully_verified_merged",
+   "summary": "Het: 'Add a Nifty 100 momentum contestant, mechanism first.' New registry key mom_nifty100_lb90 (fn=momentum, sector=nifty100, lookback=90, top_frac=0.10), reusing the existing sig_momentum function unchanged. Mechanism (cross-sectional momentum, Jegadeesh & Titman 1993 + NSE-focused replications) stated before any evidence per Law 1. New registry key only, no existing contestant mutated (Law 2). Tested via 40-cycle synthetic regression + report(), no crash. TICKER LIST FULLY RESOLVED (2026-08-29, 3-stage process): (1) initial ~93-95 names from training knowledge, since this sandbox can't reach nseindia.com; (2) verified against real Yahoo Finance data via a GitHub Actions diagnostic, found+removed 2 dead tickers (TATAMOTORS.NS/LTIM.NS, real 404s) -> 93 names; (3) verified against NSE's own official Nifty 100 constituent CSV (tools/diagnose_nifty100_official_list.py, real GitHub Actions fetch to nsearchives.nseindia.com, confirmed via NSE's own company-name column) and fully synced -> now a BYTE-EXACT 100-symbol match to NSE's real current list. Confirmed TATAMOTORS.NS's real successors are TMCV.NS/TMPV.NS (2025 Tata Motors demerger); confirmed LTIM.NS/LTIMindtree is genuinely absent from the current index, not a rename. MERGED to main across 3 commits: 893670b (initial), 2e15b6c (Yahoo-verified 93), d788988 (NSE-official-verified 100, final). No further ticker verification needed unless NSE reconstitutes the index (semi-annually) -- re-run the diagnostic, don't hand-edit.",
+   "commit": "d788988"
+  },
+  {
+   "id": "P0-URGENT-fix-promotion-bar-multiplicity",
+   "priority": "P0",
+   "status": "done",
+   "summary": "RESOLVED 2026-08-30. Het gave fresh explicit in-session authorization and chose option 4+3 from docs/research/Q5_statistical_power.md: a promoted contestant must now beat nifty_benchmark on DATE-PAIRED excess returns (information ratio, which cancels the shared market factor that was manufacturing false positives) AND clear a Bonferroni-corrected Sharpe floor for the number of contestants competing that round. Implemented in factory.py as promotion_check()/excess_return_stats()/multiplicity_sharpe_floor(); agents/judge/judge.py now DELEGATES to promotion_check() instead of re-implementing the thresholds, removing a real drift risk where the explanation a human read could disagree with the decision report() made. RULES gained require_beat_benchmark + promotion_alpha; NOTHING existing was loosened (only added conditions -- the opposite of the Section 5f kill condition). Fails CLOSED if no benchmark history is available. Committed BEFORE looking at live contestant results, per MASTER_PLAN.md's hindsight-bias requirement. ON BRANCH, UNMERGED.",
+   "commit": "27fe0a9"
+  },
+  {
+   "id": "P1-gate-crossover-breeding-on-days",
+   "priority": "P1",
+   "status": "done",
+   "summary": "RESOLVED 2026-08-30. Het authorized the one-condition fix from docs/research/Q6_breeding_overfitting.md: attempt_breeding()'s eligibility filter now also requires days_on_rung >= RULES['min_days_on_rung'], mirroring what propose_evolutions() always had. Closes the gap where crossover could fire at ~day 40, where a ZERO-EDGE contestant looks 'profitable' 43% of the time -- i.e. breeding was selecting luck and copying it into children. Tested both directions (past-the-bar parents still breed; day-40 parents fully blocked even when profitable with 50 trades). ON BRANCH, UNMERGED.",
+   "commit": "27fe0a9"
   }
  ],
  "recent_commits": [

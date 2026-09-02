@@ -535,7 +535,7 @@ Never "fix" these. Each was investigated against real data.
 | You see | It is normal because |
 |---|---|
 | Most strategies show **0 trades** | They wait for a rare price shock (~3% single-day move), which happens ~13-25 days a year. |
-| **No strategy has ever bred or evolved** | Both need `days_on_rung >= 126`. Nothing is close yet. |
+| **No strategy has ever bred or evolved** | advisor-evolve genuinely needs `days_on_rung >= 126`. **Crossover breeding does NOT** -- it only needs `equity > 1.0` AND `trades >= 10`, so it can fire much earlier (see docs/research/Q6_breeding_overfitting.md). It hasn't fired only because no contestant currently has both at once. Do not treat crossover as 126-day-protected. |
 | `monsoon_cement` never trades | Deliberately switched off. Its data ends in 2017. |
 | Registry warning after a new strategy is added | Fixes itself on the next daily run -- **but confirm that with Runbook 1 Step 1.3a's date check first.** If an update() already ran after the key landed and it is still missing, the backfill is broken and it is NOT normal. |
 | Everything says Rs 0 real money | Correct. Nothing has earned real capital yet. |

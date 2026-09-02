@@ -3,7 +3,7 @@
  "status": "idle",
  "task": null,
  "started_at": null,
- "last_updated": "2026-08-29T17:33:47.667900Z",
+ "last_updated": "2026-08-30T07:58:26Z",
  "resume_instructions": null,
- "note": "Nifty 100 momentum contestant built, verified for real via GH Actions diagnostic (2 dead tickers found+removed), and merged to main (893670b, 2e15b6c), 2026-08-29. Idle."
+ "note": "Q5 + Q6 fixes IMPLEMENTED, TESTED and PUSHED 2026-08-30 (commit 27fe0a9, ON BRANCH, UNMERGED). Het authorized writing them; merging to main is a SEPARATE decision that still needs its own fresh yes -- do not assume it. Measured result: false-positive rate at 126 days fell 84.8% -> 3.0%, power 94.8%. The 2026-08-30 RULES authorization was specific and is now SPENT; it does not cover any further RULES/LADDER/COST_PER_SIDE change. Q4 is now unblocked and is the next research task (it was deliberately held until the bar was fixed, to avoid hindsight bias). Also still open: the Sunday weekly report cron looked delayed on 2026-08-30 -- within tolerance, logged as a watch item, confirm it self-resolved. Nothing in progress."
 }
