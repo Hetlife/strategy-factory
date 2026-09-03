@@ -3,7 +3,7 @@
  "status": "idle",
  "task": null,
  "started_at": null,
- "last_updated": "2026-09-02T15:50:22Z",
+ "last_updated": "2026-09-03T07:19:10Z",
  "resume_instructions": null,
- "note": "MERGED to main 2026-09-02 (PR #21, merge commit bc4b07f). Het's fresh explicit merge confirmation given in-session. health_check.py --live is FULLY CLEAN post-merge (no findings at all -- the registry-drift warning also cleared, mom_nifty100_lb90 backfilled by an automated run while this was in progress). The new promotion bar (beat nifty_benchmark + multiplicity correction) and the breeding day-gate are now LIVE on main -- next Sunday's report() run will use them for real. Q4 (does anything beat Nifty net of cost/tax) is the next research task, now unblocked. Nothing in progress."
+ "note": "Q4 ANSWERED 2026-09-03 (docs/research/Q4_beat_nifty.md, tools/analyze_q4_vs_benchmark.py). Answer: NO -- 0 of 25 beat the benchmark with 95% confidence, but the real findings are structural: only 4-7 paired days usable (benchmark history starts 2026-08-26 vs contestants' 2026-07-13); 15 of 26 contestants have never traded so their 'excess' is cash-vs-falling-index, not alpha; and the merged Q5 gate now correctly fails closed for everyone ('need >= inf, cannot certify'), restarting the effective promotion clock from 2026-08-26 (~6 weeks later than the contestant-age clock implied). Two items now NEED HET -- see state.json queue item P1-Q4-answered-benchmark-clock-restarted. Nothing in progress."
 }

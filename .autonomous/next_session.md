@@ -1,6 +1,6 @@
 # NEXT SESSION — mechanical task list (written for a low-cost model)
 
-**Last updated: 2026-09-02.** Follow this top to bottom, in order. Don't
+**Last updated: 2026-09-03.** Follow this top to bottom, in order. Don't
 skip steps, don't improvise. If a step's outcome doesn't match what's
 written, stop and read `.autonomous/RUNBOOKS.md`'s matching RUNBOOK
 rather than guessing.
@@ -19,7 +19,7 @@ python3 tools/health_check.py --live
 
 **Expected:** `loop_state.json` status `"idle"`. `git status --short`
 empty. `health_check.py --live` prints `health_check: no findings.`
-(exactly that line, nothing else) — as of 2026-09-02 it is fully clean.
+(exactly that line, nothing else) — as of 2026-09-03 it is fully clean.
 
 If `health_check` prints any `[WARNING]` or `[ERROR]`: read
 `.autonomous/RUNBOOKS.md` Step 1.3/1.3a for the decision table. Do not
@@ -60,17 +60,25 @@ approximately zero.
 
 ---
 
-## TASK 4 — If Het is present, one question only
+## TASK 4 — If Het is present, raise the two open decisions
 
-Ask once, plainly, don't repeat if already answered this session:
+Q4 was answered 2026-09-03 (`docs/research/Q4_beat_nifty.md`). Two
+things are waiting on Het. Raise them once, plainly, don't nag, and
+don't re-ask if he already answered this session:
 
-> "The new promotion bar is live on `main` now. Want me to look into Q4
-> next — whether any contestant actually beats Nifty net of costs?"
+> "Two things from the Q4 analysis. First: the promotion clock
+> effectively restarted — the new bar compares each strategy against the
+> Nifty benchmark day-by-day, and the benchmark only started recording
+> on 26 Aug while the strategies started 13 July. So nothing can be
+> promoted until the benchmark catches up, about six weeks later than
+> we thought. I'd recommend just accepting that. Second: 15 of the 26
+> strategies have never traded once in 44 days — their thresholds never
+> get crossed. Do you want those loosened, or left as rare-event
+> insurance?"
 
-- If yes → this is a bigger research task (needs judgment, not
-  mechanical steps), better suited to a stronger model. Tell Het that
-  and offer to flag it rather than attempting it here.
-- If no / not present → do nothing further, go to TASK 5.
+- Both are **his** calls. Do not change thresholds, do not touch the
+  ledger, do not "fix" the clock yourself.
+- If he's not present → leave them flagged, go to TASK 5.
 
 ---
 
@@ -108,18 +116,25 @@ without Het's fresh, in-session "yes" for that specific change.
 
 - `.autonomous/RUNBOOKS.md` — full mechanical procedures, decision
   tables, "STOP and escalate" points.
-- `MASTER_PLAN.md` — why the promotion bar mattered, what's next (Q4).
+- `MASTER_PLAN.md` — why the promotion bar mattered, and the ranked
+  list of what's left.
+- `docs/research/Q4_beat_nifty.md` — the benchmark-clock finding.
 - `docs/research/Q5_statistical_power.md` /
   `Q6_breeding_overfitting.md` — the finished analysis behind the merge.
 - `.autonomous/het_directives.md` → NEEDS HET section — anything still
   waiting on him.
 
-## Current state, verified 2026-09-02
+## Current state, verified 2026-09-03
 
 - Phase 1, day 40+ of 126. 26 live contestants, all rung 0 (paper),
   Rs 0 real money, zero promotions ever.
 - **Promotion bar fix is LIVE on `main`** (merged, verified, health
   check clean). Next scheduled weekly `report()` run uses it for real.
-- Q4 (does anything beat Nifty net of cost/tax) is the next research
-  question — unblocked, not started, needs a session with more
-  reasoning budget than a mechanical task list can specify in advance.
+- **Q4 is ANSWERED** (2026-09-03): nothing beats Nifty yet — 0 of 25 at
+  95% confidence — but only 4-7 days are actually usable, so that is
+  "cannot measure yet", not "failed". See `docs/research/Q4_beat_nifty.md`.
+- **Nothing can be promoted right now**, by design: the benchmark has
+  too little history to certify against, so the gate fails closed with
+  "cannot certify". This is correct, not a bug. Do not try to fix it.
+- Remaining open research questions are Q3, Q7, Q8, Q9 — all lower value
+  than simply letting the calendar run. See `MASTER_PLAN.md`'s table.

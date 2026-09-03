@@ -224,6 +224,13 @@
    "status": "done",
    "summary": "RESOLVED 2026-08-30. Het authorized the one-condition fix from docs/research/Q6_breeding_overfitting.md: attempt_breeding()'s eligibility filter now also requires days_on_rung >= RULES['min_days_on_rung'], mirroring what propose_evolutions() always had. Closes the gap where crossover could fire at ~day 40, where a ZERO-EDGE contestant looks 'profitable' 43% of the time -- i.e. breeding was selecting luck and copying it into children. Tested both directions (past-the-bar parents still breed; day-40 parents fully blocked even when profitable with 50 trades). ON BRANCH, UNMERGED.",
    "commit": "bc4b07f"
+  },
+  {
+   "id": "P1-Q4-answered-benchmark-clock-restarted",
+   "priority": "P1",
+   "status": "blocked_on_human",
+   "commit": "n/a-analysis-only",
+   "summary": "Q4 ANSWERED 2026-09-03 (docs/research/Q4_beat_nifty.md): zero of 25 contestants beat the benchmark with 95% confidence. Three structural findings matter more than the numbers. (1) The usable window is only 4-7 PAIRED days, not 44 -- nifty_benchmark's history starts 2026-08-26 while contestants start 2026-07-13, and the comparison is date-paired so the shorter side caps it. (2) 15 of 26 live contestants have ZERO trades in 44 days; their apparent positive 'excess' is just sitting in cash while the index fell, clustering at an identical +0.00014/day -- non-participation, not alpha. Effective arena is ~11, not 26. (3) OPERATIONAL: the merged Q5 gate now fails closed for EVERY contestant with 'need >= inf (cannot certify -- too few paired days against the benchmark)', so the effective promotion clock restarted from the benchmark's 2026-08-26 start, pushing the earliest honest promotion ~6 weeks later. Correct fail-closed behaviour, not a bug. NEEDS HET: (a) accept the ~6-week slip (recommended -- option 2, backfilling the benchmark, would mean retroactively computed returns and hand-editing the ledger, trading away the observed-live property); (b) the event_*/input_cost_*/monsoon thresholds that have never fired in 44 days are registry-parameter territory and need his call, same bar as the 2026-08-27 steel-threshold finding."
   }
  ],
  "recent_commits": [
