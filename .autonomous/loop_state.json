@@ -1,9 +1,9 @@
 {
  "_doc": "Crash/resume file for the 15-min paid check-in loop (Het, 2026-08-26: 'use it every 15 mins... make sure if you are not left tokens you have a crash file to store what you did before the limit so you can start working again as session resets'). Every firing reads this FIRST. status='idle' means the previous firing finished cleanly or found nothing to do -- start fresh. status='in_progress' means a previous firing got cut off mid-task -- resume from resume_instructions EXACTLY, don't restart from scratch and don't second-guess what's already been committed. Update and push this file at the START of any multi-step task (before doing the risky part) and again when finishing or safely stopping -- see next_session.md and the Routine's own prompt for the full protocol.",
- "status": "idle",
- "task": null,
- "started_at": null,
- "last_updated": "2026-09-03T07:19:10Z",
- "resume_instructions": null,
+ "status": "in_progress",
+ "task": "Orchestrator directive: read-only system audit + planning deliverables (.autonomous/orchestrator/)",
+ "started_at": "2026-09-05T16:06:07Z",
+ "last_updated": "2026-09-05T16:06:07Z",
+ "resume_instructions": "Het installed a HIGH-REASONING ORCHESTRATOR DIRECTIVE (2026-09-05, fable-5-1 session). It is ADOPTED (consistent with CLAUDE.md, unlike the earlier declined 'execution prompt'). Section 23 requires a READ-ONLY audit first, then planning docs under .autonomous/orchestrator/. NO large architecture change, NO code change to factory.py, NO merge. If resuming: check which files in .autonomous/orchestrator/ already exist and are committed (git log), finish the missing ones, then log + reset this file. An adversarial subagent review of promotion_check() may have been launched -- its report lands in the scratchpad; if missing, re-run it (spec in .autonomous/orchestrator/VERIFICATION_PROTOCOL.md once written).",
  "note": "Q4 ANSWERED 2026-09-03 (docs/research/Q4_beat_nifty.md, tools/analyze_q4_vs_benchmark.py). Answer: NO -- 0 of 25 beat the benchmark with 95% confidence, but the real findings are structural: only 4-7 paired days usable (benchmark history starts 2026-08-26 vs contestants' 2026-07-13); 15 of 26 contestants have never traded so their 'excess' is cash-vs-falling-index, not alpha; and the merged Q5 gate now correctly fails closed for everyone ('need >= inf, cannot certify'), restarting the effective promotion clock from 2026-08-26 (~6 weeks later than the contestant-age clock implied). Two items now NEED HET -- see state.json queue item P1-Q4-answered-benchmark-clock-restarted. Nothing in progress."
 }
