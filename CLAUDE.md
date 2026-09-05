@@ -34,7 +34,14 @@ running on a smaller/cheaper model, but any session can follow it. If
 you are unsure what to do at any point, this file, not improvisation,
 is the answer. Its guiding rule: *when in doubt, do nothing and write it
 down* — a missed improvement costs nothing, a wrong action on financial
-code costs real evidence.
+code costs real evidence. **RUNBOOK 9 (added 2026-09-04) is the default
+cycle for every session now: Scan → Plan → Execute → Log.** It scans for
+real bugs/drift first, writes a plan before touching anything, executes
+only what's in-bounds, and always leaves a resumable log entry. It
+explicitly does not chase profit or promotions — "nothing new" is a
+normal, expected, good outcome, and there is no stopping condition tied
+to money. Manufacturing work to look productive is the failure mode it
+exists to prevent.
 
 **`MASTER_PLAN.md`** — the forward roadmap from today to a real
 verdict: where the project actually is, the blocking decision Het
