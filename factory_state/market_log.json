@@ -2946,5 +2946,467 @@
    "close": 23897.6992,
    "ret": 0.001016
   }
+ },
+ "2026-09-07": {
+  "ABB.NS": {
+   "close": 7434.0,
+   "ret": 0.003239
+  },
+  "ACC.NS": {
+   "close": 1268.7,
+   "ret": -0.011762
+  },
+  "ADANIENSOL.NS": {
+   "close": 1390.4,
+   "ret": -0.013621
+  },
+  "ADANIENT.NS": {
+   "close": 2950.0,
+   "ret": 0.004084
+  },
+  "ADANIGREEN.NS": {
+   "close": 1288.0,
+   "ret": -0.010221
+  },
+  "ADANIPORTS.NS": {
+   "close": 1694.3,
+   "ret": -0.007614
+  },
+  "ADANIPOWER.NS": {
+   "close": 204.49,
+   "ret": -0.013079
+  },
+  "AMBUJACEM.NS": {
+   "close": 398.6,
+   "ret": -0.015802
+  },
+  "APOLLOHOSP.NS": {
+   "close": 8760.0,
+   "ret": 0.012717
+  },
+  "ASIANPAINT.NS": {
+   "close": 2500.8999,
+   "ret": -0.010446
+  },
+  "ASTRAL.NS": {
+   "close": 1498.2,
+   "ret": 0.00355
+  },
+  "AXISBANK.NS": {
+   "close": 1266.0,
+   "ret": -0.005499
+  },
+  "BAJAJ-AUTO.NS": {
+   "close": 11800.0,
+   "ret": -0.009984
+  },
+  "BAJAJFINSV.NS": {
+   "close": 1938.6,
+   "ret": -0.015939
+  },
+  "BAJAJHLDNG.NS": {
+   "close": 10956.0,
+   "ret": -0.018455
+  },
+  "BAJFINANCE.NS": {
+   "close": 1060.0,
+   "ret": -0.000471
+  },
+  "BANKBARODA.NS": {
+   "close": 237.0,
+   "ret": -0.008368
+  },
+  "BEL.NS": {
+   "close": 404.0,
+   "ret": -0.00333
+  },
+  "BHARTIARTL.NS": {
+   "close": 1854.0,
+   "ret": 0.007609
+  },
+  "BOSCHLTD.NS": {
+   "close": 48025.0,
+   "ret": 0.025737
+  },
+  "BPCL.NS": {
+   "close": 312.9,
+   "ret": -0.008869
+  },
+  "BRITANNIA.NS": {
+   "close": 5042.5,
+   "ret": -0.011565
+  },
+  "BZ=F": {
+   "close": 96.28,
+   "ret": 0.0
+  },
+  "CANBK.NS": {
+   "close": 124.0,
+   "ret": -0.011952
+  },
+  "CERA.NS": {
+   "close": 5743.5,
+   "ret": -0.007603
+  },
+  "CGPOWER.NS": {
+   "close": 895.0,
+   "ret": 0.004489
+  },
+  "CHOLAFIN.NS": {
+   "close": 1848.2,
+   "ret": 0.005003
+  },
+  "CIPLA.NS": {
+   "close": 1395.0,
+   "ret": 0.00722
+  },
+  "COALINDIA.NS": {
+   "close": 418.85,
+   "ret": 0.008427
+  },
+  "CUMMINSIND.NS": {
+   "close": 5030.0,
+   "ret": -0.000993
+  },
+  "DALBHARAT.NS": {
+   "close": 1713.9,
+   "ret": -0.020237
+  },
+  "DIVISLAB.NS": {
+   "close": 9315.0,
+   "ret": 0.023626
+  },
+  "DLF.NS": {
+   "close": 672.7,
+   "ret": -0.013492
+  },
+  "DMART.NS": {
+   "close": 3710.0,
+   "ret": -0.015915
+  },
+  "DRREDDY.NS": {
+   "close": 1144.2,
+   "ret": -0.005908
+  },
+  "EICHERMOT.NS": {
+   "close": 7672.0,
+   "ret": 0.005439
+  },
+  "ENRIN.NS": {
+   "close": 3121.8999,
+   "ret": 0.00199
+  },
+  "ETERNAL.NS": {
+   "close": 320.8,
+   "ret": -0.006042
+  },
+  "GAIL.NS": {
+   "close": 176.0,
+   "ret": 0.014994
+  },
+  "GODREJCP.NS": {
+   "close": 861.9,
+   "ret": -0.018337
+  },
+  "GRASIM.NS": {
+   "close": 3302.3999,
+   "ret": -0.0059
+  },
+  "HAL.NS": {
+   "close": 4855.2002,
+   "ret": -0.000165
+  },
+  "HCLTECH.NS": {
+   "close": 1282.8,
+   "ret": -0.008195
+  },
+  "HDFCAMC.NS": {
+   "close": 2432.0,
+   "ret": -0.010698
+  },
+  "HDFCBANK.NS": {
+   "close": 710.5,
+   "ret": -0.002247
+  },
+  "HDFCLIFE.NS": {
+   "close": 533.2,
+   "ret": -0.024158
+  },
+  "HGINFRA.NS": {
+   "close": 488.7,
+   "ret": 0.0139
+  },
+  "HINDALCO.NS": {
+   "close": 1006.0,
+   "ret": -0.004946
+  },
+  "HINDUNILVR.NS": {
+   "close": 1960.0,
+   "ret": -0.00679
+  },
+  "HINDZINC.NS": {
+   "close": 589.15,
+   "ret": -0.019717
+  },
+  "HYUNDAI.NS": {
+   "close": 2210.0,
+   "ret": 0.002268
+  },
+  "ICICIBANK.NS": {
+   "close": 1427.5,
+   "ret": 0.003021
+  },
+  "INDHOTEL.NS": {
+   "close": 716.2,
+   "ret": -0.005278
+  },
+  "INDIGO.NS": {
+   "close": 5001.0,
+   "ret": 0.004822
+  },
+  "INFY.NS": {
+   "close": 1087.5,
+   "ret": -0.037611
+  },
+  "IOC.NS": {
+   "close": 135.15,
+   "ret": -0.017805
+  },
+  "IRB.NS": {
+   "close": 19.25,
+   "ret": -0.020356
+  },
+  "IRFC.NS": {
+   "close": 83.0,
+   "ret": -0.004796
+  },
+  "ITC.NS": {
+   "close": 263.5,
+   "ret": -0.002272
+  },
+  "JINDALSTEL.NS": {
+   "close": 1147.9,
+   "ret": -0.014678
+  },
+  "JIOFIN.NS": {
+   "close": 234.4,
+   "ret": -0.021294
+  },
+  "JKCEMENT.NS": {
+   "close": 5047.0,
+   "ret": -0.00718
+  },
+  "JSWSTEEL.NS": {
+   "close": 1302.0,
+   "ret": -0.017358
+  },
+  "KAJARIACER.NS": {
+   "close": 1220.5,
+   "ret": -0.015408
+  },
+  "KNRCON.NS": {
+   "close": 122.75,
+   "ret": -0.015322
+  },
+  "KOTAKBANK.NS": {
+   "close": 422.1,
+   "ret": -0.005654
+  },
+  "LODHA.NS": {
+   "close": 1200.0,
+   "ret": -0.018003
+  },
+  "LT.NS": {
+   "close": 3999.0,
+   "ret": 0.008804
+  },
+  "LTM.NS": {
+   "close": 4448.0,
+   "ret": -0.023276
+  },
+  "M&M.NS": {
+   "close": 3160.0,
+   "ret": -0.003155
+  },
+  "MARUTI.NS": {
+   "close": 12760.0,
+   "ret": 0.005199
+  },
+  "MAXHEALTH.NS": {
+   "close": 992.0,
+   "ret": 0.007311
+  },
+  "MAZDOCK.NS": {
+   "close": 2454.2,
+   "ret": -0.008404
+  },
+  "MOTHERSON.NS": {
+   "close": 162.0,
+   "ret": 0.00809
+  },
+  "MUTHOOTFIN.NS": {
+   "close": 2880.0,
+   "ret": -0.0116
+  },
+  "NESTLEIND.NS": {
+   "close": 1398.0,
+   "ret": -0.008862
+  },
+  "NTPC.NS": {
+   "close": 332.0,
+   "ret": -0.001504
+  },
+  "ONGC.NS": {
+   "close": 233.7,
+   "ret": -0.004049
+  },
+  "PFC.NS": {
+   "close": 353.1,
+   "ret": -0.00703
+  },
+  "PIDILITIND.NS": {
+   "close": 1575.0,
+   "ret": -0.033446
+  },
+  "PNB.NS": {
+   "close": 115.6,
+   "ret": -0.011966
+  },
+  "PNCINFRA.NS": {
+   "close": 181.71,
+   "ret": -0.007646
+  },
+  "POWERGRID.NS": {
+   "close": 266.45,
+   "ret": 0.001692
+  },
+  "RAMCOCEM.NS": {
+   "close": 871.5,
+   "ret": -0.014698
+  },
+  "RECLTD.NS": {
+   "close": 316.4,
+   "ret": -0.007217
+  },
+  "RELIANCE.NS": {
+   "close": 1309.5,
+   "ret": -0.009455
+  },
+  "SAIL.NS": {
+   "close": 187.9,
+   "ret": -0.045224
+  },
+  "SBILIFE.NS": {
+   "close": 1732.0,
+   "ret": -0.024225
+  },
+  "SBIN.NS": {
+   "close": 1005.9,
+   "ret": -0.010038
+  },
+  "SHREECEM.NS": {
+   "close": 23365.0,
+   "ret": -0.020541
+  },
+  "SHRIRAMFIN.NS": {
+   "close": 1037.0,
+   "ret": -0.003842
+  },
+  "SIEMENS.NS": {
+   "close": 3927.0,
+   "ret": -0.012572
+  },
+  "SOLARINDS.NS": {
+   "close": 21950.0,
+   "ret": 0.023549
+  },
+  "SUNPHARMA.NS": {
+   "close": 1895.0,
+   "ret": -0.002106
+  },
+  "SUPREMEIND.NS": {
+   "close": 3598.0,
+   "ret": 0.035396
+  },
+  "TATACAP.NS": {
+   "close": 369.95,
+   "ret": -0.013598
+  },
+  "TATACONSUM.NS": {
+   "close": 1015.0,
+   "ret": 0.00495
+  },
+  "TATAPOWER.NS": {
+   "close": 365.7,
+   "ret": -0.00625
+  },
+  "TATASTEEL.NS": {
+   "close": 185.61,
+   "ret": -0.016844
+  },
+  "TCS.NS": {
+   "close": 2270.0,
+   "ret": -0.014757
+  },
+  "TECHM.NS": {
+   "close": 1564.0,
+   "ret": -0.020602
+  },
+  "TITAN.NS": {
+   "close": 4995.0,
+   "ret": -0.00498
+  },
+  "TMCV.NS": {
+   "close": 459.65,
+   "ret": 0.003165
+  },
+  "TMPV.NS": {
+   "close": 307.0,
+   "ret": -0.014446
+  },
+  "TORNTPHARM.NS": {
+   "close": 4914.0,
+   "ret": 0.011736
+  },
+  "TRENT.NS": {
+   "close": 2814.5,
+   "ret": -0.013495
+  },
+  "TVSMOTOR.NS": {
+   "close": 4132.0,
+   "ret": -0.000266
+  },
+  "ULTRACEMCO.NS": {
+   "close": 11175.0,
+   "ret": -0.020424
+  },
+  "UNIONBANK.NS": {
+   "close": 186.04,
+   "ret": -0.006303
+  },
+  "UNITDSPR.NS": {
+   "close": 1440.0,
+   "ret": -0.02154
+  },
+  "VBL.NS": {
+   "close": 405.95,
+   "ret": -0.004048
+  },
+  "VEDL.NS": {
+   "close": 268.0,
+   "ret": -0.015068
+  },
+  "WIPRO.NS": {
+   "close": 172.8,
+   "ret": -0.020408
+  },
+  "ZYDUSLIFE.NS": {
+   "close": 1156.9,
+   "ret": 0.032946
+  },
+  "^NSEI": {
+   "close": 23779.1504,
+   "ret": -0.004961
+  }
  }
 }
