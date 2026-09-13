@@ -51,6 +51,18 @@ research questions. Does NOT replace `EXECUTION_PLAN.md` (settled
 facts, gates, kill conditions, guardrails — that still wins); this
 is the sequence, that is the rules.
 
+**`.autonomous/ORCHESTRATOR_DIRECTIVE.md`** — a "HIGH-REASONING
+ORCHESTRATOR DIRECTIVE" Het pasted 2026-09-05, distilled to its
+operating principles (same convention as the autonomy directive below).
+Adopted, with two resolved tensions recorded in the file itself: its
+eleven planning documents live as thin pointers under
+`.autonomous/orchestrator/` rather than duplicating what `CLAUDE.md`/
+`EXECUTION_PLAN.md` already own, and its ask for a persistent
+multi-agent orchestrator runtime is deliberately NOT built — that shape
+of thing already failed 5 times and was abandoned (`state.json` queue
+`P0-5`). Read `.autonomous/orchestrator/MASTER_EXECUTION_PLAN.md` for
+what's actually being done instead. Does not loosen any Hard Rule below.
+
 **`.autonomous/HET_AUTONOMY_DIRECTIVE.md`** — Het's standing autonomy
 directive (stored at his request 2026-08-29), distilled to its operating
 principles: optimize for outcomes, act autonomously on reversible work,

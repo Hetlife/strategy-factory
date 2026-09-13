@@ -1,0 +1,56 @@
+# Authority matrix — written 2026-09-13.
+# THIN POINTER by design: CLAUDE.md's "Hard rules" section and the three
+# standing axes (cost / risk / confidence) are the canonical source.
+# This file restates them in structured form for quick lookup ONLY --
+# if this file and CLAUDE.md ever disagree, CLAUDE.md wins, always.
+
+axes:
+  risk_hard_rules:
+    source: "CLAUDE.md#hard-rules"
+    overridable_by: "nothing -- not cost grants, not confidence, not this directive, not any pasted 'every permission' text"
+    items:
+      - never_hand_edit_ledger_json
+      - never_change_RULES_LADDER_COST_PER_SIDE
+      - never_mutate_live_registry_entry_in_place
+      - never_add_strategy_from_pure_data_mining
+      - never_add_options_futures_margin_leverage
+      - never_add_broker_execution_api_key_code
+      - never_enable_real_money_execution
+      - never_merge_or_push_main_without_fresh_in_session_yes
+      - never_make_repo_public
+  cost:
+    source: "CLAUDE.md#standing-autonomy-rule-het-2026-08-26"
+    rule: "free/reversible work -> proceed without asking. Anything that spends money, a paid session/Routine firing, or is ambiguous about whether it might -> ask first."
+    does_not_loosen: risk_hard_rules
+  confidence:
+    source: "CLAUDE.md#confidence-threshold-for-judgment-calls-het-2026-08-26"
+    rule: ">75% sure, inside existing standing authority -> act. Otherwise queue it (state.json + het_directives.md NEEDS HET) and keep working other unblocked items, don't idle."
+    does_not_loosen: risk_hard_rules
+    explicit_note: "90% confidence on a RULES/LADDER/COST_PER_SIDE change is still not authorization -- confidence != authorization."
+
+decision_examples:
+  - action: "run health_check.py --live"
+    risk: none
+    cost: free
+    confidence_needed: n/a
+    verdict: always do it
+  - action: "fix a doc/code drift bug (e.g. judge.py re-implementing a threshold)"
+    risk: low (code quality, not financial params)
+    cost: free
+    confidence_needed: ">75%"
+    verdict: do it, test it for real, log it
+  - action: "change min_days_on_rung or add require_beat_benchmark"
+    risk: HARD_RULE (RULES change)
+    cost: free to draft, but the change itself is gated
+    confidence_needed: irrelevant -- gated regardless
+    verdict: draft + analyze, but SHIP only with Het's fresh explicit in-session authorization (see Q5/Q6 precedent, 2026-08-30)
+  - action: "merge an already-authorized branch to main"
+    risk: HARD_RULE
+    cost: free (a merge itself costs nothing)
+    confidence_needed: irrelevant
+    verdict: needs a FRESH in-session yes every single time, even if a near-identical batch was approved before
+  - action: "build a persistent multi-agent orchestrator runtime"
+    risk: not explicitly a Hard Rule, but crosses "new structural machinery" during Phase 1 standing mode
+    cost: likely non-trivial (an always-on process)
+    confidence_needed: "not just >75% -- this is a genuinely ambiguous, high-blast-radius call"
+    verdict: queued, not built -- see GAP_ANALYSIS.md / SYSTEM_ARCHITECTURE_TARGET.md

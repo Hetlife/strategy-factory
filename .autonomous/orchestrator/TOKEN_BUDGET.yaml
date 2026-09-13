@@ -1,0 +1,40 @@
+# Token budget — written 2026-09-13. Honest state, not aspirational.
+
+reality: >
+  No metering, quota, or accounting system exists for token/dollar spend
+  on this project. Het switches models manually (/model). Sessions do
+  not track or report their own cost. This file records that plainly
+  rather than implying a system exists that doesn't.
+
+governing_rule:
+  source: "CLAUDE.md standing autonomy rule (Het, 2026-08-26)"
+  text: "ask me if something even close to costing comes, otherwise do as you please"
+  interpretation: >
+    This is a per-decision ask-first rule, not a numeric budget. A
+    session should still reason about cost (see AGENT_MODEL_ROUTING.yaml)
+    but there is no ceiling to check against -- the check is "would this
+    specific action plausibly cost money Het hasn't already authorized,"
+    not "am I under budget X."
+
+why_no_formal_budget_is_being_built_now: >
+  Building a real metering system would itself be new structural
+  machinery during Phase 1 standing mode, with no task currently
+  blocked on its absence -- the actual cost driver (which model runs how
+  often) is already visible and adjustable through the hourly Routine's
+  own model field and Het's own /model choice. Revisit only if a
+  concrete cost problem actually appears (e.g. a Routine misfiring and
+  burning spend unnoticed) rather than pre-building for a hypothetical.
+
+known_cost_facts:
+  _note: "from earlier research, for reference if this changes"
+  opus_5: "$5 / $25 per 1M input/output tokens (approx, subject to change)"
+  sonnet_5: "$2 / $10 per 1M"
+  haiku_4_5: "$1 / $5 per 1M"
+  cache_reads: "~0.1x of base input cost"
+  batch_processing: "~50% off, not used by this project's real-time Routines"
+  caveat: "these are the figures found during 2026-09 research -- verify against the live Anthropic pricing page before treating them as current"
+
+practical_guidance_today:
+  - RUNBOOK 9 mechanical cycles: cheapest model that reads state.json and follows instructions literally (sonnet-5 has been doing this)
+  - genuine research questions (Q-series) or multi-document planning: a stronger model, but only when Het explicitly puts it on that model
+  - never let a session's own uncertainty about cost become a reason to skip logging or checkpointing -- loop_state.json costs nothing and prevents wasted re-work
