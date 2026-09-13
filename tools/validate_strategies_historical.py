@@ -195,6 +195,45 @@ def main():
               f"{r['drawdown']*100:>8.1f}%{verdict:>20}")
     print("=" * 100)
 
+    # THE reference number. "-20% over 5 years" means one thing if the
+    # index also fell and a very different thing if it doubled, and the
+    # first version of this tool printed the strategies without it --
+    # a table of returns with nothing to compare them against invites
+    # exactly the misreading this project exists to avoid.
+    bench_rows = sorted(bench_map.items())
+    b_eq, b_peak, b_sum, b_sq = 1.0, 1.0, 0.0, 0.0
+    for _, r in bench_rows:
+        b_eq *= (1 + r)
+        b_peak = max(b_peak, b_eq)
+        b_sum += r
+        b_sq += r * r
+    b_n = max(len(bench_rows), 1)
+    b_mean = b_sum / b_n
+    b_var = max(b_sq / b_n - b_mean ** 2, 1e-12)
+    b_sharpe = b_mean / math.sqrt(b_var) * math.sqrt(252)
+    print(f"\nBENCHMARK over the same window ({factory.BENCHMARK}, "
+          f"buy-and-hold, {b_n} days): total return "
+          f"{(b_eq - 1) * 100:+.1f}%, sharpe {b_sharpe:.2f}, "
+          f"max drawdown {(b_eq / b_peak - 1) * 100:.1f}%")
+    beat = [r for r in ok if r["total_return"] > (b_eq - 1.0)]
+    beat_traded = [r for r in beat if r["trades"] > 0]
+    beat_idle = [r for r in beat if r["trades"] == 0]
+    print(f"Strategies beating buy-and-hold on total return: "
+          f"{len(beat)} of {len(ok)}"
+          + (f" -- but {len(beat_idle)} of those NEVER TRADED"
+             if beat_idle else ""))
+    if beat_idle:
+        # The exact misreading the Q4 analysis already had to correct
+        # once (docs/research/Q4_beat_nifty.md): a contestant holding
+        # cash "beats" a falling index by not participating. That is not
+        # alpha and must never be counted as one.
+        print("    NOT ALPHA -- a strategy holding nothing 'beats' a "
+              "falling index purely by not participating. Ignore these: "
+              + ", ".join(r["name"] for r in beat_idle))
+    if beat_traded:
+        print("    actually traded and still beat it: "
+              + ", ".join(r["name"] for r in beat_traded))
+
     never = [r for r in ok if not r["ever_passed"]]
     zero_trade = [r for r in ok if r["trades"] == 0]
     print(f"\n{len(never)} of {len(ok)} strategies NEVER cleared the "
