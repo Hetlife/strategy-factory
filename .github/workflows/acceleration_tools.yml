@@ -1,0 +1,75 @@
+name: Strategy Factory - Acceleration Tools
+
+on:
+  workflow_dispatch:
+    inputs:
+      tool:
+        description: 'Which tool to run'
+        required: true
+        default: 'validate'
+        type: choice
+        options:
+          - validate          # historical strategy validation (read-only)
+          - backfill-dryrun   # benchmark backfill, DRY RUN, writes nothing
+          - backfill-apply    # benchmark backfill, WRITES + commits ledger.json
+          - phantom           # phantom/duplicate day detector (read-only)
+
+# Manual-only. This sandbox cannot reach any market data source (yfinance
+# and FRED both verified blocked 2026-09-13), so anything needing real
+# prices has to run here, where the runner has real network access.
+#
+# Only 'backfill-apply' writes anything. The other three are read-only and
+# safe to run at any time. 'backfill-apply' commits the modified
+# ledger.json (plus its timestamped backup) back to the branch it runs on,
+# and is deliberately a separate menu choice so it can never be triggered
+# by accident while meaning to run a dry run.
+
+jobs:
+  run-tool:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
+
+      - name: Install dependencies
+        run: pip install pandas numpy yfinance
+
+      - name: Historical strategy validation (read-only)
+        if: inputs.tool == 'validate'
+        run: python tools/validate_strategies_historical.py
+
+      - name: Phantom / duplicate day detector (read-only)
+        if: inputs.tool == 'phantom'
+        run: python tools/detect_phantom_days.py
+
+      - name: Benchmark backfill - DRY RUN (writes nothing)
+        if: inputs.tool == 'backfill-dryrun'
+        run: python tools/backfill_benchmark_history.py
+
+      - name: Benchmark backfill - APPLY (writes ledger.json)
+        if: inputs.tool == 'backfill-apply'
+        run: python tools/backfill_benchmark_history.py --apply
+
+      - name: Commit backfilled ledger
+        if: inputs.tool == 'backfill-apply'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add factory_state
+          git diff --staged --quiet || git commit -m "Backfill nifty_benchmark history from real index data
+
+          Ran tools/backfill_benchmark_history.py --apply. Only
+          nifty_benchmark's history was touched; a timestamped backup of
+          the previous ledger.json is committed alongside. See that
+          tool's docstring for why this specific backfill is legitimate
+          (buy-and-hold, no discretion to reconstruct) and what it
+          deliberately does not do."
+          git push

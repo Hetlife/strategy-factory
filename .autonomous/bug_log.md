@@ -10,14 +10,66 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## OPEN
 
+- **FIX ON BRANCH, NOT YET MERGED | 2026-09-13 | ledger-duplicate-trading-days | HIGH** —
+  `factory.yml`'s "Run daily arena update" step had no `if:` guard, so it
+  fired on BOTH cron schedules — the weekday one and the Sunday report
+  one. `update()` keys its history row on the newest date in the PRICE
+  PANEL, not the calendar date of the run; over a weekend that is still
+  Friday's row. So every Sunday run appended a SECOND row for Friday,
+  double-counting that day's P&L into `sum_ret`/`sum_sq` and advancing
+  `days_on_rung` again. **Measured in the live ledger: 26 of 27
+  contestants carry duplicate dates, 142 extra rows, almost all Fridays**
+  (the one non-Friday, 2026-07-14, is consistent with a Monday holiday
+  making Tuesday the panel's newest row). Effect: every contestant's
+  progress toward the 126-day promotion bar was overstated by roughly
+  19%, and Friday returns were counted twice in every Sharpe estimate.
+  Confirms as REAL and ACTIVE what the 2026-09-13 adversarial review had
+  rated only a theoretical MEDIUM ("if update() ever double-fires").
+  **FIX (on branch, tested, awaiting merge):** belt-and-braces — an
+  idempotence guard in `update()` that refuses to record a date already
+  present in any contestant's history (protects against manual dispatch
+  and re-runs too), plus an `if: github.event.schedule != '30 4 * * 0'`
+  guard on the workflow step (stops the pointless Sunday run entirely).
+  Tested three ways in an isolated ledger copy: a re-run on an
+  already-recorded date changes nothing; a genuine new trading day still
+  records exactly one row per live contestant; an immediate re-run of
+  that new day changes nothing. Skipping rather than overwriting is
+  deliberate — the first recording of a day is the one actually observed,
+  and a re-run must never be able to rewrite observed history.
+  **The 142 existing duplicate rows are NOT cleaned by this fix** — see
+  `.autonomous/ACCELERATION_PLAN.md` STEP 6; that rewrites recorded
+  history and is Het's call. The promotion gate itself is already
+  protected, because `excess_return_stats()` was made to dedupe by date
+  earlier the same day.
+
+- **OPEN | 2026-09-13 | phantom-trading-days-from-ffill | MEDIUM** —
+  `fetch_prices()` ends with `px.dropna(how="all").ffill()`.
+  `dropna(how="all")` only drops a date row where EVERY ticker is
+  missing, so a row where most tickers are NaN — an NSE holiday Yahoo
+  still lists, or a day whose data hasn't posted — survives, and
+  `.ffill()` fills it with yesterday's closes. The result is a recorded
+  "trading day" on which essentially every stock closed exactly
+  unchanged. **Measured via `tools/detect_phantom_days.py` (built this
+  session, read-only, no network needed): 2 of 5 checkable days were
+  phantom — 2026-08-27 with 95% of 21 tickers at exactly 0.0, and
+  2026-08-31 with 99% of 115.** Each phantom day advanced `days_on_rung`
+  and added a paired benchmark day (which LOWERS the multiplicity Sharpe
+  floor, since it scales as sqrt(252/n) — the unsafe direction). Sharpe
+  itself moves the conservative way: extra 0.0 days shrink the mean
+  faster than the standard deviation, measured at −12% to −25% for 10–27
+  padded days. Net effect is mixed, which is why the tool reports
+  evidence rather than asserting one direction. **Largely addressed by
+  the idempotence guard above** (a phantom day usually coincides with a
+  non-advancing panel), but not provably all cases. Coverage caveat:
+  `market_log.json` starts later than contestant history, so the true
+  phantom count over the full window is unknown and likely higher.
+
 - **OPEN | 2026-09-13 | promotion-gate-benchmark-first-permanent-match-ambiguity | LOW** —
-  `benchmark_returns()` (`factory.py:827-829`) picks the FIRST
-  `permanent`-flagged contestant it finds in dict-iteration order. Inert
-  today (only `nifty_benchmark` is `permanent`), but would be silently
-  ambiguous — no error, just whichever happens to be first — if a second
-  permanent contestant is ever added. Not fixed (not reachable today, no
-  concrete failing input exists yet); revisit if a second permanent
-  contestant is ever proposed.
+  `benchmark_returns()` picks the FIRST `permanent`-flagged contestant in
+  dict-iteration order. Inert today (only `nifty_benchmark` is
+  `permanent`), silently ambiguous if a second is ever added. Not fixed —
+  no concrete failing input exists yet.
+
 - **OPEN | 2026-09-13 | promotion-gate-input-cost-threshold-unverified** —
   the 15 never-traded contestants Het asked to "loosen" break into three
   different situations, only one of which is a real open item: (1) the 9

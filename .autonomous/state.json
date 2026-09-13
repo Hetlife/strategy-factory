@@ -84,6 +84,24 @@
  ],
  "queue": [
   {
+   "id": "P0-CRITICAL-ledger-duplicate-trading-days",
+   "priority": "P0",
+   "status": "fix_on_branch_needs_merge",
+   "summary": "2026-09-13. factory.yml's update step had no weekday guard so it also ran on the Sunday report cron; update() keys its row on the newest PRICE PANEL date (still Friday over a weekend), so Friday was recorded TWICE nearly every week since July. Measured: 26 of 27 contestants carry duplicate dates, 142 extra rows, almost all Fridays -- every contestant's progress toward the 126-day bar overstated ~19%, Friday returns double-counted in every Sharpe. Confirms as REAL what the adversarial review rated a theoretical MEDIUM. FIXED ON BRANCH, TESTED (3 cases in an isolated ledger copy): idempotence guard in update() refusing to record an already-present date, plus a weekday-only guard on the workflow step. NOT MERGED -- needs Het's fresh yes. The 142 existing duplicate rows are NOT cleaned (ACCELERATION_PLAN STEP 6, Het's call); the promotion gate is already protected since excess_return_stats() dedupes by date."
+  },
+  {
+   "id": "P1-phantom-trading-days",
+   "priority": "P1",
+   "status": "detector_built_rootcause_fixed_on_branch",
+   "summary": "2026-09-13. fetch_prices()'s .ffill() turns a mostly-NaN date row (NSE holiday, or data not yet posted) into a fake trading day where everything closed exactly unchanged. Measured via tools/detect_phantom_days.py: 2 of 5 checkable days phantom (95% and 99% of all tickers at exactly 0.0). Advances days_on_rung and adds paired benchmark days (lowers the multiplicity floor -- unsafe direction); deflates Sharpe (conservative direction). Largely addressed by the same idempotence guard. Coverage caveat: market_log.json starts later than contestant history so the true count is unknown and likely higher."
+  },
+  {
+   "id": "P1-acceleration-plan",
+   "priority": "P1",
+   "status": "tooling_built_blocked_on_merge",
+   "summary": "2026-09-13, Het: 'start working on it and create detailed work list ... for low token model to do autonomously.' Built and tested on branch: tools/validate_strategies_historical.py (reuses advisors.backtest() + the REAL factory.promotion_check() to ask whether each live strategy would EVER have cleared the bar in 5y of history; validated against a random-walk panel where it correctly passed 0 of 25), tools/backfill_benchmark_history.py (dry-run default, backs up, touches ONLY nifty_benchmark, verified idempotent and non-destructive in an isolated copy), tools/detect_phantom_days.py, and .github/workflows/acceleration_tools.yml. Full mechanical work list at .autonomous/ACCELERATION_PLAN.md. ALL STEPS BLOCKED ON STEP 1: merging the tooling to main, which GitHub requires before workflow_dispatch will run a new workflow file, and which is the only way to reach real market data (yfinance AND FRED both verified blocked from this sandbox)."
+  },
+  {
    "id": "P0-CRITICAL-promotion-gate-defects-found",
    "priority": "P0",
    "status": "done",

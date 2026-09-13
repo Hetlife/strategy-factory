@@ -525,9 +525,34 @@ def update():
     px = fetch_prices()
     today = str(px.index[-1].date())
     todays_ret = px.pct_change().iloc[-1]
-    append_market_log(today, px)
     state = load_state()
     reg, con = state["registry"], state["contestants"]
+
+    # IDEMPOTENCE GUARD (2026-09-13). `today` is the newest date in the
+    # PRICE PANEL, not the calendar date of this run -- so any run made
+    # when the market hasn't produced a new session yet re-reads the same
+    # last row. factory.yml's update step has no weekday guard, so it also
+    # fires on the Sunday report cron, when the newest panel row is still
+    # Friday's: Friday was then appended a SECOND time, double-counting
+    # that day's P&L into sum_ret/sum_sq and advancing days_on_rung again.
+    # Measured in the live ledger before this guard: 26 of 27 contestants
+    # carried duplicate dates, 142 extra rows, almost all Fridays -- a
+    # ~19% overstatement of every contestant's progress toward the
+    # 126-day promotion bar. See bug_log.md, ledger-duplicate-trading-days.
+    #
+    # Skipping (rather than overwriting) is the conservative choice: the
+    # first recording of a day is the one actually observed at the time,
+    # and re-running must never be able to rewrite observed history.
+    already = {r[0] for s in con.values() for r in s.get("history", [])}
+    if today in already:
+        print(f"Arena update SKIPPED: {today} is already recorded -- the "
+              f"price panel has not produced a new session since the last "
+              f"update (weekend run, market holiday, or a re-run on the "
+              f"same day). Nothing was changed; this is the idempotence "
+              f"guard working, not an error.")
+        return
+
+    append_market_log(today, px)
 
     for name, params in reg.items():
         s = con.setdefault(name, blank_stats())
