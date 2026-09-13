@@ -10,7 +10,67 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## OPEN
 
-(none currently)
+- **OPEN | 2026-09-13 | promotion-gate-rounding-flips-fail-to-pass | CRITICAL** —
+  `factory.py:890-891` builds the expectancy check as
+  `("expectancy (mean daily net return)", round(mean, 6), R["min_expectancy"])`
+  and `factory.py:906-910` compares the ROUNDED value, not the raw `mean`.
+  Same pattern on the excess-return-vs-benchmark check (`round(ex_mean, 6)`,
+  `factory.py:899-901`). Concrete reproduction against real, unmodified
+  `factory.RULES` (`require_beat_benchmark=True`): a contestant with true
+  `mean=0.00049999949` (genuinely BELOW `min_expectancy=0.0005`) and
+  `sharpe=1.5` gets `promotion_check(...) == True`, because
+  `round(0.00049999949, 6) == 0.0005` and `0.0005 >= 0.0005` is `True`.
+  Verified independently (not just by the reviewing subagent) with a
+  direct `python3` call against the live, unmodified `factory.py` — see
+  `AUTONOMOUS_LOG.md` 2026-09-13 entry for the exact repro. Caught by an
+  adversarial subagent review launched as part of the orchestrator-
+  directive planning pass, its first real use (see
+  `.autonomous/orchestrator/VERIFICATION_PROTOCOL.md`); full report at
+  the review's own output path, summarized in the log entry above.
+  **Next step, NOT done**: this changes promotion pass/fail boundaries,
+  same category as Q5/Q6 — needs Het's fresh explicit authorization
+  before any fix ships, per CLAUDE.md's Hard Rules. Minimal fix (once
+  authorized): stop rounding the value fed into the comparison; round
+  only at display time (judge.py already rounds separately for display).
+  No live contestant is currently near this boundary (0/27 promoted,
+  gate still fails closed on paired-benchmark-days per the Q4 finding),
+  so there is no active risk today, but this should be fixed before the
+  benchmark-day gate stops failing closed for everyone.
+
+- **OPEN | 2026-09-13 | promotion-gate-drawdown-not-checked-internally | HIGH** —
+  `promotion_check()`'s own docstring (`factory.py:880`) says "Every
+  condition a contestant must clear for PROMOTE, in one place," but the
+  function body never reads `s["equity"]`/`s["peak"]` — drawdown is
+  checked only by callers (`factory.py:954-956`, `agents/judge/judge.py:
+  67-72,94-97`), which today all do it correctly, so there is no live
+  bug in the actual daily/weekly run. But a direct call to
+  `promotion_check()` with `equity=0.40, peak=1.0` (a 60% drawdown, which
+  `RULES["max_drawdown"]=-0.12` should reject) still returns
+  `passed=True` — the function doesn't do what its own docstring
+  promises. Same reviewer, same session as the finding above. **Next
+  step, NOT done**: either fix the docstring (documentation-only, zero
+  behavior change, safe to do without asking) or add an internal
+  drawdown check so the "one place" claim is actually true (a real code
+  change to promotion-gate logic — needs Het's fresh authorization, same
+  as the CRITICAL item above). Bundle both into one conversation with
+  Het rather than asking twice.
+
+- **OPEN | 2026-09-13 | promotion-gate-minor-findings (3 items, MEDIUM/LOW)** —
+  same review pass, lower severity, deferred alongside the two items
+  above rather than raised separately: (1) duplicate calendar-date rows
+  in a contestant's `history` aren't deduplicated before benchmark
+  pairing (`factory.py:847`), inflating `n_paired` if `update()` ever
+  double-fires for one date; (2) the "beat benchmark" check's `>= 0.0`
+  lets a value that rounds to `-0.0` (i.e. a contestant that actually
+  underperformed every day) read as a pass in `judge.py`'s human-facing
+  explanation — masked today because the accompanying excess-sharpe
+  check independently blocks it, so not an exploitable false PROMOTE by
+  itself, just misleading text; (3) `benchmark_returns()` picks the
+  first `permanent`-flagged contestant in dict order — inert with
+  today's single-permanent registry, would be silently ambiguous if a
+  second permanent contestant is ever added. Full detail in the review's
+  own report. No fix proposed for any of these yet; fold into the same
+  authorization conversation as the CRITICAL/HIGH items above.
 
 ## CLOSED (accepted, not fixed -- distinct from FIXED below, which means an actual code fix landed)
 
