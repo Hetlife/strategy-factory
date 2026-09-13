@@ -528,6 +528,113 @@ judgment (e.g. don't guess a replacement ticker symbol) in
 
 ---
 
+# RUNBOOK 9 — Scan → Plan → Execute → Log (the default cycle, every session)
+
+**This is the entry point for every session now — interactive or the
+hourly Routine.** It doesn't replace Runbooks 1-8; it's the discipline
+that decides *when* to reach for them. Het asked (2026-09-04) for a
+formal cycle: scan for real problems, plan before touching anything,
+execute only what's safely in-bounds, and always leave a resumable log.
+
+**What this is explicitly NOT for:** it does not chase profit, and it
+never treats "we haven't made money yet" as a problem to fix. Phase 1's
+correct amount of new work per cycle is close to zero — finding nothing
+is a normal, good outcome, not a failure to try harder. See
+`CLAUDE.md`'s "evidence machine, not a money machine" and the kill
+condition on loosening rules to make results look better
+(`EXECUTION_PLAN.md` Section 5f). A cycle that manufactures work to
+look productive is doing this wrong.
+
+### Step 9.1 — SCAN (read-only, no changes yet)
+
+Run all of these before deciding anything:
+
+```bash
+cat .autonomous/loop_state.json          # interrupted work? (Step 1.1 logic)
+git fetch origin main -q && git status --short
+python3 tools/health_check.py --live
+tail -20 .autonomous/bug_log.md          # known OPEN defects
+```
+
+Then Runbook 2's three checks (health / agents / workflows green).
+
+Then a real drift scan, not a guess — pick 1-2 per cycle, rotate so the
+whole surface gets covered over time rather than re-checking the same
+thing every session:
+- Does any doc claim something about the code that a quick `grep` can
+  verify? (This is exactly how the Q6 breeding-gate doc error and the
+  `judge.py` drift were found — both real bugs, found by checking a
+  specific claim against the actual code, not by re-reading everything.)
+- Does `.autonomous/state.json`'s queue have an item marked done whose
+  claimed commit doesn't actually exist? (`git log --oneline | grep <sha>`)
+- Does `.autonomous/het_directives.md`'s NEEDS HET section have
+  anything stale — already answered, already resolved by later work?
+
+If `loop_state.json` said `"in_progress"`: resume from
+`resume_instructions` instead of scanning fresh. Don't redo settled work.
+
+### Step 9.2 — PLAN (write it down before executing anything)
+
+Before making a single change, write a short plan — a few lines is
+enough, doesn't need its own file unless the finding is substantial:
+- What's actually broken or worth doing (name the specific finding)
+- Why it's in-bounds: reversible, free, no RULES/LADDER/COST_PER_SIDE,
+  no merge, no new strategy invented from scratch
+- What you're explicitly NOT doing and why (e.g. "this touches RULES,
+  queuing for Het instead")
+
+**If nothing was found:** the plan is "nothing new" — stop here, do
+Step 9.4, done. This is the common case and a good outcome.
+
+**If something needs Het's judgment or authorization** (ambiguous,
+touches a Hard Rule, a real trading/registry decision): that goes in
+the plan as "queued for Het," gets written to `het_directives.md`'s
+NEEDS HET section in Step 9.4, and is **not** executed. Per the
+confidence-threshold rule in `CLAUDE.md`: below ~75% sure, queue it —
+and keep working on anything else already in-bounds rather than
+stalling on the one uncertain item.
+
+### Step 9.3 — EXECUTE (only what the plan authorized)
+
+- Follow Runbook 4's discipline: save your place first (the checkpoint
+  section above) before risky work, make the change, **test it for
+  real** (Runbook 4 Step 4.3's regression pattern for `factory.py`),
+  then commit to the branch.
+- Never skip straight to committing because a fix "looks obviously
+  right" — the whole point of Step 9.2 is that the plan already said
+  why it's safe; executing is just carrying that out, not relitigating it.
+- Hit something the plan didn't anticipate (bigger than expected, or it
+  turns out to touch a Hard Rule after all)? Stop, don't improvise
+  past it — go back to Step 9.2 and re-plan, or queue it and move on.
+
+### Step 9.4 — LOG (every cycle, whether or not you changed anything)
+
+- One line in `AUTONOMOUS_LOG.md`: what the scan found (even "nothing"),
+  what was done, what was queued.
+- If anything is queued for Het: add/update it in `het_directives.md`'s
+  NEEDS HET section.
+- Reset `loop_state.json` to `"idle"` with a short `note` summarizing
+  the cycle — this is what the *next* cycle's Step 9.1 reads first.
+- **If context is running low mid-cycle:** stop immediately and use the
+  "RUNNING LOW ON CONTEXT" section above instead of finishing this
+  step normally — that section's checkpoint already covers exactly
+  this, don't duplicate it here.
+
+### The only legitimate stopping points for this cycle
+
+1. Nothing found — report "nothing new," stop. (Most common, expected.)
+2. Something found and fixed within existing authority — logged, stop.
+3. Something found that needs Het — queued, logged, stop. Don't guess
+   in his favor to keep the loop moving.
+4. Context running low — checkpoint per the section above, stop.
+
+**There is no fifth condition where the cycle keeps running "until"
+some outcome like a promotion or a profit.** The calendar, not this
+cycle, is what produces that — see `MASTER_PLAN.md`. A cycle that
+refuses to stop at 1-4 above is malfunctioning, not being thorough.
+
+---
+
 # THINGS THAT LOOK BROKEN BUT ARE NORMAL
 
 Never "fix" these. Each was investigated against real data.

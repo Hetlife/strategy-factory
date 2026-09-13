@@ -1,0 +1,147 @@
+{
+ "_doc": "Task graph derived from .autonomous/state.json's real queue (2026-09-13). Not invented -- every node here corresponds to an actual queue item. 'status' mirrors state.json. 'depends_on' is added only where a real dependency exists (verified against AUTONOMOUS_LOG.md / het_directives.md), not guessed.",
+ "generated_from": ".autonomous/state.json (queue, 23 items)",
+ "generated_at": "2026-09-13",
+ "nodes": [
+  {
+   "id": "P0-1-size-aware-cost-model",
+   "status": "done",
+   "summary": "EXECUTION_PLAN.md Section 3. Replace flat COST_PER_SIDE with round_trip_cost_pct(position_size) = 0.222% + (Rs15.34/position_size). May be d"
+  },
+  {
+   "id": "P0-2-post-tax-expectancy",
+   "status": "done",
+   "summary": "post_tax_expectancy() added, wired into report() as two additive columns (post_tax_expectancy, tax_basis). Classifies holding period as days"
+  },
+  {
+   "id": "P0-3-nifty-benchmark",
+   "status": "done",
+   "summary": "sig_benchmark() (always fully invested in BENCHMARK=^NSEI) + permanent nifty_benchmark registry entry (permanent=True). Excluded from PROMOT"
+  },
+  {
+   "id": "P0-4-falsification-criteria-committed",
+   "status": "done",
+   "summary": "Verified: EXECUTION_PLAN.md Section 5 (kill conditions a-f, dated, specific RULES/LADDER thresholds referenced) already committed before thi"
+  },
+  {
+   "id": "P0-5-diagnose-routine-zero-commits",
+   "status": "abandoned_by_het_decision",
+   "summary": "The 5-hourly autonomous dev-loop Routine (trig_013GUxs9AwHaRvb1o4eGJRGx, DISABLED) failed 5 confirmed times across two structurally differen"
+  },
+  {
+   "id": "P0-GATE",
+   "status": "cleared",
+   "summary": "All four Phase 0 deliverables (P0-1..P0-4) done and tested as of 2026-08-24. current_phase flipped to phase_1 below. Standing mode now (EXEC",
+   "depends_on": [
+    "P0-1-size-aware-cost-model",
+    "P0-2-post-tax-expectancy",
+    "P0-3-nifty-benchmark",
+    "P0-4-falsification-criteria-committed"
+   ]
+  },
+  {
+   "id": "P1-ladder-rung1-raise",
+   "status": "done",
+   "summary": "2026-08-25: Het confirmed the exact figures via fresh AskUserQuestion sign-off (not just direction). LADDER changed [0,10_000,25_000,50_000,"
+  },
+  {
+   "id": "P1-pr1-decision",
+   "status": "done",
+   "summary": "Het confirmed via fresh AskUserQuestion sign-off (2026-08-25): merge. PR #1 merged to main, merge commit aa55914. Included: P0-1..P0-3, agen"
+  },
+  {
+   "id": "P1-dashboard-auth",
+   "status": "blocked_on_human",
+   "summary": "confirm dashboard.py's raw-GitHub-URL auth works for a REAL anonymous visitor, not from inside this sandbox (proxy invalidates that test -- "
+  },
+  {
+   "id": "P1-advisor-training-real-run",
+   "status": "done",
+   "summary": "Triggered for real 2026-08-27 (workflow_dispatch, run 33051644818) -- SUCCEEDED, produced a genuine parameter_bank.json on main for the firs"
+  },
+  {
+   "id": "P2-vectorize",
+   "status": "open_low_priority_standing_mode",
+   "summary": "vectorize update()/report() per-contestant loop + yf.download(threads=True). Must not change signal logic or promotion math. MEASURED, not j"
+  },
+  {
+   "id": "P2-monsoon-csv",
+   "status": "data_sourced_deliberately_not_live",
+   "summary": "UPDATED 2026-08-26: this was stale -- data/imd_rainfall_departure_historical.csv (free community mirror of IMD subdivision rainfall stats, 1"
+  },
+  {
+   "id": "P2-breeding-population-watch",
+   "status": "ongoing_watch",
+   "summary": "crossover breeding adds a second source of new registry entries alongside advisor evolution -- watch population growth against MAX_CONTESTAN"
+  },
+  {
+   "id": "P3-breeding-dashboard-viz",
+   "status": "idea_not_started_frozen",
+   "summary": "a real family-tree/lineage-graph view would show the breeding mechanic better once there's real multi-generation data. Explicitly the kind o"
+  },
+  {
+   "id": "P3-anti-pattern-visibility-for-new-agents",
+   "status": "done",
+   "summary": "DONE and MERGED 2026-08-26 (commit ea877a1, PR #5, Het's fresh 'Yes merge' confirmation). factory.graveyard(state) lists every retired conte"
+  },
+  {
+   "id": "shared-graveyard-anti-repeat",
+   "status": "done",
+   "summary": "Het's request 2026-08-26: 'make sure all AI agents don't just learn from their own failures but also have a common library they can refer to"
+  },
+  {
+   "id": "P3-broker-execution",
+   "status": "not_started_permanently_gated",
+   "summary": "explicitly NOT to be started until at least one real promotion has happened under current rules (EXECUTION_PLAN.md gate 1->2)",
+   "depends_on": [
+    "P0-URGENT-fix-promotion-bar-multiplicity"
+   ]
+  },
+  {
+   "id": "P3-options-futures-leverage",
+   "status": "permanently_out_of_scope",
+   "summary": "not deferred, permanently excluded per Law 1/objectives and EXECUTION_PLAN.md Section 7"
+  },
+  {
+   "id": "P3-rules-threshold-review",
+   "status": "not_started_permanently_gated",
+   "summary": "only after 3-6 months real paper-trading history; argument must be written BEFORE looking at effect on current contestants (avoid hindsight ",
+   "depends_on": [
+    "P1-Q4-answered-benchmark-clock-restarted"
+   ]
+  },
+  {
+   "id": "P1-nifty100-momentum-contestant",
+   "status": "done_fully_verified_merged",
+   "summary": "Het: 'Add a Nifty 100 momentum contestant, mechanism first.' New registry key mom_nifty100_lb90 (fn=momentum, sector=nifty100, lookback=90, ",
+   "depends_on": [
+    "P0-GATE"
+   ]
+  },
+  {
+   "id": "P0-URGENT-fix-promotion-bar-multiplicity",
+   "status": "done",
+   "summary": "RESOLVED 2026-08-30. Het gave fresh explicit in-session authorization and chose option 4+3 from docs/research/Q5_statistical_power.md: a pro",
+   "depends_on": [
+    "P0-3-nifty-benchmark"
+   ]
+  },
+  {
+   "id": "P1-gate-crossover-breeding-on-days",
+   "status": "done",
+   "summary": "RESOLVED 2026-08-30. Het authorized the one-condition fix from docs/research/Q6_breeding_overfitting.md: attempt_breeding()'s eligibility fi",
+   "depends_on": [
+    "P0-URGENT-fix-promotion-bar-multiplicity"
+   ]
+  },
+  {
+   "id": "P1-Q4-answered-benchmark-clock-restarted",
+   "status": "blocked_on_human",
+   "summary": "Q4 ANSWERED 2026-09-03 (docs/research/Q4_beat_nifty.md): zero of 25 contestants beat the benchmark with 95% confidence. Three structural fin",
+   "depends_on": [
+    "P0-URGENT-fix-promotion-bar-multiplicity",
+    "P0-3-nifty-benchmark"
+   ]
+  }
+ ]
+}

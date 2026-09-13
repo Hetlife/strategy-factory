@@ -10,7 +10,86 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## OPEN
 
-(none currently)
+- **FIX ON BRANCH, NOT YET MERGED | 2026-09-13 | ledger-duplicate-trading-days | HIGH** —
+  `factory.yml`'s "Run daily arena update" step had no `if:` guard, so it
+  fired on BOTH cron schedules — the weekday one and the Sunday report
+  one. `update()` keys its history row on the newest date in the PRICE
+  PANEL, not the calendar date of the run; over a weekend that is still
+  Friday's row. So every Sunday run appended a SECOND row for Friday,
+  double-counting that day's P&L into `sum_ret`/`sum_sq` and advancing
+  `days_on_rung` again. **Measured in the live ledger: 26 of 27
+  contestants carry duplicate dates, 142 extra rows, almost all Fridays**
+  (the one non-Friday, 2026-07-14, is consistent with a Monday holiday
+  making Tuesday the panel's newest row). Effect: every contestant's
+  progress toward the 126-day promotion bar was overstated by roughly
+  19%, and Friday returns were counted twice in every Sharpe estimate.
+  Confirms as REAL and ACTIVE what the 2026-09-13 adversarial review had
+  rated only a theoretical MEDIUM ("if update() ever double-fires").
+  **FIX (on branch, tested, awaiting merge):** belt-and-braces — an
+  idempotence guard in `update()` that refuses to record a date already
+  present in any contestant's history (protects against manual dispatch
+  and re-runs too), plus an `if: github.event.schedule != '30 4 * * 0'`
+  guard on the workflow step (stops the pointless Sunday run entirely).
+  Tested three ways in an isolated ledger copy: a re-run on an
+  already-recorded date changes nothing; a genuine new trading day still
+  records exactly one row per live contestant; an immediate re-run of
+  that new day changes nothing. Skipping rather than overwriting is
+  deliberate — the first recording of a day is the one actually observed,
+  and a re-run must never be able to rewrite observed history.
+  **The 142 existing duplicate rows are NOT cleaned by this fix** — see
+  `.autonomous/ACCELERATION_PLAN.md` STEP 6; that rewrites recorded
+  history and is Het's call. The promotion gate itself is already
+  protected, because `excess_return_stats()` was made to dedupe by date
+  earlier the same day.
+
+- **OPEN | 2026-09-13 | phantom-trading-days-from-ffill | MEDIUM** —
+  `fetch_prices()` ends with `px.dropna(how="all").ffill()`.
+  `dropna(how="all")` only drops a date row where EVERY ticker is
+  missing, so a row where most tickers are NaN — an NSE holiday Yahoo
+  still lists, or a day whose data hasn't posted — survives, and
+  `.ffill()` fills it with yesterday's closes. The result is a recorded
+  "trading day" on which essentially every stock closed exactly
+  unchanged. **Measured via `tools/detect_phantom_days.py` (built this
+  session, read-only, no network needed): 2 of 5 checkable days were
+  phantom — 2026-08-27 with 95% of 21 tickers at exactly 0.0, and
+  2026-08-31 with 99% of 115.** Each phantom day advanced `days_on_rung`
+  and added a paired benchmark day (which LOWERS the multiplicity Sharpe
+  floor, since it scales as sqrt(252/n) — the unsafe direction). Sharpe
+  itself moves the conservative way: extra 0.0 days shrink the mean
+  faster than the standard deviation, measured at −12% to −25% for 10–27
+  padded days. Net effect is mixed, which is why the tool reports
+  evidence rather than asserting one direction. **Largely addressed by
+  the idempotence guard above** (a phantom day usually coincides with a
+  non-advancing panel), but not provably all cases. Coverage caveat:
+  `market_log.json` starts later than contestant history, so the true
+  phantom count over the full window is unknown and likely higher.
+
+- **OPEN | 2026-09-13 | promotion-gate-benchmark-first-permanent-match-ambiguity | LOW** —
+  `benchmark_returns()` picks the FIRST `permanent`-flagged contestant in
+  dict-iteration order. Inert today (only `nifty_benchmark` is
+  `permanent`), silently ambiguous if a second is ever added. Not fixed —
+  no concrete failing input exists yet.
+
+- **OPEN | 2026-09-13 | promotion-gate-input-cost-threshold-unverified** —
+  the 15 never-traded contestants Het asked to "loosen" break into three
+  different situations, only one of which is a real open item: (1) the 9
+  original `event_*` cement/infra/steel entries already have real-data-
+  grounded looser siblings added 2026-08-27 (`event_cement_t17` etc.) —
+  no further action, just needs more calendar time (4 days old); (2)
+  `monsoon_cement` is NOT a threshold problem at all — `sig_monsoon` is a
+  deliberate dormant no-op (its registry `csv` path doesn't even match
+  the real sourced file, and the real file's data ends in 2017 anyway;
+  see `factory.py:269-278` and the 2026-08-27 diagnostic) — loosening its
+  threshold would do nothing; (3) `input_cost_crude_cement/steel` (BZ=F
+  Brent crude, 20-day -5% drop, only 6 days old) is the one genuinely
+  open question — built `tools/diagnose_input_cost_threshold.py` +
+  `.github/workflows/diagnose_input_cost_threshold.yml` (same pattern as
+  the event_drift diagnostic) to check real BZ=F history, but running it
+  needs the workflow merged to `main` first (GitHub's own
+  `workflow_dispatch` platform constraint — a brand-new workflow file
+  isn't dispatchable from a non-default branch). Queued for Het:
+  authorize that merge (tooling-only, same category as prior diagnostic
+  merges) so the real data can be checked before any threshold changes.
 
 ## CLOSED (accepted, not fixed -- distinct from FIXED below, which means an actual code fix landed)
 
@@ -172,6 +251,45 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
   next scheduled `factory.yml` run against main's ledger.json.
 
 ## FIXED
+
+- **FIXED | 2026-09-13 | promotion-gate-rounding-flips-fail-to-pass | CRITICAL** —
+  Het's fresh explicit authorization (2026-09-13, in-session: "Yes, fix
+  both"). `factory.py`'s `promotion_check()` used to round `mean`/
+  `ex_mean` to 6dp BEFORE comparing to the threshold, so a value
+  genuinely just below the bar (e.g. 0.00049999949 < 0.0005) could round
+  UP to exactly the bar and pass. Fixed: comparisons now use the raw
+  value; `judge.py` already rounds independently for display, so no
+  display precision is lost. As a side effect, this ALSO closes the
+  related "-0.0 tie" finding from the same review (a value that
+  previously rounded to `-0.0` and read `>= 0.0` as true no longer can,
+  since there's no rounding step left to produce a false `-0.0`).
+  Tested: re-ran the review's own exact repro (now correctly rejected,
+  `passed=False`), a genuine-pass case (still correctly accepted), the
+  gate's Monte Carlo false-positive check (150 trials/cell, unchanged at
+  3.3%/4.0%/4.7% — still at/under the 5% target), and `judge.py` against
+  all 25 live non-benchmark contestants in the real ledger (0 crashes, 0
+  disagreements with `report()`'s own decision path, still 0 eligible
+  for promotion — consistent with the Q4 finding). No RULES/LADDER/
+  COST_PER_SIDE value changed, no registry entry touched.
+
+- **FIXED | 2026-09-13 | promotion-gate-drawdown-not-checked-internally | HIGH** —
+  same authorization as above. `promotion_check()` now actually computes
+  and checks `equity/peak - 1 >= max_drawdown` itself, instead of relying
+  entirely on every caller to pre-filter it (which they did correctly,
+  but the function's own docstring claimed it was unnecessary). Tested:
+  the review's own 60%-drawdown isolated-call repro is now correctly
+  rejected (`passed=False`); `report()`'s and `judge.py`'s existing
+  external drawdown checks still short-circuit first in the real call
+  paths, so this is additive/defensive, zero behavior change to any live
+  verdict (confirmed via the same 25-contestant live-ledger check above).
+
+- **FIXED | 2026-09-13 | promotion-gate-duplicate-date-double-counting | MEDIUM** —
+  same authorization, same commit. `excess_return_stats()` now dedupes a
+  contestant's `history` by date (last-write-wins, matching `bench_map`'s
+  own convention) before pairing against the benchmark, so a same-day
+  double run of `update()` can no longer inflate `n_paired` or double-
+  weight that day. Tested: a synthetic 30-day history with one date
+  duplicated now correctly returns `n_paired=30`, not 31.
 
 - **FIXED | 2026-08-29 | supervisor-false-pipeline-dead-alarm** —
   `tools/supervisor_check.py` read `factory_state/ledger.json` from the

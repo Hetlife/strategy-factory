@@ -1,0 +1,44 @@
+# Milestone rules — written 2026-09-13.
+# THIN POINTER: EXECUTION_PLAN.md sections 4-5 own the real gates and
+# kill conditions. This file is a structured index into that document,
+# not a second copy -- re-derive nothing here, follow the link.
+
+phases:
+  phase_0:
+    status: cleared_2026-08-24
+    gate_id: P0-GATE
+    deliverables: [P0-1-size-aware-cost-model, P0-2-post-tax-expectancy, P0-3-nifty-benchmark, P0-4-falsification-criteria-committed]
+    source: "EXECUTION_PLAN.md Section 3-4"
+  phase_1:
+    status: current (standing_mode)
+    entered: 2026-08-24
+    rule: "run the daily/weekly schedule, accumulate real evidence over the ~12-month window, do NOT add new structural machinery"
+    source: "EXECUTION_PLAN.md Section 4"
+    live_stats_as_of_2026-09-13:
+      contestants: 27
+      promoted_rung_gt_0: 0
+      never_traded: 15
+      last_factory_run: "2026-09-11 (success)"
+      last_supervisor_run: "2026-09-13 (success)"
+  phase_1_exit_trigger:
+    condition: "first honest PROMOTE verdict under the corrected (post-Q5/Q6) gate"
+    caveat: "promotion clock effectively restarted 2026-08-26 (Q4 finding, docs/research/Q4_beat_nifty.md) -- benchmark history is the limiting factor, not contestant age"
+    source: "MASTER_PLAN.md STEP 3, docs/research/Q4_beat_nifty.md"
+  phase_2:
+    status: not_started
+    trigger: "phase_1_exit_trigger fires"
+    what_it_unblocks: "out-of-sample validation before any capital -- see MASTER_PLAN.md STEP 4"
+    what_it_does_NOT_unblock: "broker/execution code, real capital -- those stay gated by EXECUTION_PLAN.md's own kill conditions and CLAUDE.md's Hard Rules regardless of phase"
+
+kill_conditions:
+  source: "EXECUTION_PLAN.md Section 5 (a-f), GOALS.md"
+  note: >
+    Six dated, specific, pre-committed falsification conditions with
+    concrete RULES/LADDER thresholds. Do not restate them here --
+    restating invites drift between two copies. Read EXECUTION_PLAN.md
+    directly when checking whether a kill condition has fired.
+  known_second_order_issue: >
+    Q5 (docs/research/Q5_statistical_power.md) found the original
+    kill condition 5f rarely fires even with zero real edge, because the
+    old promotion bar had an 85% false-positive rate -- fixed 2026-09-02
+    by the Q5/Q6 merge. Flagged, not silently ignored.

@@ -67,13 +67,25 @@ START HERE:
    operating principles (outcomes over responses, tool-first, act
    on reversible work without asking, don't stop while meaningful
    work remains). It changes NO guardrail.
-3. Execute **RUNBOOK 1 — Hourly check-in**, top to bottom. Step 1.1
-   checks `.autonomous/loop_state.json` for interrupted work from a
-   PREVIOUS session first -- if `"in_progress"`, resume from
+3. Execute **RUNBOOK 9 — Scan → Plan → Execute → Log**, top to bottom.
+   This is the default cycle for every session (Het, 2026-09-04): scan
+   for real problems first, write a plan before touching anything,
+   execute only what the plan authorized, then log. It calls into
+   Runbook 1 for the mechanical check-in and Step 9.1 checks
+   `.autonomous/loop_state.json` for interrupted work from a PREVIOUS
+   session first -- if `"in_progress"`, resume from
    `resume_instructions` exactly, don't restart from scratch.
 4. Any step saying "STOP. Escalate" → **RUNBOOK 6**. Escalating is a
    SUCCESS, not a failure.
-5. Finish with **RUNBOOK 5**.
+5. Finish with **RUNBOOK 5** (Runbook 9's own Step 9.4 covers the same
+   ground; Runbook 5 is the fuller version if more session-end work
+   applies).
+
+THIS CYCLE DOES NOT CHASE PROFIT OR PROMOTIONS. "Nothing new" is a
+normal, correct, common outcome. There are exactly four legitimate
+stopping points (Runbook 9): nothing found, something fixed in-bounds,
+something queued for Het, or context running low. Manufacturing work
+to look productive is a malfunction of this cycle, not diligence.
 
 IF YOU RUN LOW ON CONTEXT MID-TASK: stop immediately and run
 RUNBOOKS.md's "RUNNING LOW ON CONTEXT" checkpoint FIRST, before

@@ -34,7 +34,14 @@ running on a smaller/cheaper model, but any session can follow it. If
 you are unsure what to do at any point, this file, not improvisation,
 is the answer. Its guiding rule: *when in doubt, do nothing and write it
 down* — a missed improvement costs nothing, a wrong action on financial
-code costs real evidence.
+code costs real evidence. **RUNBOOK 9 (added 2026-09-04) is the default
+cycle for every session now: Scan → Plan → Execute → Log.** It scans for
+real bugs/drift first, writes a plan before touching anything, executes
+only what's in-bounds, and always leaves a resumable log entry. It
+explicitly does not chase profit or promotions — "nothing new" is a
+normal, expected, good outcome, and there is no stopping condition tied
+to money. Manufacturing work to look productive is the failure mode it
+exists to prevent.
 
 **`MASTER_PLAN.md`** — the forward roadmap from today to a real
 verdict: where the project actually is, the blocking decision Het
@@ -43,6 +50,18 @@ the strict order of what happens next, and the ranked remaining
 research questions. Does NOT replace `EXECUTION_PLAN.md` (settled
 facts, gates, kill conditions, guardrails — that still wins); this
 is the sequence, that is the rules.
+
+**`.autonomous/ORCHESTRATOR_DIRECTIVE.md`** — a "HIGH-REASONING
+ORCHESTRATOR DIRECTIVE" Het pasted 2026-09-05, distilled to its
+operating principles (same convention as the autonomy directive below).
+Adopted, with two resolved tensions recorded in the file itself: its
+eleven planning documents live as thin pointers under
+`.autonomous/orchestrator/` rather than duplicating what `CLAUDE.md`/
+`EXECUTION_PLAN.md` already own, and its ask for a persistent
+multi-agent orchestrator runtime is deliberately NOT built — that shape
+of thing already failed 5 times and was abandoned (`state.json` queue
+`P0-5`). Read `.autonomous/orchestrator/MASTER_EXECUTION_PLAN.md` for
+what's actually being done instead. Does not loosen any Hard Rule below.
 
 **`.autonomous/HET_AUTONOMY_DIRECTIVE.md`** — Het's standing autonomy
 directive (stored at his request 2026-08-29), distilled to its operating

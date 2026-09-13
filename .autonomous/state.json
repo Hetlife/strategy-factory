@@ -5,7 +5,7 @@
  "branch": "claude/scheduled-maintenance-template-d7yufr",
  "pr_number": 5,
  "pr_status": "PR #1 (aa55914), #2 (b55b562), #3 (3df9143), #4 (9f5f30e), #5 (ea877a1) all merged to main, all with Het's fresh explicit confirmation. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement. main now has everything: Phase 0 (P0-1..P0-4), agents/ team, LADDER raise, nifty_benchmark backfill fix, healer agent + health_check tool, dashboard Office tab + factor toggle, paper holding-cost decay, and the shared graveyard anti-repeat guard. No known outstanding branch-vs-main gap as of this update.",
- "claude_md_sha1": "9ddebb19dd5c01bdb000b28ad63f9bcb6dd31849",
+ "claude_md_sha1": "524b8b8a2fe35f0f081303424b2c427090459ed3",
  "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
  "current_phase": "phase_1",
  "current_phase_note": "Phase 0 cleared 2026-08-24 (all 4 deliverables done+tested, see queue P0-1..P0-4 and P0-GATE). Now in Phase 1 (EXECUTION_PLAN.md Section 4): STANDING MODE. Run the daily update()/weekly report() schedule, accumulate real evidence, do NOT start new structural/feature work beyond what's already unfrozen below. The 12-month Phase 1 evidence clock (EXECUTION_PLAN.md Section 5a/5b/6) starts counting meaningfully from here -- don't treat Phase-0-era paper history as part of that clock, the cost/tax model underneath it just changed.",
@@ -83,6 +83,30 @@
   }
  ],
  "queue": [
+  {
+   "id": "P0-CRITICAL-ledger-duplicate-trading-days",
+   "priority": "P0",
+   "status": "fix_on_branch_needs_merge",
+   "summary": "2026-09-13. factory.yml's update step had no weekday guard so it also ran on the Sunday report cron; update() keys its row on the newest PRICE PANEL date (still Friday over a weekend), so Friday was recorded TWICE nearly every week since July. Measured: 26 of 27 contestants carry duplicate dates, 142 extra rows, almost all Fridays -- every contestant's progress toward the 126-day bar overstated ~19%, Friday returns double-counted in every Sharpe. Confirms as REAL what the adversarial review rated a theoretical MEDIUM. FIXED ON BRANCH, TESTED (3 cases in an isolated ledger copy): idempotence guard in update() refusing to record an already-present date, plus a weekday-only guard on the workflow step. NOT MERGED -- needs Het's fresh yes. The 142 existing duplicate rows are NOT cleaned (ACCELERATION_PLAN STEP 6, Het's call); the promotion gate is already protected since excess_return_stats() dedupes by date."
+  },
+  {
+   "id": "P1-phantom-trading-days",
+   "priority": "P1",
+   "status": "detector_built_rootcause_fixed_on_branch",
+   "summary": "2026-09-13. fetch_prices()'s .ffill() turns a mostly-NaN date row (NSE holiday, or data not yet posted) into a fake trading day where everything closed exactly unchanged. Measured via tools/detect_phantom_days.py: 2 of 5 checkable days phantom (95% and 99% of all tickers at exactly 0.0). Advances days_on_rung and adds paired benchmark days (lowers the multiplicity floor -- unsafe direction); deflates Sharpe (conservative direction). Largely addressed by the same idempotence guard. Coverage caveat: market_log.json starts later than contestant history so the true count is unknown and likely higher."
+  },
+  {
+   "id": "P1-acceleration-plan",
+   "priority": "P1",
+   "status": "tooling_built_blocked_on_merge",
+   "summary": "2026-09-13, Het: 'start working on it and create detailed work list ... for low token model to do autonomously.' Built and tested on branch: tools/validate_strategies_historical.py (reuses advisors.backtest() + the REAL factory.promotion_check() to ask whether each live strategy would EVER have cleared the bar in 5y of history; validated against a random-walk panel where it correctly passed 0 of 25), tools/backfill_benchmark_history.py (dry-run default, backs up, touches ONLY nifty_benchmark, verified idempotent and non-destructive in an isolated copy), tools/detect_phantom_days.py, and .github/workflows/acceleration_tools.yml. Full mechanical work list at .autonomous/ACCELERATION_PLAN.md. ALL STEPS BLOCKED ON STEP 1: merging the tooling to main, which GitHub requires before workflow_dispatch will run a new workflow file, and which is the only way to reach real market data (yfinance AND FRED both verified blocked from this sandbox)."
+  },
+  {
+   "id": "P0-CRITICAL-promotion-gate-defects-found",
+   "priority": "P0",
+   "status": "done",
+   "summary": "RESOLVED 2026-09-13. Het gave fresh explicit in-session authorization (\"Yes, fix both\"). Fixed in factory.py: (1) promotion_check() no longer rounds mean/ex_mean before comparing to thresholds (the CRITICAL bug -- a value genuinely below min_expectancy could round up to exactly the bar and pass); (2) promotion_check() now internally checks drawdown too, not just relying on callers (the HIGH docstring-vs-behavior mismatch); (3) excess_return_stats() now dedupes a contestant's history by date before pairing against the benchmark (the MEDIUM double-counting bug). Tested: all 3 original review repros now correctly rejected/fixed, Monte Carlo false-positive rate unchanged (3.3%/4.0%/4.7%, still under 5% target), judge.py vs report() agreement checked against all 25 live contestants (0 crashes, 0 disagreements, still 0 eligible -- consistent with Q4). One LOW finding (benchmark_returns() first-permanent-match ambiguity) left open, not reachable with today's single-permanent registry. See bug_log.md FIXED section for full detail."
+  },
   {
    "id": "P0-1-size-aware-cost-model",
    "priority": "P0",
@@ -216,14 +240,21 @@
    "priority": "P0",
    "status": "done",
    "summary": "RESOLVED 2026-08-30. Het gave fresh explicit in-session authorization and chose option 4+3 from docs/research/Q5_statistical_power.md: a promoted contestant must now beat nifty_benchmark on DATE-PAIRED excess returns (information ratio, which cancels the shared market factor that was manufacturing false positives) AND clear a Bonferroni-corrected Sharpe floor for the number of contestants competing that round. Implemented in factory.py as promotion_check()/excess_return_stats()/multiplicity_sharpe_floor(); agents/judge/judge.py now DELEGATES to promotion_check() instead of re-implementing the thresholds, removing a real drift risk where the explanation a human read could disagree with the decision report() made. RULES gained require_beat_benchmark + promotion_alpha; NOTHING existing was loosened (only added conditions -- the opposite of the Section 5f kill condition). Fails CLOSED if no benchmark history is available. Committed BEFORE looking at live contestant results, per MASTER_PLAN.md's hindsight-bias requirement. ON BRANCH, UNMERGED.",
-   "commit": "27fe0a9"
+   "commit": "bc4b07f"
   },
   {
    "id": "P1-gate-crossover-breeding-on-days",
    "priority": "P1",
    "status": "done",
    "summary": "RESOLVED 2026-08-30. Het authorized the one-condition fix from docs/research/Q6_breeding_overfitting.md: attempt_breeding()'s eligibility filter now also requires days_on_rung >= RULES['min_days_on_rung'], mirroring what propose_evolutions() always had. Closes the gap where crossover could fire at ~day 40, where a ZERO-EDGE contestant looks 'profitable' 43% of the time -- i.e. breeding was selecting luck and copying it into children. Tested both directions (past-the-bar parents still breed; day-40 parents fully blocked even when profitable with 50 trades). ON BRANCH, UNMERGED.",
-   "commit": "27fe0a9"
+   "commit": "bc4b07f"
+  },
+  {
+   "id": "P1-Q4-answered-benchmark-clock-restarted",
+   "priority": "P1",
+   "status": "blocked_on_human",
+   "commit": "n/a-analysis-only",
+   "summary": "Q4 ANSWERED 2026-09-03 (docs/research/Q4_beat_nifty.md): zero of 25 contestants beat the benchmark with 95% confidence. Three structural findings matter more than the numbers. (1) The usable window is only 4-7 PAIRED days, not 44 -- nifty_benchmark's history starts 2026-08-26 while contestants start 2026-07-13, and the comparison is date-paired so the shorter side caps it. (2) 15 of 26 live contestants have ZERO trades in 44 days; their apparent positive 'excess' is just sitting in cash while the index fell, clustering at an identical +0.00014/day -- non-participation, not alpha. Effective arena is ~11, not 26. (3) OPERATIONAL: the merged Q5 gate now fails closed for EVERY contestant with 'need >= inf (cannot certify -- too few paired days against the benchmark)', so the effective promotion clock restarted from the benchmark's 2026-08-26 start, pushing the earliest honest promotion ~6 weeks later. Correct fail-closed behaviour, not a bug. NEEDS HET: (a) accept the ~6-week slip (recommended -- option 2, backfilling the benchmark, would mean retroactively computed returns and hand-editing the ledger, trading away the observed-live property); (b) the event_*/input_cost_*/monsoon thresholds that have never fired in 44 days are registry-parameter territory and need his call, same bar as the 2026-08-27 steel-threshold finding."
   }
  ],
  "recent_commits": [

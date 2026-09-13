@@ -1,0 +1,55 @@
+# Agent/model routing guidance — written 2026-09-13.
+# Documentation only. No automated router exists; Het (or a session
+# reading this) still picks the model by hand via /model. This exists
+# so that choice is informed rather than ad hoc.
+#
+# Principle (already stated in CLAUDE.md's "Outsource to free tooling
+# first"): before spending any model's reasoning on a task, ask whether
+# a free deterministic script already does it. Only route to a model
+# for what genuinely needs judgment.
+
+free_deterministic_first:
+  - health_check.py --live          # structural drift check, always run this before reasoning about "is something broken"
+  - supervisor_check.py --live      # staleness check
+  - factory.py update / report      # the actual trading logic, runs in CI, never in a chat session
+  - any tools/analyze_*.py script   # once written, re-running it is free; writing it the first time needs a model
+
+cheap_model (sonnet-5 or lower):
+  fits:
+    - RUNBOOK 9 mechanical cycle (Scan -> Plan -> Execute -> Log) when nothing found or a small in-bounds fix
+    - reading state.json / loop_state.json / next_session.md and following resume_instructions literally
+    - running and interpreting health_check.py / supervisor_check.py output
+    - small doc updates, log entries, queue bookkeeping
+    - checking GitHub Actions run status via mcp__github__actions_list
+  avoid:
+    - inventing a new statistical method from scratch
+    - writing a document that requires synthesizing 25 sections of a pasted directive from memory
+    - anything the Hard Rules gate (those need Het's judgment regardless of model)
+
+stronger_model (opus-5 / fable-5-1, "high-reasoning"):
+  fits:
+    - answering an open research question (Q4/Q5/Q6-shaped: does this bar still make sense, is there a hidden bias)
+    - designing a new statistical test or fix to RULES-adjacent logic (still needs Het's authorization to ship)
+    - writing multi-document planning artifacts like this one
+    - adversarial review of financial logic before it's trusted (see VERIFICATION_PROTOCOL.md)
+  avoid:
+    - routine RUNBOOK 9 cycles where nothing is wrong -- that's pure cost with no reasoning benefit
+
+subagents (Agent tool, general-purpose):
+  fits:
+    - a bounded, read-only adversarial review task with a narrow file list and explicit output format
+      (this session's promotion_gate_review.md is the template to reuse)
+    - broad read-only exploration when the parent session doesn't need every file it reads, just the conclusion
+  avoid:
+    - anything that writes to factory_state/ or ledger.json
+    - anything that needs to merge, push to main, or make a Hard-Rule-gated decision -- subagents report,
+      the parent session (with Het's live confirmation) acts
+
+routing_is_advisory_not_automated: true
+note: >
+  This file does not change how model selection actually happens (Het's
+  own /model command, or a Routine's fixed model field). It exists so a
+  session -- of any model -- can look at a pending task and judge for
+  itself whether it's equipped to do it well, per this project's own
+  75%-confidence rule (CLAUDE.md): if under-equipped, queue it rather
+  than guess.

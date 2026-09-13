@@ -47,7 +47,19 @@ jobs:
         run: |
           mkdir -p factory_state
 
+      # Weekday cron ONLY. Before 2026-09-13 this step had no `if:` guard,
+      # so it also fired on the Sunday report cron below -- and because
+      # update() keys its history row on the newest date in the PRICE
+      # PANEL (still Friday's, over a weekend), every Friday was recorded
+      # twice. That double-counted Friday P&L and advanced the 126-day
+      # promotion clock ~6 days per 5 real trading days. factory.py's
+      # update() now also refuses to re-record a date it already has, so
+      # this guard and that one are deliberately belt-and-braces: this
+      # stops the pointless run, the code guard stops the corruption from
+      # any other trigger (manual dispatch, re-run). See bug_log.md,
+      # ledger-duplicate-trading-days.
       - name: Run daily arena update
+        if: github.event.schedule != '30 4 * * 0'
         run: |
           python factory.py update
 
