@@ -844,7 +844,14 @@ def excess_return_stats(hist, bench_map):
     existing treatment of an under-sampled variance estimate."""
     if not bench_map:
         return 0, float("nan"), float("nan")
-    diffs = [row[1] - bench_map[row[0]] for row in hist if row[0] in bench_map]
+    # De-duped by date (last write wins, matching bench_map's own dict
+    # convention) before pairing -- an un-deduped hist would let a
+    # same-day double run of update() count that day's excess return
+    # twice, inflating n_paired and double-weighting it. Found in the
+    # 2026-09-13 adversarial review, fixed alongside the rounding bug
+    # below (Het's fresh authorization, same conversation).
+    hist_map = {row[0]: row[1] for row in hist}
+    diffs = [r - bench_map[d] for d, r in hist_map.items() if d in bench_map]
     n = len(diffs)
     if n < MIN_SHARPE_SAMPLE_DAYS:
         return n, float("nan"), float("nan")
@@ -882,12 +889,25 @@ def promotion_check(s, mean, sharpe, bench_map, n_tests, R=None):
     Returns (passed, checks) where checks is a list of
     (label, have, need, ok) suitable for printing verbatim to a human --
     judge.py renders exactly these, so the explanation a human reads can
-    never disagree with the decision the machine made."""
+    never disagree with the decision the machine made.
+
+    Two real bugs fixed here 2026-09-13 (adversarial review, Het's fresh
+    authorization): (1) the mean/excess-mean checks used to round to 6dp
+    BEFORE comparing to the threshold, so a value genuinely just below
+    the bar (e.g. 0.00049999949 < min_expectancy=0.0005) could round UP
+    to exactly the bar and pass -- comparisons now use the raw value;
+    judge.py already rounds independently for display, so nothing that
+    reads this function's output loses precision. (2) drawdown is now
+    actually checked here, not just by every current caller -- the
+    docstring's "in one place" claim used to be false for any caller
+    that didn't separately pre-filter it first."""
     R = R or RULES
+    dd = s["equity"] / s["peak"] - 1
     checks = [
+        ("drawdown", dd, R["max_drawdown"]),
         ("days_on_rung", s["days_on_rung"], R["min_days_on_rung"]),
         ("trades", s["trades"], R["min_trades"]),
-        ("expectancy (mean daily net return)", round(mean, 6),
+        ("expectancy (mean daily net return)", mean,
          R["min_expectancy"]),
         ("sharpe", sharpe, R["min_sharpe"]),
     ]
@@ -897,8 +917,7 @@ def promotion_check(s, mean, sharpe, bench_map, n_tests, R=None):
         floor = multiplicity_sharpe_floor(n_paired, n_tests,
                                           R.get("promotion_alpha", 0.05))
         checks.append(("excess return vs benchmark (mean daily)",
-                       round(ex_mean, 6) if not _isnan(ex_mean) else ex_mean,
-                       0.0))
+                       ex_mean, 0.0))
         checks.append((f"excess sharpe vs benchmark, corrected for "
                        f"{n_tests} simultaneous contestant"
                        f"{'' if n_tests == 1 else 's'}",

@@ -10,67 +10,34 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## OPEN
 
-- **OPEN | 2026-09-13 | promotion-gate-rounding-flips-fail-to-pass | CRITICAL** —
-  `factory.py:890-891` builds the expectancy check as
-  `("expectancy (mean daily net return)", round(mean, 6), R["min_expectancy"])`
-  and `factory.py:906-910` compares the ROUNDED value, not the raw `mean`.
-  Same pattern on the excess-return-vs-benchmark check (`round(ex_mean, 6)`,
-  `factory.py:899-901`). Concrete reproduction against real, unmodified
-  `factory.RULES` (`require_beat_benchmark=True`): a contestant with true
-  `mean=0.00049999949` (genuinely BELOW `min_expectancy=0.0005`) and
-  `sharpe=1.5` gets `promotion_check(...) == True`, because
-  `round(0.00049999949, 6) == 0.0005` and `0.0005 >= 0.0005` is `True`.
-  Verified independently (not just by the reviewing subagent) with a
-  direct `python3` call against the live, unmodified `factory.py` — see
-  `AUTONOMOUS_LOG.md` 2026-09-13 entry for the exact repro. Caught by an
-  adversarial subagent review launched as part of the orchestrator-
-  directive planning pass, its first real use (see
-  `.autonomous/orchestrator/VERIFICATION_PROTOCOL.md`); full report at
-  the review's own output path, summarized in the log entry above.
-  **Next step, NOT done**: this changes promotion pass/fail boundaries,
-  same category as Q5/Q6 — needs Het's fresh explicit authorization
-  before any fix ships, per CLAUDE.md's Hard Rules. Minimal fix (once
-  authorized): stop rounding the value fed into the comparison; round
-  only at display time (judge.py already rounds separately for display).
-  No live contestant is currently near this boundary (0/27 promoted,
-  gate still fails closed on paired-benchmark-days per the Q4 finding),
-  so there is no active risk today, but this should be fixed before the
-  benchmark-day gate stops failing closed for everyone.
-
-- **OPEN | 2026-09-13 | promotion-gate-drawdown-not-checked-internally | HIGH** —
-  `promotion_check()`'s own docstring (`factory.py:880`) says "Every
-  condition a contestant must clear for PROMOTE, in one place," but the
-  function body never reads `s["equity"]`/`s["peak"]` — drawdown is
-  checked only by callers (`factory.py:954-956`, `agents/judge/judge.py:
-  67-72,94-97`), which today all do it correctly, so there is no live
-  bug in the actual daily/weekly run. But a direct call to
-  `promotion_check()` with `equity=0.40, peak=1.0` (a 60% drawdown, which
-  `RULES["max_drawdown"]=-0.12` should reject) still returns
-  `passed=True` — the function doesn't do what its own docstring
-  promises. Same reviewer, same session as the finding above. **Next
-  step, NOT done**: either fix the docstring (documentation-only, zero
-  behavior change, safe to do without asking) or add an internal
-  drawdown check so the "one place" claim is actually true (a real code
-  change to promotion-gate logic — needs Het's fresh authorization, same
-  as the CRITICAL item above). Bundle both into one conversation with
-  Het rather than asking twice.
-
-- **OPEN | 2026-09-13 | promotion-gate-minor-findings (3 items, MEDIUM/LOW)** —
-  same review pass, lower severity, deferred alongside the two items
-  above rather than raised separately: (1) duplicate calendar-date rows
-  in a contestant's `history` aren't deduplicated before benchmark
-  pairing (`factory.py:847`), inflating `n_paired` if `update()` ever
-  double-fires for one date; (2) the "beat benchmark" check's `>= 0.0`
-  lets a value that rounds to `-0.0` (i.e. a contestant that actually
-  underperformed every day) read as a pass in `judge.py`'s human-facing
-  explanation — masked today because the accompanying excess-sharpe
-  check independently blocks it, so not an exploitable false PROMOTE by
-  itself, just misleading text; (3) `benchmark_returns()` picks the
-  first `permanent`-flagged contestant in dict order — inert with
-  today's single-permanent registry, would be silently ambiguous if a
-  second permanent contestant is ever added. Full detail in the review's
-  own report. No fix proposed for any of these yet; fold into the same
-  authorization conversation as the CRITICAL/HIGH items above.
+- **OPEN | 2026-09-13 | promotion-gate-benchmark-first-permanent-match-ambiguity | LOW** —
+  `benchmark_returns()` (`factory.py:827-829`) picks the FIRST
+  `permanent`-flagged contestant it finds in dict-iteration order. Inert
+  today (only `nifty_benchmark` is `permanent`), but would be silently
+  ambiguous — no error, just whichever happens to be first — if a second
+  permanent contestant is ever added. Not fixed (not reachable today, no
+  concrete failing input exists yet); revisit if a second permanent
+  contestant is ever proposed.
+- **OPEN | 2026-09-13 | promotion-gate-input-cost-threshold-unverified** —
+  the 15 never-traded contestants Het asked to "loosen" break into three
+  different situations, only one of which is a real open item: (1) the 9
+  original `event_*` cement/infra/steel entries already have real-data-
+  grounded looser siblings added 2026-08-27 (`event_cement_t17` etc.) —
+  no further action, just needs more calendar time (4 days old); (2)
+  `monsoon_cement` is NOT a threshold problem at all — `sig_monsoon` is a
+  deliberate dormant no-op (its registry `csv` path doesn't even match
+  the real sourced file, and the real file's data ends in 2017 anyway;
+  see `factory.py:269-278` and the 2026-08-27 diagnostic) — loosening its
+  threshold would do nothing; (3) `input_cost_crude_cement/steel` (BZ=F
+  Brent crude, 20-day -5% drop, only 6 days old) is the one genuinely
+  open question — built `tools/diagnose_input_cost_threshold.py` +
+  `.github/workflows/diagnose_input_cost_threshold.yml` (same pattern as
+  the event_drift diagnostic) to check real BZ=F history, but running it
+  needs the workflow merged to `main` first (GitHub's own
+  `workflow_dispatch` platform constraint — a brand-new workflow file
+  isn't dispatchable from a non-default branch). Queued for Het:
+  authorize that merge (tooling-only, same category as prior diagnostic
+  merges) so the real data can be checked before any threshold changes.
 
 ## CLOSED (accepted, not fixed -- distinct from FIXED below, which means an actual code fix landed)
 
@@ -232,6 +199,45 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
   next scheduled `factory.yml` run against main's ledger.json.
 
 ## FIXED
+
+- **FIXED | 2026-09-13 | promotion-gate-rounding-flips-fail-to-pass | CRITICAL** —
+  Het's fresh explicit authorization (2026-09-13, in-session: "Yes, fix
+  both"). `factory.py`'s `promotion_check()` used to round `mean`/
+  `ex_mean` to 6dp BEFORE comparing to the threshold, so a value
+  genuinely just below the bar (e.g. 0.00049999949 < 0.0005) could round
+  UP to exactly the bar and pass. Fixed: comparisons now use the raw
+  value; `judge.py` already rounds independently for display, so no
+  display precision is lost. As a side effect, this ALSO closes the
+  related "-0.0 tie" finding from the same review (a value that
+  previously rounded to `-0.0` and read `>= 0.0` as true no longer can,
+  since there's no rounding step left to produce a false `-0.0`).
+  Tested: re-ran the review's own exact repro (now correctly rejected,
+  `passed=False`), a genuine-pass case (still correctly accepted), the
+  gate's Monte Carlo false-positive check (150 trials/cell, unchanged at
+  3.3%/4.0%/4.7% — still at/under the 5% target), and `judge.py` against
+  all 25 live non-benchmark contestants in the real ledger (0 crashes, 0
+  disagreements with `report()`'s own decision path, still 0 eligible
+  for promotion — consistent with the Q4 finding). No RULES/LADDER/
+  COST_PER_SIDE value changed, no registry entry touched.
+
+- **FIXED | 2026-09-13 | promotion-gate-drawdown-not-checked-internally | HIGH** —
+  same authorization as above. `promotion_check()` now actually computes
+  and checks `equity/peak - 1 >= max_drawdown` itself, instead of relying
+  entirely on every caller to pre-filter it (which they did correctly,
+  but the function's own docstring claimed it was unnecessary). Tested:
+  the review's own 60%-drawdown isolated-call repro is now correctly
+  rejected (`passed=False`); `report()`'s and `judge.py`'s existing
+  external drawdown checks still short-circuit first in the real call
+  paths, so this is additive/defensive, zero behavior change to any live
+  verdict (confirmed via the same 25-contestant live-ledger check above).
+
+- **FIXED | 2026-09-13 | promotion-gate-duplicate-date-double-counting | MEDIUM** —
+  same authorization, same commit. `excess_return_stats()` now dedupes a
+  contestant's `history` by date (last-write-wins, matching `bench_map`'s
+  own convention) before pairing against the benchmark, so a same-day
+  double run of `update()` can no longer inflate `n_paired` or double-
+  weight that day. Tested: a synthetic 30-day history with one date
+  duplicated now correctly returns `n_paired=30`, not 31.
 
 - **FIXED | 2026-08-29 | supervisor-false-pipeline-dead-alarm** —
   `tools/supervisor_check.py` read `factory_state/ledger.json` from the
