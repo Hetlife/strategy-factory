@@ -228,13 +228,16 @@ or leave it and note the overstatement — and let him choose.
 
 ```
 STEP 0  orient .................. (run every session)
-STEP 1  merge tooling ........... BLOCKED — needs Het's fresh yes
-STEP 2  confirm dup fix live .... waiting on STEP 1
-STEP 3  historical validation ... waiting on STEP 1
-STEP 4  benchmark backfill ...... waiting on STEP 1
-STEP 5  retire dead strategies .. waiting on STEP 3 + Het
+STEP 1  merge tooling ........... DONE 2026-09-13 (PR #22, merge 695ddac)
+STEP 2  confirm dup fix live .... waiting on the next Sunday cron
+STEP 3  historical validation ... DISPATCHED (acceleration_tools.yml, tool=validate)
+STEP 4  benchmark backfill ...... DRY RUN DISPATCHED; apply after reading it
+STEP 5  retire dead strategies .. waiting on STEP 3 output + Het
 STEP 6  historical cleanup ...... waiting on Het, lowest priority
 ```
 
-Last updated: 2026-09-13 (plan created; all tooling built and tested on
-branch, nothing merged, nothing run against real data yet).
+Last updated: 2026-09-13. STEP 1 merged with Het's fresh in-session
+authorization ("Yes, merge it all", via AskUserQuestion). Both guards
+verified present on `main`. STEP 2's real proof is the next Sunday run —
+check it per the decision table above; until then the fix is merged but
+unproven in production.
