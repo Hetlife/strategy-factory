@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
  "updated_at": "2026-10-03T23:22:24Z",
- "updated_by_commit": "(this commit)",
+ "updated_by_commit": "36a43be",
  "branch": "claude/scheduled-maintenance-template-d7yufr",
- "pr_number": 5,
- "pr_status": "PR #1 (aa55914), #2 (b55b562), #3 (3df9143), #4 (9f5f30e), #5 (ea877a1) all merged to main, all with Het's fresh explicit confirmation. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement. main now has everything: Phase 0 (P0-1..P0-4), agents/ team, LADDER raise, nifty_benchmark backfill fix, healer agent + health_check tool, dashboard Office tab + factor toggle, paper holding-cost decay, and the shared graveyard anti-repeat guard. No known outstanding branch-vs-main gap as of this update. 2026-10-03: branch re-synced with main (merge 8ce9693, clean); Capital Engine package added on branch; PR open for CE-0-01, unmerged.",
+ "pr_number": 23,
+ "pr_status": "PR #1 (aa55914), #2 (b55b562), #3 (3df9143), #4 (9f5f30e), #5 (ea877a1) all merged to main, all with Het's fresh explicit confirmation. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement. main now has everything: Phase 0 (P0-1..P0-4), agents/ team, LADDER raise, nifty_benchmark backfill fix, healer agent + health_check tool, dashboard Office tab + factor toggle, paper holding-cost decay, and the shared graveyard anti-repeat guard. No known outstanding branch-vs-main gap as of this update. 2026-10-03: branch re-synced with main (merge 8ce9693, clean); Capital Engine package added on branch; PR open for CE-0-01, unmerged. PR #23 opened 2026-10-03 (branch -> main) = CE-0-01; LucyOS PR for TR-8-04 opened the same day.",
  "claude_md_sha1": "56cc03ef5e7ac7a204863c00a2cdab489d59c138",
  "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
  "current_phase": "phase_1",

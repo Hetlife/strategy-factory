@@ -9,7 +9,7 @@ without the matching §8 sentence in `.autonomous/het_directives.md`.
 
 | ID | Title | Executor | Depends | Fable review | Status |
 |---|---|---|---|---|---|
-| [CE-0-01](work_orders/CE-0-01.md) | Merge the work branch to `main` | OWNER | — | NO | OPEN (needs Het: `merge CE-0-01`) |
+| [CE-0-01](work_orders/CE-0-01.md) | Merge the work branch to `main` | OWNER | — | NO | OPEN — PR #23 open (needs Het: `merge CE-0-01`) |
 | [CE-0-02](work_orders/CE-0-02.md) | Run ACCELERATION_PLAN steps 2-4 on `main` | CLAUDE_CODE | CE-0-01 | NO | OPEN |
 | [CE-0-03](work_orders/CE-0-03.md) | Retire-never-traded decision packet | CLAUDE_CODE + OWNER | CE-0-02 | NO | OPEN |
 | [CE-1-01](work_orders/CE-1-01.md) | Golden-master regression harness | CLAUDE_CODE | CE-0-01 | NO | OPEN |
