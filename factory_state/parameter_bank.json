@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-01T06:33:16.375147+00:00",
+ "generated_at": "2026-10-01T07:31:19.802294+00:00",
  "train_period": "5y",
  "advisors": [
   "sharpe",
@@ -17,23 +17,10 @@
       "threshold": 0.03,
       "hold": 5
      },
-     "sharpe": 0.705,
-     "robustness": -0.216,
-     "cost_efficiency": 5.8741,
-     "ensemble_rank": 2.0
-    },
-    {
-     "params": {
-      "fn": "event_drift",
-      "sector": "cement",
-      "leader": "ULTRACEMCO.NS",
-      "threshold": 0.03,
-      "hold": 3
-     },
-     "sharpe": 0.241,
-     "robustness": -0.156,
-     "cost_efficiency": 1.6054,
-     "ensemble_rank": 3.33
+     "sharpe": 0.598,
+     "robustness": 0.211,
+     "cost_efficiency": 4.8733,
+     "ensemble_rank": 1.0
     },
     {
      "params": {
@@ -43,9 +30,35 @@
       "threshold": 0.03,
       "hold": 4
      },
-     "sharpe": 0.432,
-     "robustness": -0.273,
-     "cost_efficiency": 3.2423,
+     "sharpe": 0.466,
+     "robustness": 0.153,
+     "cost_efficiency": 3.6283,
+     "ensemble_rank": 2.33
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "cement",
+      "leader": "ULTRACEMCO.NS",
+      "threshold": 0.03,
+      "hold": 3
+     },
+     "sharpe": 0.28,
+     "robustness": 0.191,
+     "cost_efficiency": 1.9104,
+     "ensemble_rank": 2.67
+    },
+    {
+     "params": {
+      "fn": "event_drift",
+      "sector": "cement",
+      "leader": "ULTRACEMCO.NS",
+      "threshold": 0.03,
+      "hold": 2
+     },
+     "sharpe": 0.051,
+     "robustness": -0.027,
+     "cost_efficiency": 0.2805,
      "ensemble_rank": 4.0
     },
     {
@@ -53,26 +66,13 @@
       "fn": "event_drift",
       "sector": "cement",
       "leader": "ULTRACEMCO.NS",
-      "threshold": 0.06,
-      "hold": 3
+      "threshold": 0.02,
+      "hold": 5
      },
-     "sharpe": 0.174,
-     "robustness": -0.336,
-     "cost_efficiency": 3.9743,
-     "ensemble_rank": 4.67
-    },
-    {
-     "params": {
-      "fn": "event_drift",
-      "sector": "cement",
-      "leader": "ULTRACEMCO.NS",
-      "threshold": 0.06,
-      "hold": 2
-     },
-     "sharpe": 0.176,
-     "robustness": -0.497,
-     "cost_efficiency": 3.7219,
-     "ensemble_rank": 5.0
+     "sharpe": -0.212,
+     "robustness": -0.588,
+     "cost_efficiency": -0.9315,
+     "ensemble_rank": 9.33
     }
    ],
    "infra": [
@@ -84,9 +84,9 @@
       "threshold": 0.03,
       "hold": 5
      },
-     "sharpe": 0.411,
-     "robustness": -0.077,
-     "cost_efficiency": 3.8697,
+     "sharpe": 0.486,
+     "robustness": -0.711,
+     "cost_efficiency": 4.8104,
      "ensemble_rank": 1.0
     },
     {
@@ -97,9 +97,9 @@
       "threshold": 0.03,
       "hold": 4
      },
-     "sharpe": 0.22,
-     "robustness": -0.345,
-     "cost_efficiency": 1.8686,
+     "sharpe": 0.304,
+     "robustness": -0.909,
+     "cost_efficiency": 2.6309,
      "ensemble_rank": 2.0
     },
     {
@@ -110,10 +110,10 @@
       "threshold": 0.03,
       "hold": 2
      },
-     "sharpe": -0.027,
-     "robustness": -0.354,
-     "cost_efficiency": -0.1589,
-     "ensemble_rank": 3.0
+     "sharpe": 0.042,
+     "robustness": -1.016,
+     "cost_efficiency": 0.2512,
+     "ensemble_rank": 4.33
     },
     {
      "params": {
@@ -123,23 +123,23 @@
       "threshold": 0.03,
       "hold": 3
      },
-     "sharpe": -0.105,
-     "robustness": -0.713,
-     "cost_efficiency": -0.7662,
-     "ensemble_rank": 4.33
+     "sharpe": -0.006,
+     "robustness": -1.183,
+     "cost_efficiency": -0.0446,
+     "ensemble_rank": 6.33
     },
     {
      "params": {
       "fn": "event_drift",
       "sector": "infra",
       "leader": "LT.NS",
-      "threshold": 0.02,
-      "hold": 4
+      "threshold": 0.07,
+      "hold": 5
      },
-     "sharpe": -0.294,
-     "robustness": -0.931,
-     "cost_efficiency": -1.4864,
-     "ensemble_rank": 7.33
+     "sharpe": -0.188,
+     "robustness": -0.92,
+     "cost_efficiency": -9.3712,
+     "ensemble_rank": 7.0
     }
    ],
    "steel": [
@@ -151,9 +151,9 @@
       "threshold": 0.06,
       "hold": 3
      },
-     "sharpe": 0.223,
-     "robustness": -0.037,
-     "cost_efficiency": 3.4096,
+     "sharpe": 0.201,
+     "robustness": -0.275,
+     "cost_efficiency": 3.3575,
      "ensemble_rank": 1.33
     },
     {
@@ -165,7 +165,7 @@
       "hold": 2
      },
      "sharpe": 0.188,
-     "robustness": 0.157,
+     "robustness": -0.082,
      "cost_efficiency": 2.6142,
      "ensemble_rank": 1.67
     },
@@ -178,7 +178,7 @@
       "hold": 2
      },
      "sharpe": 0.026,
-     "robustness": -0.179,
+     "robustness": -0.445,
      "cost_efficiency": 0.9559,
      "ensemble_rank": 3.0
     },
@@ -187,26 +187,26 @@
       "fn": "event_drift",
       "sector": "steel",
       "leader": "TATASTEEL.NS",
-      "threshold": 0.07,
-      "hold": 2
+      "threshold": 0.06,
+      "hold": 4
      },
-     "sharpe": -0.184,
-     "robustness": -0.297,
-     "cost_efficiency": -4.5647,
-     "ensemble_rank": 6.33
+     "sharpe": -0.148,
+     "robustness": -0.467,
+     "cost_efficiency": -3.5943,
+     "ensemble_rank": 4.33
     },
     {
      "params": {
       "fn": "event_drift",
       "sector": "steel",
       "leader": "TATASTEEL.NS",
-      "threshold": 0.08,
-      "hold": 4
+      "threshold": 0.05,
+      "hold": 3
      },
-     "sharpe": -0.161,
-     "robustness": -0.203,
-     "cost_efficiency": -6.4539,
-     "ensemble_rank": 6.67
+     "sharpe": -0.22,
+     "robustness": -0.541,
+     "cost_efficiency": -2.7366,
+     "ensemble_rank": 6.0
     }
    ]
   },
@@ -219,9 +219,9 @@
       "lookback": 120,
       "top_frac": 0.34
      },
-     "sharpe": 0.024,
-     "robustness": -0.494,
-     "cost_efficiency": 0.1549,
+     "sharpe": -0.075,
+     "robustness": -1.002,
+     "cost_efficiency": -0.4508,
      "ensemble_rank": 1.67
     },
     {
@@ -231,22 +231,10 @@
       "lookback": 30,
       "top_frac": 0.34
      },
-     "sharpe": 0.045,
-     "robustness": -0.825,
-     "cost_efficiency": 0.1464,
+     "sharpe": -0.124,
+     "robustness": -1.275,
+     "cost_efficiency": -0.3952,
      "ensemble_rank": 2.67
-    },
-    {
-     "params": {
-      "fn": "momentum",
-      "sector": "cement",
-      "lookback": 40,
-      "top_frac": 0.34
-     },
-     "sharpe": -0.099,
-     "robustness": -0.728,
-     "cost_efficiency": -0.3472,
-     "ensemble_rank": 3.33
     },
     {
      "params": {
@@ -255,9 +243,21 @@
       "lookback": 60,
       "top_frac": 0.34
      },
-     "sharpe": -0.181,
-     "robustness": -0.453,
-     "cost_efficiency": -0.7169,
+     "sharpe": -0.35,
+     "robustness": -0.977,
+     "cost_efficiency": -1.3381,
+     "ensemble_rank": 3.67
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "cement",
+      "lookback": 40,
+      "top_frac": 0.34
+     },
+     "sharpe": -0.292,
+     "robustness": -1.227,
+     "cost_efficiency": -0.985,
      "ensemble_rank": 3.67
     },
     {
@@ -267,10 +267,10 @@
       "lookback": 90,
       "top_frac": 0.34
      },
-     "sharpe": -0.152,
-     "robustness": -0.633,
-     "cost_efficiency": -0.8751,
-     "ensemble_rank": 4.33
+     "sharpe": -0.247,
+     "robustness": -1.152,
+     "cost_efficiency": -1.3488,
+     "ensemble_rank": 4.0
     }
    ],
    "infra": [
@@ -281,10 +281,10 @@
       "lookback": 60,
       "top_frac": 0.34
      },
-     "sharpe": 0.216,
-     "robustness": -0.985,
-     "cost_efficiency": 3.2705,
-     "ensemble_rank": 1.33
+     "sharpe": 0.073,
+     "robustness": -1.663,
+     "cost_efficiency": 1.0621,
+     "ensemble_rank": 2.0
     },
     {
      "params": {
@@ -293,10 +293,10 @@
       "lookback": 40,
       "top_frac": 0.34
      },
-     "sharpe": -0.11,
-     "robustness": -1.03,
-     "cost_efficiency": -1.1537,
-     "ensemble_rank": 2.67
+     "sharpe": -0.079,
+     "robustness": -1.533,
+     "cost_efficiency": -0.834,
+     "ensemble_rank": 2.33
     },
     {
      "params": {
@@ -305,10 +305,10 @@
       "lookback": 120,
       "top_frac": 0.34
      },
-     "sharpe": -0.082,
-     "robustness": -1.065,
-     "cost_efficiency": -1.5243,
-     "ensemble_rank": 3.0
+     "sharpe": -0.251,
+     "robustness": -1.429,
+     "cost_efficiency": -4.4599,
+     "ensemble_rank": 2.67
     },
     {
      "params": {
@@ -317,10 +317,10 @@
       "lookback": 90,
       "top_frac": 0.34
      },
-     "sharpe": -0.181,
-     "robustness": -0.779,
-     "cost_efficiency": -2.8729,
-     "ensemble_rank": 3.0
+     "sharpe": -0.33,
+     "robustness": -1.403,
+     "cost_efficiency": -5.1495,
+     "ensemble_rank": 3.33
     },
     {
      "params": {
@@ -329,10 +329,10 @@
       "lookback": 20,
       "top_frac": 0.34
      },
-     "sharpe": -0.593,
-     "robustness": -1.86,
-     "cost_efficiency": -4.0486,
-     "ensemble_rank": 5.33
+     "sharpe": -0.739,
+     "robustness": -2.34,
+     "cost_efficiency": -5.0312,
+     "ensemble_rank": 5.0
     }
    ],
    "pipes_tiles": [
@@ -343,9 +343,9 @@
       "lookback": 40,
       "top_frac": 0.34
      },
-     "sharpe": -0.016,
-     "robustness": -0.353,
-     "cost_efficiency": -0.159,
+     "sharpe": -0.17,
+     "robustness": -0.752,
+     "cost_efficiency": -1.6971,
      "ensemble_rank": 1.0
     },
     {
@@ -355,22 +355,10 @@
       "lookback": 30,
       "top_frac": 0.34
      },
-     "sharpe": -0.247,
-     "robustness": -0.808,
-     "cost_efficiency": -2.2632,
+     "sharpe": -0.359,
+     "robustness": -1.379,
+     "cost_efficiency": -3.193,
      "ensemble_rank": 2.0
-    },
-    {
-     "params": {
-      "fn": "momentum",
-      "sector": "pipes_tiles",
-      "lookback": 60,
-      "top_frac": 0.34
-     },
-     "sharpe": -0.451,
-     "robustness": -1.207,
-     "cost_efficiency": -5.1469,
-     "ensemble_rank": 3.67
     },
     {
      "params": {
@@ -379,10 +367,22 @@
       "lookback": 120,
       "top_frac": 0.34
      },
-     "sharpe": -0.389,
-     "robustness": -1.408,
-     "cost_efficiency": -4.4696,
+     "sharpe": -0.386,
+     "robustness": -1.643,
+     "cost_efficiency": -4.689,
      "ensemble_rank": 3.67
+    },
+    {
+     "params": {
+      "fn": "momentum",
+      "sector": "pipes_tiles",
+      "lookback": 60,
+      "top_frac": 0.34
+     },
+     "sharpe": -0.569,
+     "robustness": -1.61,
+     "cost_efficiency": -6.6071,
+     "ensemble_rank": 4.17
     },
     {
      "params": {
@@ -391,10 +391,10 @@
       "lookback": 20,
       "top_frac": 0.34
      },
-     "sharpe": -1.049,
-     "robustness": -1.216,
-     "cost_efficiency": -5.8029,
-     "ensemble_rank": 5.0
+     "sharpe": -1.167,
+     "robustness": -1.61,
+     "cost_efficiency": -6.3557,
+     "ensemble_rank": 4.5
     }
    ]
   },
@@ -408,9 +408,9 @@
       "lb": 40,
       "drop": -0.04
      },
-     "sharpe": 0.539,
-     "robustness": 0.513,
-     "cost_efficiency": 4.5821,
+     "sharpe": 0.536,
+     "robustness": 0.509,
+     "cost_efficiency": 4.4823,
      "ensemble_rank": 2.0
     },
     {
@@ -447,9 +447,9 @@
       "lb": 40,
       "drop": -0.03
      },
-     "sharpe": 0.503,
-     "robustness": 0.281,
-     "cost_efficiency": 4.187,
+     "sharpe": 0.494,
+     "robustness": 0.396,
+     "cost_efficiency": 3.9147,
      "ensemble_rank": 3.33
     },
     {
@@ -460,9 +460,9 @@
       "lb": 40,
       "drop": -0.05
      },
-     "sharpe": 0.316,
+     "sharpe": 0.313,
      "robustness": 0.225,
-     "cost_efficiency": 2.4793,
+     "cost_efficiency": 2.4163,
      "ensemble_rank": 7.0
     }
    ]
