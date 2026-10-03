@@ -63,10 +63,29 @@ BENCHMARK_KEY = "nifty_benchmark"     # the ONLY contestant this may touch
 
 
 def fetch_index_history(period="1y"):
-    """Real daily closes for the benchmark index only."""
+    """Real daily closes for the benchmark index only, as a Series.
+
+    yfinance returns a DataFrame from ["Close"] even for a SINGLE ticker
+    (one column, named for the ticker) -- unlike factory.fetch_prices(),
+    which passes a LIST and genuinely wants the ticker-columned frame.
+    Squeezing here rather than assuming a Series: the first real run of
+    this tool died on exactly that (TypeError: cannot convert the series
+    to <class 'float'>), caught harmlessly because dry run writes
+    nothing. Handle both shapes so a future yfinance change can't
+    reintroduce it."""
+    import pandas as pd
     import yfinance as yf
     px = yf.download(factory.BENCHMARK, period=period, auto_adjust=True,
                      progress=False)["Close"]
+    if isinstance(px, pd.DataFrame):
+        if factory.BENCHMARK in px.columns:
+            px = px[factory.BENCHMARK]
+        elif px.shape[1] == 1:
+            px = px.iloc[:, 0]
+        else:
+            raise ValueError(
+                f"expected one close series for {factory.BENCHMARK}, got "
+                f"columns {list(px.columns)} -- refusing to guess")
     return px.dropna()
 
 
