@@ -51,6 +51,16 @@ research questions. Does NOT replace `EXECUTION_PLAN.md` (settled
 facts, gates, kill conditions, guardrails — that still wins); this
 is the sequence, that is the rules.
 
+**`docs/capital_engine/00_DESIGN.md` + `.autonomous/capital_engine/WORK_ORDERS.md`
+(added 2026-10-03, Het's directive)** -- the Capital Engine: three asset
+classes (A shield 50% floor incl. the existing equity arena, B crypto paper,
+C derivatives GATED) as *profiles* of the one engine, run as a LucyOS project.
+The design record holds the why, the research records hold the evidence, and
+the work orders hold exact mechanical steps for low-token models (`/ce-workorder`
+skill). Nothing in it loosens a Hard Rule: crypto exists as paper research only,
+F&O and broker code need the exact sentences in the design's §8. If a session is
+asked to "continue the capital engine", that queue is the answer.
+
 **`.autonomous/ORCHESTRATOR_DIRECTIVE.md`** — a "HIGH-REASONING
 ORCHESTRATOR DIRECTIVE" Het pasted 2026-09-05, distilled to its
 operating principles (same convention as the autonomy directive below).
