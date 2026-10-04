@@ -146,7 +146,7 @@ def main():
         for t in tickers:
             if is_stablecoin(t) or t not in vol.columns or t not in close.columns:
                 continue
-            dv = (close[t] * vol[t]).dropna().iloc[-365:]
+            dv = vol[t].dropna().iloc[-365:]   # Yahoo crypto Volume is already USD; do NOT multiply by price (CE-3-03)
             if len(dv):
                 rank[t] = float(dv.mean())
         if rank:
