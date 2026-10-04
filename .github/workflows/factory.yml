@@ -8,14 +8,53 @@ on:
     - cron: "45 12 * * 1-5"
     # Runs every Sunday at 10:00 AM IST
     - cron: "30 4 * * 0"
+    # Runs every day (incl. weekends) at 8:00 AM IST -- weekend-trading
+    # profiles only (CE-1-03; none enabled yet, so the weekend job is skipped).
+    - cron: "30 2 * * *"
 
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: false
+# CE-1-03: concurrency is per profile, set on each job (a workflow-level group
+# would serialize the whole matrix and drop queued legs). Two runs for the same
+# profile never race on the same commit; different profiles may run in parallel
+# and the commit step rebases before pushing.
 
 jobs:
-  strategy-factory:
+  # Free, deterministic: reads profiles/*.json and emits the two matrices.
+  # A disabled profile (enabled != true) never appears in either list.
+  discover:
     runs-on: ubuntu-latest
+    outputs:
+      weekday: ${{ steps.lists.outputs.weekday }}
+      weekend: ${{ steps.lists.outputs.weekend }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: List enabled profiles
+        id: lists
+        run: |
+          weekday="$(python3 tools/list_enabled_profiles.py --weekday)"
+          weekend="$(python3 tools/list_enabled_profiles.py --weekend)"
+          echo "weekday=${weekday}" >> "$GITHUB_OUTPUT"
+          echo "weekend=${weekend}" >> "$GITHUB_OUTPUT"
+          echo "weekday profiles: ${weekday}"
+          echo "weekend profiles: ${weekend}"
+
+  # Weekday profiles (equity_nse today). Behaviour for equity_nse is unchanged:
+  # same two crons, same guard, same commit message prefix. The new 02:30
+  # daily cron is excluded here so equity does not also update at 02:30 UTC.
+  strategy-factory:
+    needs: discover
+    if: needs.discover.outputs.weekday != '[]' && github.event.schedule != '30 2 * * *'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: ${{ fromJSON(needs.discover.outputs.weekday) }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.profile }}
+      cancel-in-progress: false
+    env:
+      FACTORY_PROFILE: ${{ matrix.profile }}
 
     permissions:
       contents: write
@@ -80,7 +119,11 @@ jobs:
             exit 0
           fi
 
-          git commit -m "Factory update $(date -u +'%Y-%m-%d')" || true
+          # Equity keeps the historical prefix "Factory update"; any other
+          # profile is tagged so the history shows which class committed.
+          TAG=""
+          if [ "$FACTORY_PROFILE" != "equity_nse" ]; then TAG=" [$FACTORY_PROFILE]"; fi
+          git commit -m "Factory update${TAG} $(date -u +'%Y-%m-%d')" || true
 
           for i in 1 2 3; do
             git fetch origin
@@ -97,4 +140,86 @@ jobs:
 
           echo "Failed after 3 attempts."
           exit 1
-        
+
+  # Weekend-trading profiles (crypto later). Runs on the daily 02:30 UTC cron,
+  # the Sunday report cron and manual dispatch -- NOT on the weekday cron, and
+  # it deliberately has no weekday guard. Skipped cleanly while the list is [].
+  strategy-factory-weekend:
+    needs: discover
+    if: needs.discover.outputs.weekend != '[]' && github.event.schedule != '45 12 * * 1-5'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: ${{ fromJSON(needs.discover.outputs.weekend) }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.profile }}
+      cancel-in-progress: false
+    env:
+      FACTORY_PROFILE: ${{ matrix.profile }}
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
+
+      - name: Install dependencies
+        run: |
+          pip install yfinance pandas numpy
+
+      - name: Create state directory
+        run: |
+          mkdir -p factory_state
+
+      - name: Run daily arena update
+        if: github.event.schedule != '30 4 * * 0'
+        run: |
+          python factory.py update
+
+      - name: Generate weekly report (Sunday only)
+        if: github.event.schedule == '30 4 * * 0'
+        run: |
+          python factory.py report
+
+      - name: Commit updated state
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add factory_state
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          TAG=""
+          if [ "$FACTORY_PROFILE" != "equity_nse" ]; then TAG=" [$FACTORY_PROFILE]"; fi
+          git commit -m "Factory update${TAG} $(date -u +'%Y-%m-%d')" || true
+
+          for i in 1 2 3; do
+            git fetch origin
+            git rebase origin/main
+
+            if git push origin HEAD:main; then
+              echo "Push successful."
+              exit 0
+            fi
+
+            echo "Push conflict detected. Retrying..."
+            sleep 5
+          done
+
+          echo "Failed after 3 attempts."
+          exit 1
