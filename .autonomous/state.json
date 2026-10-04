@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "updated_at": "2026-10-04T04:22:57Z",
+ "updated_at": "2026-10-04T04:39:11Z",
  "updated_by_commit": "7866e5a",
  "branch": "claude/scheduled-maintenance-template-d7yufr",
  "pr_number": 24,
@@ -89,6 +89,11 @@
   {
    "id": "class-b-paper-authorized",
    "summary": "2026-10-04 Het: 'Authorize class b but make it effective and token friendly' = 00_DESIGN.md \u00a78 A2. Crypto paper research class authorized; EXECUTION_PLAN \u00a79 note updated. Nothing else in \u00a78 granted. Build delegated to cheap executors; operation runs on free GitHub Actions.",
+   "commit": "(this commit)"
+  },
+  {
+   "id": "retire-monsoon-cement-and-class-a-approved",
+   "summary": "2026-10-04 Het: 'If its failing remove it' (monsoon_cement: 0 trades in 5y real history, rainfall CSV never sourced) -> RETIRED_BY_OWNER code path in factory.load_state(), history preserved, no registry deletion; '3 approved' -> class A shield_nse hypothesis signed (A1_shield_core.md). Both ride PR #24 (merge CE-0-04).",
    "commit": "(this commit)"
   }
  ],

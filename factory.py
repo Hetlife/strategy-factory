@@ -109,6 +109,17 @@ ALL_TICKERS = sorted({t for v in UNIVERSE.values() for t in v}
 # keep the two in step. Used by update() (CE-0-04) and health_check.py.
 PHANTOM_UNCHANGED_FRACTION = 0.80
 
+# Retirements decided by Het (an explicit, dated yes), applied through this
+# code path in load_state() -- never by hand-editing the ledger, never by
+# deleting a registry key (history is preserved forever; see graveyard()).
+# ACCELERATION_PLAN STEP 5 / CE-0-03. Idempotent: sets retired=True once.
+RETIRED_BY_OWNER = {
+    "monsoon_cement": ("2026-10-04 Het: 'If its failing remove it' -- 0 trades in "
+                       "5y of real history (CE-0-02 validator run 37176891498) "
+                       "and 0 live trades; the IMD rainfall CSV was never "
+                       "sourced, so sig_monsoon could never fire."),
+}
+
 LADDER = [0, 25_000, 50_000, 100_000, 200_000]    # rupees per rung (0 = paper)
                                    # Raised 2026-08-25 (Het, fresh explicit
                                    # confirmation): rung-1 was Rs 10,000, where
@@ -442,6 +453,15 @@ def load_state():
             state["registry"][name] = params
         if name not in state["contestants"]:
             state["contestants"][name] = blank_stats()
+    # Owner-decided retirements (RETIRED_BY_OWNER). Applied here so both the
+    # daily update() and the weekly report() honour them on their next run;
+    # save_state() then persists the flag. Permanent entries are never retired.
+    for name, why in RETIRED_BY_OWNER.items():
+        s = state["contestants"].get(name)
+        if s and not s.get("retired") and not state["registry"].get(name, {}).get("permanent"):
+            s["retired"] = True
+            s["retired_reason"] = f"owner decision: {why}"
+            print(f"RETIRED by owner decision: {name} -- {why}")
     return state
 
 def save_state(s):
@@ -631,7 +651,8 @@ def graveyard(state=None):
         params = reg.get(name, {})
         numeric_params = {k: v for k, v in params.items()
                            if k not in _NON_NUMERIC_PARAM_KEYS}
-        cause = ("repeated drawdown breaches (paper_failures cap)"
+        cause = (s["retired_reason"] if s.get("retired_reason")
+                 else "repeated drawdown breaches (paper_failures cap)"
                  if s.get("paper_failures", 0) >= RULES["max_paper_failures"]
                  else "retired (reason not mechanically tagged)")
         entries.append(dict(
