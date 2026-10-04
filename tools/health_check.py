@@ -291,4 +291,9 @@ if __name__ == "__main__":
         sys.exit(0)
     for level, msg in results:
         print(f"[{level.upper()}] {msg}")
+    # info-only findings are context, not failures: the 15-minute supervisor
+    # and the ce-workorder orient step treat exit 1 as "something is wrong".
+    if all(level == "info" for level, _ in results):
+        print("health_check: informational findings only, nothing to fix.")
+        sys.exit(0)
     sys.exit(1)
