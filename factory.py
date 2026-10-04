@@ -313,6 +313,41 @@ def sig_fixed_weight(px, p):
     tot = sum(w.values())
     return {t: x / tot for t, x in w.items()} if tot > 0 else {}
 
+def fixed_weight_next(cur, todays_ret, target, band, is_rebalance_day, cash=None):
+    """CE-2-02b (A1 section 3): state-aware band rebalancing for the
+    "fixed_weight" strategy. Pure. Returns (new_positions, held):
+    held = the weights actually held going into the trade (cur drifted by
+    today's returns), which update() must cost turnover against -- weights
+    that merely drift are not trades. new_positions = what is held after.
+
+    cur: positions held through today (ticker -> weight); {} on day 1.
+    todays_ret: today's returns (mapping/Series ticker -> return, NaN = 0).
+    target: target weights (already dropped/renormalised for missing tickers).
+    band: absolute drift tolerance. is_rebalance_day: weekly gate.
+    cash: sleeve ticker that must be present in target; if not, fail closed
+    (hold cur unchanged, print WARNING) rather than silently going 100% risk.
+
+    Day 1 (cur empty) -> enter target. Otherwise drift cur by today's returns
+    (renormalised to cur's gross); on a rebalance day with any |drift - target|
+    > band -> target, else the drifted weights (zero turnover)."""
+    if cash is not None and cash not in target:
+        print(f"  [WARNING] fixed_weight: cash sleeve {cash} missing from the "
+              f"price panel -- holding previous positions unchanged")
+        return dict(cur), dict(cur)
+    if not cur:
+        return dict(target), {}
+    grown = {}
+    for t, w in cur.items():
+        r = todays_ret.get(t, 0.0)
+        grown[t] = w * (1.0 + (0.0 if pd.isna(r) else float(r)))
+    tot, gross = sum(grown.values()), sum(cur.values())
+    drifted = {t: g / tot * gross for t, g in grown.items()} if tot > 0 else dict(cur)
+    if is_rebalance_day and any(
+            abs(drifted.get(t, 0.0) - target.get(t, 0.0)) > band
+            for t in set(drifted) | set(target)):
+        return dict(target), drifted
+    return drifted, drifted
+
 IMPLS = {"event_drift": sig_event_drift, "momentum": sig_momentum,
          "input_cost": sig_input_cost, "monsoon": sig_monsoon,
          "benchmark": sig_benchmark, "fixed_weight": sig_fixed_weight}
@@ -666,6 +701,13 @@ def update():
         except Exception as e:
             targets = {}
             print(f"  [warn] {name}: {e}")
+        if params["fn"] == "fixed_weight":   # CE-2-02b band rebalancing
+            # day_ret is already booked on yesterday's weights. Re-base the
+            # turnover below on the DRIFTED weights, so drift is not a trade.
+            targets, s["positions"] = fixed_weight_next(
+                s["positions"], todays_ret, targets, params.get("band", 0.05),
+                pd.Timestamp(today).weekday() == params.get("rebalance_weekday", 4),
+                cash=BENCHMARK)
         tickers = set(s["positions"]) | set(targets)
         turn = sum(abs(targets.get(t, 0) - s["positions"].get(t, 0))
                    for t in tickers)

@@ -29,7 +29,8 @@
     "GOLDBEES.NS": 0.2,
     "NIFTYBEES.NS": 0.2
    },
-   "band": 0.05
+   "band": 0.05,
+   "rebalance_weekday": 4
   },
   "shield_cash_benchmark": {
    "fn": "benchmark",
