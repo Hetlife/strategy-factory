@@ -64,7 +64,7 @@ class TestAggregate(unittest.TestCase):
         self.assertEqual(rows["crypto_spot"]["real_exposure"], 0)
         self.assertEqual(rows["options"]["status"], "no ledger yet")
         self.assertEqual(v["total_real_exposure"], 0)
-        self.assertEqual(v["classes"]["A"]["ceiling_text"], "no real capital (ceiling 50% max)")
+        self.assertEqual(v["classes"]["A"]["ceiling_text"], "no real capital (floor 50%, max 100%)")
         self.assertEqual(v["classes"]["B"]["ceiling_text"], "no real capital (ceiling 30% max)")
         self.assertEqual(v["classes"]["C"]["ceiling_text"], "no real capital (ceiling 20% max)")
         self.assertEqual(v["paper_view"]["classes_blended"], ["A", "B"])
@@ -83,7 +83,8 @@ class TestAggregate(unittest.TestCase):
             v = agg.aggregate(tmp, ladder=LADDER)
         self.assertEqual(v["total_real_exposure"], 75_000)
         self.assertAlmostEqual(v["classes"]["A"]["share_of_real"], 50 / 75)
-        self.assertIn("[OVER CEILING]", v["classes"]["A"]["ceiling_text"])   # 66.7% > 50%
+        self.assertNotIn("[BELOW FLOOR]", v["classes"]["A"]["ceiling_text"])  # 66.7% >= 50% floor
+        self.assertNotIn("OVER", v["classes"]["A"]["ceiling_text"])          # and under the 100% cap
         self.assertIn("[OVER CEILING]", v["classes"]["B"]["ceiling_text"])   # 33.3% > 30%
         self.assertNotIn("OVER", v["classes"]["C"]["ceiling_text"])
 

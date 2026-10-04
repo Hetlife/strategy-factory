@@ -13,7 +13,9 @@ Conventions (documented, not hidden):
     contestants with rung >= 1 (0 for everyone today).
   * paper contestants = non-retired, non-permanent, rung 0. The permanent
     benchmark is a yardstick, not a contestant, and is excluded from all counts.
-  * ceilings (A 0.50 / B 0.30 / C 0.20) are MAXIMA of TOTAL real capital.
+  * ceilings: B 0.30 and C 0.20 are MAXIMA of TOTAL real capital. Class A is the
+    shield: a FLOOR of 0.50 (design section 2) with a cap of 1.00, because day one
+    is 100% class A1 (design section 3.1). Fixed 2026-10-04 (it was wrongly 0.50 max).
   * the portfolio drawdown is a PAPER VIEW: each class's best paper contestant
     equity curve, aligned on the dates common to all classes present, blended
     with equal weight (mean of equity levels). It is not a result and not a
@@ -26,7 +28,8 @@ import os
 import sys
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CEILINGS = {"A": 0.50, "B": 0.30, "C": 0.20}
+CEILINGS = {"A": 1.00, "B": 0.30, "C": 0.20}
+A_FLOOR = 0.50   # class A should hold at least this share of real capital once any exists
 DD_PAPER_RULE = -0.10
 DD_KILL_RULE = -0.15
 PAPER_LABEL = "PAPER VIEW -- not a result"
@@ -153,11 +156,16 @@ def aggregate(root=REPO_ROOT, ladder=None):
         if total_real > 0:
             share = exp / total_real
             entry["share_of_real"] = share
-            entry["ceiling_text"] = (f"{share:.1%} of real capital vs ceiling {ceil:.0%}"
-                                     + ("  [OVER CEILING]" if share > ceil else ""))
+            if letter == "A":
+                entry["ceiling_text"] = (f"{share:.1%} of real capital vs floor {A_FLOOR:.0%} / max {ceil:.0%}"
+                                         + ("  [BELOW FLOOR]" if share < A_FLOOR else ""))
+            else:
+                entry["ceiling_text"] = (f"{share:.1%} of real capital vs ceiling {ceil:.0%}"
+                                         + ("  [OVER CEILING]" if share > ceil else ""))
         else:
             entry["share_of_real"] = None
-            entry["ceiling_text"] = f"no real capital (ceiling {ceil:.0%} max)"
+            entry["ceiling_text"] = (f"no real capital (floor {A_FLOOR:.0%}, max {ceil:.0%})" if letter == "A"
+                                     else f"no real capital (ceiling {ceil:.0%} max)")
         # class paper curve = best paper contestant across the class's profiles
         cands = [p for p in members if p.get("best_paper_equity") is not None]
         if cands:
@@ -202,7 +210,7 @@ def format_table(view):
         be = f"{p['best_paper_equity']:.4f}" if p["best_paper_equity"] is not None else "-"
         L.append(f"  {p['profile']:<14}{p['class']:<6}{p['real_exposure']:>9,}"
                  f"{p['paper_count']:>7}{p['retired_count']:>9}{be:>15}  ok")
-    L += ["", "Per class (ceilings are MAXIMA of total real capital):"]
+    L += ["", "Per class (B and C ceilings are MAXIMA of total real capital; A is a 50% floor, max 100%):"]
     for letter, c in view["classes"].items():
         L.append(f"  Class {letter}: Rs {c['real_exposure']:,} -- {c['ceiling_text']}")
     pv = view["paper_view"]

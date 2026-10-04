@@ -47,7 +47,7 @@ GATE_NAMES = {"G1": "evidence", "G2": "independent validation", "G3": "portfolio
 # 100% A1 (design s3.1), so only B and C are capped by the aggregator's ceilings;
 # A's cap here is 1.0. (The aggregator still prints A against 0.50 -- flagged in
 # the CE-4-01 evidence packet, not changed here: read-only scope.)
-GATE_CEILINGS = dict(agg.CEILINGS, A=1.0)
+GATE_CEILINGS = dict(agg.CEILINGS)   # A is 1.0 (floor 50%, cap 100%) since 2026-10-04
 C_REASON = "gated: no derivatives logic exists and none is authorized (design section 8 A4)"
 
 _AUTH_RE = re.compile(r"AUTHORIZE REAL CAPITAL\s+([ABC])\s+(\S+)\s+(\d[\d,_]*)")
