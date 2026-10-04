@@ -79,6 +79,9 @@ def _load_factory_copy(tmp):
         if n != 1:
             raise RuntimeError(f"GOLDEN_MUTATE: constant {name} not found")
     path = os.path.join(tmp, "factory.py")
+    # CE-1-02: factory.py loads profiles/<name>.json beside itself
+    shutil.copytree(os.path.join(ROOT, "profiles"), os.path.join(tmp, "profiles"),
+                    ignore=shutil.ignore_patterns("__pycache__"), dirs_exist_ok=True)
     with open(path, "w") as f:
         f.write(src)
     spec = importlib.util.spec_from_file_location("factory_goldencopy", path)

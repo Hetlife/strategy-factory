@@ -244,6 +244,33 @@ def check_phantom_days(market_log_path=None, log_data=None):
         f"rewritten; see tools/detect_phantom_days.py and CE-0-04.")]
 
 
+def check_profile_integrity(profile_dir=None):
+    """CE-1-02: profiles/equity_nse.json must (a) carry none of rules/ladder/
+    cost_per_side and (b) when FACTORY_PROFILE is unset/equity_nse, hold
+    exactly the values factory.py runs with. Errors, not info: a drifted
+    equity profile silently changes the live arena."""
+    from profiles import load_profile, ProfileError, DEFAULT_PROFILE
+    path = os.path.join(profile_dir or os.path.join(REPO_ROOT, "profiles"),
+                        DEFAULT_PROFILE + ".json")
+    try:
+        profile = load_profile(DEFAULT_PROFILE, os.path.dirname(path))
+    except ProfileError as e:
+        return [("error", f"profile integrity: {e}")]
+    if os.environ.get("FACTORY_PROFILE", DEFAULT_PROFILE) != DEFAULT_PROFILE:
+        return []         # factory's constants belong to another profile here
+    import factory
+    findings = []
+    for name in ("UNIVERSE", "MACRO_PROXIES", "BENCHMARK", "STATE_DIR",
+                 "VARIABLE_COST_PER_SIDE", "DP_CHARGE_PER_SCRIP", "STCG_RATE",
+                 "LTCG_RATE", "LTCG_EXEMPTION_PER_YEAR"):
+        if name not in profile:
+            findings.append(("error", f"{DEFAULT_PROFILE}.json is missing {name}"))
+        elif profile[name] != getattr(factory, name):
+            findings.append(("error",
+                f"{DEFAULT_PROFILE}.json {name} differs from factory.{name}"))
+    return findings
+
+
 def run_all(ledger_path=None, state_path=None, live=False):
     ledger_path = ledger_path or os.path.join(REPO_ROOT, "factory_state", "ledger.json")
     state_path = state_path or os.path.join(REPO_ROOT, ".autonomous", "state.json")
@@ -267,6 +294,7 @@ def run_all(ledger_path=None, state_path=None, live=False):
     # branch-vs-main drift (they're not written by factory.yml's
     # main-only cron) -- local checkout is a trustworthy source for these
     # regardless of --live.
+    findings += check_profile_integrity()
     findings += check_state_json_wellformed(state_path)
     findings += check_claude_md_sha1(state_path, claude_md_path)
     findings += check_bug_log_state_consistency(bug_log_path, state_path)

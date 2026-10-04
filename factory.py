@@ -17,7 +17,26 @@ from statistics import NormalDist
 import numpy as np
 import pandas as pd
 
-STATE_DIR = "factory_state"
+# ---------------- asset-class profile (CE-1-02) -------------------------
+# The universe, benchmark, calendar flag, state dir and the variable-cost /
+# tax constants come from profiles/<FACTORY_PROFILE>.json. Unset means
+# "equity_nse", whose JSON holds exactly the values that used to be literals
+# here. RULES, LADDER and COST_PER_SIDE are NOT profile-driven: they stay
+# literal below.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _HERE)
+from profiles import load_profile, ProfileError, DEFAULT_PROFILE
+FACTORY_PROFILE = os.environ.get("FACTORY_PROFILE") or DEFAULT_PROFILE
+try:
+    _PROFILE = load_profile(FACTORY_PROFILE,
+                            os.path.join(_HERE, "profiles"))
+except ProfileError as _e:
+    sys.exit(f"factory.py: {_e}")
+# A non-default profile keeps its state under factory_state/<profile>/ so the
+# equity ledger path never moves.
+STATE_DIR = (_PROFILE["STATE_DIR"] if FACTORY_PROFILE == DEFAULT_PROFILE
+             else os.path.join("factory_state", FACTORY_PROFILE))
+TRADES_WEEKENDS = bool(_PROFILE.get("trades_weekends", False))
 COST_PER_SIDE = 0.0019            # legacy flat-rate constant, kept for reference/
                                    # display only -- update() no longer charges
                                    # against this directly, see round_trip_cost().
@@ -27,77 +46,47 @@ COST_PER_SIDE = 0.0019            # legacy flat-rate constant, kept for referenc
                                    # rung 1 actually implies, because real costs
                                    # have a FIXED component (the DP charge) that
                                    # a flat rate can't represent.
-VARIABLE_COST_PER_SIDE = 0.00111  # STT+exchange txn+stamp+GST, ~0.222% round
+VARIABLE_COST_PER_SIDE = _PROFILE["VARIABLE_COST_PER_SIDE"]  # STT+exchange txn+stamp+GST, ~0.222% round
                                    # trip / 2, charged per side on traded notional
-DP_CHARGE_PER_SCRIP = 15.34       # Rs, FIXED, once per scrip per sell-day --
+DP_CHARGE_PER_SCRIP = _PROFILE["DP_CHARGE_PER_SCRIP"]  # Rs, FIXED, once per scrip per sell-day --
                                    # this is the fixed component a flat-percentage
                                    # model misses entirely
-BENCHMARK = "^NSEI"
+BENCHMARK = _PROFILE["BENCHMARK"]
 MAX_CONTESTANTS = 40              # cap so the arena stays readable
 
-UNIVERSE = {
-    "cement": ["ULTRACEMCO.NS", "AMBUJACEM.NS", "ACC.NS", "SHREECEM.NS",
-               "JKCEMENT.NS", "RAMCOCEM.NS", "DALBHARAT.NS"],
-    "infra": ["LT.NS", "IRB.NS", "KNRCON.NS", "PNCINFRA.NS", "HGINFRA.NS"],
-    "pipes_tiles": ["ASTRAL.NS", "SUPREMEIND.NS", "KAJARIACER.NS", "CERA.NS"],
-    "steel": ["TATASTEEL.NS", "JSWSTEEL.NS", "JINDALSTEL.NS", "SAIL.NS"],
-    # 2026-08-29 (Het: "add a Nifty 100 momentum contestant, mechanism
-    # first"). Originally built from training knowledge (~93 names) since
-    # this sandbox's egress proxy blocks nseindia.com/wikipedia.org/
-    # smallcase.com -- then VERIFIED AND CORRECTED FOR REAL the same day
-    # via tools/diagnose_nifty100_official_list.py on a GitHub Actions
-    # runner, which fetched NSE's own official published Nifty 100
-    # constituent CSV directly (nsearchives.nseindia.com, NSE's own
-    # domain, not a third-party mirror or a Yahoo Finance inference).
-    # This is now a BYTE-EXACT match to that real fetch (100 symbols),
-    # not an approximation: the diagnostic's diff (20 real constituents
-    # missing from the training-knowledge guess, 13 the guess had that
-    # have since dropped out of the index) was applied in full, with
-    # each addition confirmed against NSE's own company-name column --
-    # not just resolved-or-not on Yahoo Finance. Two corrections worth
-    # recording explicitly because they overturned an earlier guess:
-    # TATAMOTORS.NS (real 404 on Yahoo, flagged earlier as an assumed
-    # demerger) is CONFIRMED replaced by two real, currently-listed
-    # entities from Tata Motors' 2025 split -- TMCV.NS ("Tata Motors
-    # Ltd.") and TMPV.NS ("Tata Motors Passenger Vehicles Ltd."), both
-    # added. LTIM.NS/LTIMindtree is CONFIRMED genuinely absent from the
-    # current Nifty 100 (not a ticker rename -- likely dropped out by
-    # market-cap ranking) -- LTM.NS turned up in the official list but
-    # its NSE company name is "LTM Ltd.", an unrelated company, so it
-    # was NOT used as a substitute; it's included here only because it's
-    # a real, separate, current Nifty 100 constituent in its own right.
-    # Since this is a byte-exact, dated snapshot of a market-cap-ranked
-    # index, it WILL drift again as NSE reconstitutes the index
-    # (typically semi-annually) -- re-run the same diagnostic to refresh
-    # it rather than hand-editing entries, and don't assume this list is
-    # still exactly current more than a few months after 2026-08-29.
-    "nifty100": [
-        "ABB.NS", "ADANIENSOL.NS", "ADANIENT.NS", "ADANIGREEN.NS",
-        "ADANIPORTS.NS", "ADANIPOWER.NS", "AMBUJACEM.NS", "APOLLOHOSP.NS",
-        "ASIANPAINT.NS", "AXISBANK.NS", "BAJAJ-AUTO.NS", "BAJAJFINSV.NS",
-        "BAJAJHLDNG.NS", "BAJFINANCE.NS", "BANKBARODA.NS", "BEL.NS",
-        "BHARTIARTL.NS", "BOSCHLTD.NS", "BPCL.NS", "BRITANNIA.NS",
-        "CANBK.NS", "CGPOWER.NS", "CHOLAFIN.NS", "CIPLA.NS",
-        "COALINDIA.NS", "CUMMINSIND.NS", "DIVISLAB.NS", "DLF.NS",
-        "DMART.NS", "DRREDDY.NS", "EICHERMOT.NS", "ENRIN.NS",
-        "ETERNAL.NS", "GAIL.NS", "GODREJCP.NS", "GRASIM.NS", "HAL.NS",
-        "HCLTECH.NS", "HDFCAMC.NS", "HDFCBANK.NS", "HDFCLIFE.NS",
-        "HINDALCO.NS", "HINDUNILVR.NS", "HINDZINC.NS", "HYUNDAI.NS",
-        "ICICIBANK.NS", "INDHOTEL.NS", "INDIGO.NS", "INFY.NS", "IOC.NS",
-        "IRFC.NS", "ITC.NS", "JINDALSTEL.NS", "JIOFIN.NS", "JSWSTEEL.NS",
-        "KOTAKBANK.NS", "LODHA.NS", "LT.NS", "LTM.NS", "M&M.NS",
-        "MARUTI.NS", "MAXHEALTH.NS", "MAZDOCK.NS", "MOTHERSON.NS",
-        "MUTHOOTFIN.NS", "NESTLEIND.NS", "NTPC.NS", "ONGC.NS", "PFC.NS",
-        "PIDILITIND.NS", "PNB.NS", "POWERGRID.NS", "RECLTD.NS",
-        "RELIANCE.NS", "SBILIFE.NS", "SBIN.NS", "SHREECEM.NS",
-        "SHRIRAMFIN.NS", "SIEMENS.NS", "SOLARINDS.NS", "SUNPHARMA.NS",
-        "TATACAP.NS", "TATACONSUM.NS", "TATAPOWER.NS", "TATASTEEL.NS",
-        "TCS.NS", "TECHM.NS", "TITAN.NS", "TMCV.NS", "TMPV.NS",
-        "TORNTPHARM.NS", "TRENT.NS", "TVSMOTOR.NS", "ULTRACEMCO.NS",
-        "UNIONBANK.NS", "UNITDSPR.NS", "VBL.NS", "VEDL.NS", "WIPRO.NS",
-        "ZYDUSLIFE.NS",
-    ],
-}
+# NOTE (moved with the literal): provenance of the nifty100 list now in
+# profiles/equity_nse.json, kept here because it is history, not data:
+# 2026-08-29 (Het: "add a Nifty 100 momentum contestant, mechanism
+# first"). Originally built from training knowledge (~93 names) since
+# this sandbox's egress proxy blocks nseindia.com/wikipedia.org/
+# smallcase.com -- then VERIFIED AND CORRECTED FOR REAL the same day
+# via tools/diagnose_nifty100_official_list.py on a GitHub Actions
+# runner, which fetched NSE's own official published Nifty 100
+# constituent CSV directly (nsearchives.nseindia.com, NSE's own
+# domain, not a third-party mirror or a Yahoo Finance inference).
+# This is now a BYTE-EXACT match to that real fetch (100 symbols),
+# not an approximation: the diagnostic's diff (20 real constituents
+# missing from the training-knowledge guess, 13 the guess had that
+# have since dropped out of the index) was applied in full, with
+# each addition confirmed against NSE's own company-name column --
+# not just resolved-or-not on Yahoo Finance. Two corrections worth
+# recording explicitly because they overturned an earlier guess:
+# TATAMOTORS.NS (real 404 on Yahoo, flagged earlier as an assumed
+# demerger) is CONFIRMED replaced by two real, currently-listed
+# entities from Tata Motors' 2025 split -- TMCV.NS ("Tata Motors
+# Ltd.") and TMPV.NS ("Tata Motors Passenger Vehicles Ltd."), both
+# added. LTIM.NS/LTIMindtree is CONFIRMED genuinely absent from the
+# current Nifty 100 (not a ticker rename -- likely dropped out by
+# market-cap ranking) -- LTM.NS turned up in the official list but
+# its NSE company name is "LTM Ltd.", an unrelated company, so it
+# was NOT used as a substitute; it's included here only because it's
+# a real, separate, current Nifty 100 constituent in its own right.
+# Since this is a byte-exact, dated snapshot of a market-cap-ranked
+# index, it WILL drift again as NSE reconstitutes the index
+# (typically semi-annually) -- re-run the same diagnostic to refresh
+# it rather than hand-editing entries, and don't assume this list is
+# still exactly current more than a few months after 2026-08-29.
+UNIVERSE = _PROFILE["UNIVERSE"]   # literal moved to profiles/equity_nse.json (CE-1-02)
 # Macro cost proxies (not tradeable sectors -- fetched alongside the
 # equity panel purely so sig_input_cost can read them as `proxy`).
 # 2026-08-26 (Het: "add gold and petrol prices... we can use them as
@@ -109,7 +98,7 @@ UNIVERSE = {
 # added yet -- no comparably direct mechanism to cement/infra/steel was
 # found (see AUTONOMOUS_LOG.md); asked Het rather than force a weak,
 # two-hop story into the registry.
-MACRO_PROXIES = ["BZ=F"]   # ICE Brent Crude continuous future
+MACRO_PROXIES = _PROFILE["MACRO_PROXIES"]   # ICE Brent Crude continuous future
 ALL_TICKERS = sorted({t for v in UNIVERSE.values() for t in v}
                       | {BENCHMARK} | set(MACRO_PROXIES))
 
@@ -119,6 +108,17 @@ ALL_TICKERS = sorted({t for v in UNIVERSE.values() for t in v}
 # Same threshold as PHANTOM_THRESHOLD in tools/detect_phantom_days.py --
 # keep the two in step. Used by update() (CE-0-04) and health_check.py.
 PHANTOM_UNCHANGED_FRACTION = 0.80
+
+# Retirements decided by Het (an explicit, dated yes), applied through this
+# code path in load_state() -- never by hand-editing the ledger, never by
+# deleting a registry key (history is preserved forever; see graveyard()).
+# ACCELERATION_PLAN STEP 5 / CE-0-03. Idempotent: sets retired=True once.
+RETIRED_BY_OWNER = {
+    "monsoon_cement": ("2026-10-04 Het: 'If its failing remove it' -- 0 trades in "
+                       "5y of real history (CE-0-02 validator run 37176891498) "
+                       "and 0 live trades; the IMD rainfall CSV was never "
+                       "sourced, so sig_monsoon could never fire."),
+}
 
 LADDER = [0, 25_000, 50_000, 100_000, 200_000]    # rupees per rung (0 = paper)
                                    # Raised 2026-08-25 (Het, fresh explicit
@@ -209,9 +209,9 @@ BREEDING_MAX_NEW_PER_ROUND = 3              # caps a single report() round's bir
 # N-times-count the same exemption, so it is deliberately NOT netted into
 # this per-contestant number. It is noted once, in report()'s printed
 # output, as a portfolio-level reminder instead.
-STCG_RATE = 0.20     # holding <= 12 months
-LTCG_RATE = 0.125    # holding  > 12 months (before the annual exemption)
-LTCG_EXEMPTION_PER_YEAR = 125_000   # Rs, account-wide/annual -- NOT applied
+STCG_RATE = _PROFILE["STCG_RATE"]     # holding <= 12 months
+LTCG_RATE = _PROFILE["LTCG_RATE"]    # holding  > 12 months (before the annual exemption)
+LTCG_EXEMPTION_PER_YEAR = _PROFILE["LTCG_EXEMPTION_PER_YEAR"]   # Rs, account-wide/annual -- NOT applied
                                      # per-strategy here, see note above
 TRADING_DAYS_PER_YEAR = 252         # same convention as the Sharpe annualization
 
@@ -435,9 +435,12 @@ def blank_stats(lineage=None):
 def load_state():
     os.makedirs(STATE_DIR, exist_ok=True)
     p = os.path.join(STATE_DIR, "ledger.json")
-    if not os.path.exists(p):
-        return {"registry": seed_registry(), "contestants": {}}
-    state = json.load(open(p))
+    if os.path.exists(p):
+        state = json.load(open(p))
+    else:
+        # brand-new ledger: seed, then fall through so the backfill loop
+        # creates blank stats and RETIRED_BY_OWNER applies from day one
+        state = {"registry": seed_registry(), "contestants": {}}
     for s in state["contestants"].values():   # backfill pre-advisor-layer entries
         s.setdefault("lineage", None)
         s.setdefault("evolved_out", False)
@@ -453,6 +456,15 @@ def load_state():
             state["registry"][name] = params
         if name not in state["contestants"]:
             state["contestants"][name] = blank_stats()
+    # Owner-decided retirements (RETIRED_BY_OWNER). Applied here so both the
+    # daily update() and the weekly report() honour them on their next run;
+    # save_state() then persists the flag. Permanent entries are never retired.
+    for name, why in RETIRED_BY_OWNER.items():
+        s = state["contestants"].get(name)
+        if s and not s.get("retired") and not state["registry"].get(name, {}).get("permanent"):
+            s["retired"] = True
+            s["retired_reason"] = f"owner decision: {why}"
+            print(f"RETIRED by owner decision: {name} -- {why}")
     return state
 
 def save_state(s):
@@ -494,7 +506,10 @@ def fetch_prices():
     import yfinance as yf
     px = yf.download(ALL_TICKERS, period="1y", auto_adjust=True,
                      progress=False)["Close"]
-    return px.dropna(how="all").ffill()
+    px = px.dropna(how="all").ffill()
+    if not TRADES_WEEKENDS:           # no-op for equity (yfinance has trading days only)
+        px = px[px.index.weekday < 5]
+    return px
 
 def round_trip_cost(turn, tickers_sold, effective_capital):
     """Size-aware transaction cost for one day's rebalance, as a fraction
@@ -639,7 +654,8 @@ def graveyard(state=None):
         params = reg.get(name, {})
         numeric_params = {k: v for k, v in params.items()
                            if k not in _NON_NUMERIC_PARAM_KEYS}
-        cause = ("repeated drawdown breaches (paper_failures cap)"
+        cause = (s["retired_reason"] if s.get("retired_reason")
+                 else "repeated drawdown breaches (paper_failures cap)"
                  if s.get("paper_failures", 0) >= RULES["max_paper_failures"]
                  else "retired (reason not mechanically tagged)")
         entries.append(dict(

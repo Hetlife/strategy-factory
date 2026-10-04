@@ -93,9 +93,10 @@ class PhantomGuard(unittest.TestCase):
         self.assertIn("PHANTOM SKIPPED: " + dday, out)
         self.assertNotIn(dday, self.recorded_dates())
         self.run_update(self.panel.iloc[:d + 1])    # cycle k+1: D now populated
-        self.assertEqual(self.recorded_dates().count(dday),
-                         len(json.load(open(os.path.join(
-                             self.tmp, "factory_state", "ledger.json")))["contestants"]))
+        contestants = json.load(open(os.path.join(
+            self.tmp, "factory_state", "ledger.json")))["contestants"]
+        active = [c for c in contestants.values() if not c.get("retired")]
+        self.assertEqual(self.recorded_dates().count(dday), len(active))  # retired ones skip
         self.assertEqual(self.market_log_dates().count(dday), 1)
         out = self.run_update(self.panel.iloc[:d + 1])  # replay: idempotence still holds
         self.assertIn("Arena update SKIPPED", out)

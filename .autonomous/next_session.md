@@ -40,7 +40,9 @@ grep -n "merge CE-0-01" .autonomous/het_directives.md
 
 ## TASK 3 — Work that needs no merge (do these, in order)
 
-1. `CE-1-02` — a Sonnet worker built it on side branch `ce/CE-1-02-profiles` (2026-10-04). Fetch it, read EVIDENCE/CE-1-02.md, run the tests (golden must be unchanged), review the factory.py diff, then `git merge --no-ff ce/CE-1-02-profiles` into the work branch AFTER PR #24 is merged. If the side branch does not exist, the worker failed: build it per the order file.
+1. `CE-2-02` — class A profile `shield_nse` + `sig_fixed_weight` (A1 approved by Het 2026-10-04; profile loader CE-1-02 is merged on the branch). Fable review: YES before merge — a low-token session BUILDS it and sets NEEDS_REVIEW.
+1b. `CE-3-03` — class B profile `crypto` + trend signal (A2 granted; needs CE-3-02's real-run USABLE list first, which needs PR #24 merged).
+1c. `CE-1-03` — workflow matrix over enabled profiles.
 2. `CE-2-03` — portfolio aggregator (read-only) once CE-1-02 is in.
 3. `CE-4-03` — execution-adapter contract (document only).
 (CE-1-01, CE-2-01, CE-3-01, CE-3-02 tool, CE-0-04 were done 2026-10-04.)
