@@ -215,6 +215,11 @@ LTCG_EXEMPTION_PER_YEAR = _PROFILE["LTCG_EXEMPTION_PER_YEAR"]   # Rs, account-wi
                                      # per-strategy here, see note above
 TRADING_DAYS_PER_YEAR = 252         # same convention as the Sharpe annualization
 
+# CE-3-03: per-profile tax model + cash rate. Equity default is unchanged.
+TAX_MODEL = _PROFILE.get("tax_model", "india_equity")   # "vda_india" for class B crypto
+CASH_RATE_ANNUAL = float(_PROFILE.get("cash_rate_annual", 0.0))   # accrual of fn "cash" entries
+VDA_TDS_RATE = 0.01                  # 1% TDS withheld on every crypto sale (R2 s3)
+
 # ---------------- paper holding-cost decay (P1, per Het's request 2026-08-26) --
 # Real capital sitting in an unproven strategy has a real opportunity cost --
 # even doing nothing (a savings account / T-bill) earns something. A
@@ -233,7 +238,7 @@ TRADING_DAYS_PER_YEAR = 252         # same convention as the Sharpe annualizatio
 # `permanent` contestant (nifty_benchmark -- the passive bar itself doesn't
 # pay a management fee in this model, taxing it would corrupt the comparison
 # P0-3 exists to provide).
-PAPER_HOLDING_TAX_WEEKLY = 0.0013
+PAPER_HOLDING_TAX_WEEKLY = _PROFILE.get("paper_holding_tax_weekly", 0.0013)   # CE-2-04: per-profile, default unchanged
 
 def post_tax_expectancy(mean_daily_return, days_in_market, trades):
     """Rough, ranking-purpose approximation, not a lot-level tax computation
@@ -248,6 +253,18 @@ def post_tax_expectancy(mean_daily_return, days_in_market, trades):
     if avg_holding_days > TRADING_DAYS_PER_YEAR:
         return mean_daily_return * (1 - LTCG_RATE), "LTCG"
     return mean_daily_return * (1 - STCG_RATE), "STCG"
+
+def post_tax_expectancy_vda(mean_daily_return, days_in_market, trades):
+    """CE-3-03, class B (India VDA regime, R2 s3). DISPLAY ONLY: never feeds
+    a PROMOTE/DEMOTE verdict. 30% flat (STCG_RATE) on a POSITIVE mean, with
+    NO loss set-off: a non-positive mean gets no tax credit (post-tax equals
+    pre-tax, never better). 1% TDS on each sale is a cash drag, subtracted
+    after tax; trades/2 is used as the sale count (a round trip = one buy
+    + one sale), a stated approximation. Returns (post_tax_mean, label)."""
+    taxed = (mean_daily_return * (1 - STCG_RATE) if mean_daily_return > 0
+             else mean_daily_return)
+    tds_drag = VDA_TDS_RATE * (trades / 2.0) / max(days_in_market, 1)
+    return taxed - tds_drag, "VDA30"
 
 # ---------------- strategy implementations (parametric) ----------------
 def sig_event_drift(px, p):
@@ -291,9 +308,113 @@ def sig_benchmark(px, p):
     Always fully invested in BENCHMARK once it appears in the price panel."""
     return {BENCHMARK: 1.0} if BENCHMARK in px.columns else {}
 
+def sig_fixed_weight(px, p):
+    """CE-2-02 (Class A shield, hypothesis A1): hold fixed TARGET weights
+    p["weights"] ({ticker: weight}, summing to 1.0). Long-only, unlevered.
+
+    The A1 band rule (trade only when a sleeve drifts > p["band"] from
+    target) needs the contestant's CURRENT positions, and a sig_* function
+    sees only (px, p) -- it is stateless, and this order forbids adding
+    ledger state. So the band is NOT enforced here: the signal returns the
+    target weights every day. update() stores positions = targets, so after
+    day 1 turnover is 0 (the engine models a continuously rebalanced fixed
+    mix, at zero cost). Real band logic needs CE-2-02b (a state-aware hook).
+    `band` is carried in the registry entry for that follow-up and is
+    unused today.
+
+    Tickers missing from the price panel are dropped and the rest are
+    renormalised to gross 1.0; if none are present, returns {} (no
+    position)."""
+    w = {t: float(x) for t, x in p["weights"].items()
+         if t in px.columns and x > 0 and not pd.isna(px[t].iloc[-1])}
+    tot = sum(w.values())
+    return {t: x / tot for t, x in w.items()} if tot > 0 else {}
+
+def fixed_weight_next(cur, todays_ret, target, band, is_rebalance_day, cash=None):
+    """CE-2-02b (A1 section 3): state-aware band rebalancing for the
+    "fixed_weight" strategy. Pure. Returns (new_positions, held):
+    held = the weights actually held going into the trade (cur drifted by
+    today's returns), which update() must cost turnover against -- weights
+    that merely drift are not trades. new_positions = what is held after.
+
+    cur: positions held through today (ticker -> weight); {} on day 1.
+    todays_ret: today's returns (mapping/Series ticker -> return, NaN = 0).
+    target: target weights (already dropped/renormalised for missing tickers).
+    band: absolute drift tolerance. is_rebalance_day: weekly gate.
+    cash: sleeve ticker that must be present in target; if not, fail closed
+    (hold cur unchanged, print WARNING) rather than silently going 100% risk.
+
+    Day 1 (cur empty) -> enter target. Otherwise drift cur by today's returns
+    (renormalised to cur's gross); on a rebalance day with any |drift - target|
+    > band -> target, else the drifted weights (zero turnover)."""
+    if cash is not None and cash not in target:
+        print(f"  [WARNING] fixed_weight: cash sleeve {cash} missing from the "
+              f"price panel -- holding previous positions unchanged")
+        return dict(cur), dict(cur)
+    if not cur:
+        return dict(target), {}
+    grown = {}
+    for t, w in cur.items():
+        r = todays_ret.get(t, 0.0)
+        grown[t] = w * (1.0 + (0.0 if pd.isna(r) else float(r)))
+    tot, gross = sum(grown.values()), sum(cur.values())
+    drifted = {t: g / tot * gross for t, g in grown.items()} if tot > 0 else dict(cur)
+    if is_rebalance_day and any(
+            abs(drifted.get(t, 0.0) - target.get(t, 0.0)) > band
+            for t in set(drifted) | set(target)):
+        return dict(target), drifted
+    return drifted, drifted
+
+def sig_trend_long_flat(px, p):
+    """CE-3-03 (Class B, hypothesis B1): slow trend, long-or-flat, per coin.
+    Long if close > the trailing p["lookback"]-day Donchian midpoint
+    (rule "donchian": (max close + min close)/2 over the PRIOR N closes,
+    today excluded) or close > the N-day simple moving average (rule "sma",
+    last N closes including today); else flat. Equal weight across coins
+    in an uptrend; a coin whose trailing 90-day realised daily vol exceeds
+    2x BTC's (BENCHMARK column) gets half weight BEFORE normalising to
+    gross 1.0. Never short, never leveraged. Needs >= N+1 rows else {}.
+    Stateless: acting only on p["rebalance_weekday"] is done in update()."""
+    n = int(p["lookback"])
+    coins = [t for t in px.columns if t not in MACRO_PROXIES]
+    if len(px) < n + 1 or not coins:
+        return {}
+    close = px[coins]
+    last = close.iloc[-1]
+    if p["rule"] == "donchian":
+        win = close.iloc[-n - 1:-1]
+        level = (win.max() + win.min()) / 2.0
+    elif p["rule"] == "sma":
+        level = close.iloc[-n:].mean()
+    else:
+        raise ValueError(f"unknown trend rule {p['rule']!r}")
+    longs = [t for t in coins if not pd.isna(last[t]) and not pd.isna(level[t])
+             and last[t] > level[t]]
+    if not longs:
+        return {}
+    ref_vol = None
+    if BENCHMARK in close.columns and len(close) >= 91:
+        ref_vol = close[BENCHMARK].pct_change().iloc[-90:].std()
+    raw = {}
+    for t in longs:
+        w = 1.0
+        if ref_vol is not None and not pd.isna(ref_vol) and len(close) >= 91:
+            v = close[t].pct_change().iloc[-90:].std()
+            if not pd.isna(v) and v > 2.0 * ref_vol:
+                w = 0.5
+        raw[t] = w
+    tot = sum(raw.values())
+    return {t: w / tot for t, w in raw.items()}
+
+def sig_cash(px, p):
+    """CE-3-03 (B0): always no position. The daily accrual of cash_rate_annual
+    is applied in update() for registry fn "cash"."""
+    return {}
+
 IMPLS = {"event_drift": sig_event_drift, "momentum": sig_momentum,
          "input_cost": sig_input_cost, "monsoon": sig_monsoon,
-         "benchmark": sig_benchmark}
+         "benchmark": sig_benchmark, "fixed_weight": sig_fixed_weight,
+         "trend_long_flat": sig_trend_long_flat, "cash": sig_cash}
 
 def seed_registry():
     """Starting population: a small grid of variants per hypothesis."""
@@ -384,6 +505,14 @@ def seed_registry():
     reg["nifty_benchmark"] = dict(fn="benchmark", permanent=True)
     return reg
 
+def seed_registry_for_profile():
+    """CE-2-02: the equity_nse profile seeds from seed_registry() (unchanged).
+    Any other profile carrying a "registry" key seeds from that key instead
+    (a deep copy, so the profile dict is never aliased into the ledger)."""
+    if FACTORY_PROFILE != DEFAULT_PROFILE and "registry" in _PROFILE:
+        return json.loads(json.dumps(_PROFILE["registry"]))
+    return seed_registry()
+
 def spawn_children(name, params, registry):
     """Breed neighbour variants when a parent wins promotion. Children start
     on paper (rung 0) and must earn their own way up. Selection, not editing."""
@@ -440,7 +569,7 @@ def load_state():
     else:
         # brand-new ledger: seed, then fall through so the backfill loop
         # creates blank stats and RETIRED_BY_OWNER applies from day one
-        state = {"registry": seed_registry(), "contestants": {}}
+        state = {"registry": seed_registry_for_profile(), "contestants": {}}
     for s in state["contestants"].values():   # backfill pre-advisor-layer entries
         s.setdefault("lineage", None)
         s.setdefault("evolved_out", False)
@@ -451,7 +580,7 @@ def load_state():
     # ledger, so a pre-existing one silently never gets new seed entries
     # without this. Additive only: never touches an existing registry key
     # or existing contestant stats, only adds missing ones fresh.
-    for name, params in seed_registry().items():
+    for name, params in seed_registry_for_profile().items():
         if name not in state["registry"]:
             state["registry"][name] = params
         if name not in state["contestants"]:
@@ -542,9 +671,50 @@ def round_trip_cost(turn, tickers_sold, effective_capital):
              if effective_capital > 0 else 0.0)
     return variable + fixed
 
+# ---------------- kill switch (CE-4-02) ----------------
+# A file `factory_state/KILL` (any content) stops every WRITE path: update()
+# and report() return before fetch_prices()/load_state(); advisors.py train()
+# does the same. A non-default profile also honours its own
+# `factory_state/<profile>/KILL`. Pull it by committing the file (GitHub web
+# UI works from a phone); release it by deleting the file. No file -> no
+# behaviour change at all.
+KILL_GLOBAL_PATH = os.path.join("factory_state", "KILL")
+
+def kill_switch_active(global_only=False):
+    """Return the KILL file's text (first 200 chars, stripped; "(no reason
+    given)" if empty) when a kill switch applies to this process, else None.
+    Checks the global factory_state/KILL and, unless global_only, the per-
+    profile <STATE_DIR>/KILL of a non-default profile."""
+    paths = [KILL_GLOBAL_PATH]
+    if not global_only and FACTORY_PROFILE != DEFAULT_PROFILE:
+        paths.append(os.path.join(STATE_DIR, "KILL"))
+    for path in paths:
+        if os.path.exists(path):
+            try:
+                with open(path, errors="replace") as fh:
+                    text = fh.read(200).strip()
+            except OSError:
+                text = "(KILL file present but unreadable)"
+            return text or "(no reason given)"
+    return None
+
+def _kill_notice(text):
+    print(f"KILL SWITCH ACTIVE -- {text}; no state changed.")
+
 # ---------------- daily arena ----------------
 def update():
+    killed = kill_switch_active()
+    if killed is not None:
+        _kill_notice(killed)
+        return
     px = fetch_prices()
+    if px is None or len(px) < 2:
+        # Empty/failed download (data source unreachable, Yahoo outage).
+        # Fail loudly and cleanly -- the run goes red so the supervisor sees
+        # it -- instead of crashing later with an IndexError. Nothing written.
+        print("Arena update FAILED: the price download returned no usable rows "
+              "(data source unreachable?). Nothing was changed.")
+        sys.exit(1)
     rets = px.pct_change()
     # PHANTOM-DAY GUARD (CE-0-04): select the last REAL row, not blindly the
     # last row. See PHANTOM_UNCHANGED_FRACTION.
@@ -597,11 +767,26 @@ def update():
         # P&L from positions decided yesterday (no lookahead)
         day_ret = sum(w * todays_ret.get(t, 0.0)
                       for t, w in s["positions"].items())
+        if params["fn"] == "cash":          # CE-3-03: B0 accrual, no positions
+            day_ret = CASH_RATE_ANNUAL / 365.0
         try:
             targets = IMPLS[params["fn"]](px, params)
         except Exception as e:
             targets = {}
             print(f"  [warn] {name}: {e}")
+        if params["fn"] == "fixed_weight":   # CE-2-02b band rebalancing
+            # day_ret is already booked on yesterday's weights. Re-base the
+            # turnover below on the DRIFTED weights, so drift is not a trade.
+            targets, s["positions"] = fixed_weight_next(
+                s["positions"], todays_ret, targets, params.get("band", 0.05),
+                pd.Timestamp(today).weekday() == params.get("rebalance_weekday", 4),
+                cash=BENCHMARK)
+
+        # CE-3-03 (B1 s3): trend positions change ONLY on the rebalance
+        # weekday; other days hold what the contestant already holds.
+        if (params["fn"] == "trend_long_flat"
+                and sel.weekday() != params.get("rebalance_weekday", 4)):
+            targets = dict(s["positions"])
         tickers = set(s["positions"]) | set(targets)
         turn = sum(abs(targets.get(t, 0) - s["positions"].get(t, 0))
                    for t in tickers)
@@ -997,6 +1182,10 @@ def _isnan(x):
 
 # ---------------- weekly tournament ----------------
 def report():
+    killed = kill_switch_active()
+    if killed is not None:
+        _kill_notice(killed)
+        return
     state = load_state()
     reg, con = state["registry"], state["contestants"]
     R = RULES
@@ -1041,8 +1230,12 @@ def report():
             # contestants (Q5 fix, authorized by Het).
             verdict = "PROMOTE"
         paper_pnl = s["equity"] * PAPER_STARTING_CAPITAL - PAPER_STARTING_CAPITAL
-        pt_mean, tax_basis = post_tax_expectancy(mean, s["days_in_market"],
-                                                  s["trades"])
+        if TAX_MODEL == "vda_india":     # CE-3-03: display only, like the equity one
+            pt_mean, tax_basis = post_tax_expectancy_vda(
+                mean, s["days_in_market"], s["trades"])
+        else:
+            pt_mean, tax_basis = post_tax_expectancy(mean, s["days_in_market"],
+                                                      s["trades"])
         rows.append(dict(strategy=name, rung=s["rung"],
                          capital=f"Rs {LADDER[s['rung']]:,}",
                          days=s["days_on_rung"], trades=s["trades"],
@@ -1054,11 +1247,17 @@ def report():
                          tax_basis=tax_basis))
     df = pd.DataFrame(rows).sort_values(["rung", "sharpe"], ascending=False)
     print(df.to_string(index=False))
-    print("\nNote: post_tax_expectancy/tax_basis are ranking context only, "
-          "NOT part of the PROMOTE/DEMOTE verdict above (verdict stays "
-          "pre-tax per RULES). The Rs 1.25L/yr LTCG exemption is annual and "
-          "account-wide, not credited per-strategy here -- see "
-          "post_tax_expectancy()'s docstring.")
+    if TAX_MODEL == "vda_india":
+        print("\nNote: post_tax_expectancy/tax_basis (VDA30) are ranking context "
+              "only, NOT part of the PROMOTE/DEMOTE verdict above. 30% flat on "
+              "gains, no loss set-off, 1% TDS on sales as a cash drag -- see "
+              "post_tax_expectancy_vda().")
+    else:
+        print("\nNote: post_tax_expectancy/tax_basis are ranking context only, "
+              "NOT part of the PROMOTE/DEMOTE verdict above (verdict stays "
+              "pre-tax per RULES). The Rs 1.25L/yr LTCG exemption is annual and "
+              "account-wide, not credited per-strategy here -- see "
+              "post_tax_expectancy()'s docstring.")
     ranked_rows = df.to_dict("records")   # tournament-wide rank order (1 = best)
 
     # apply verdicts + evolution

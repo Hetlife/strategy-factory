@@ -101,5 +101,16 @@ def report(ledger_state=None):
     else:
         print(f"  Drawdown correlation check: {below}/{live_n} live "
               f"contestants in elevated drawdown -- not flagged.")
+    try:  # CE-2-03: one-line portfolio summary; advisory, never breaks report()
+        from portfolio import aggregate as _agg
+        pv = _agg.aggregate()
+        dd = pv["paper_view"]["max_drawdown"]
+        cls = ", ".join(f"{k}: Rs {c['real_exposure']:,}" for k, c in pv["classes"].items())
+        print(f"  Portfolio (all profiles): real Rs {pv['total_real_exposure']:,} "
+              f"[{cls}]; paper-view blended max DD "
+              + ("n/a" if dd is None else f"{dd:.2%}")
+              + (f"; {len(pv['problems'])} ledger problem(s)" if pv["problems"] else ""))
+    except Exception as e:
+        print(f"  Portfolio summary unavailable ({type(e).__name__}: {e})")
     return dict(real_money_exposure=exposure, sector_concentration=conc,
                 correlated_drawdown_flag=flagged)

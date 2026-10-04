@@ -35,7 +35,8 @@ import numpy as np
 import pandas as pd
 
 from factory import (STATE_DIR, UNIVERSE, ALL_TICKERS, LADDER,
-                      IMPLS, seed_registry, round_trip_cost)
+                      IMPLS, seed_registry, round_trip_cost,
+                     kill_switch_active)
 
 BANK_PATH = os.path.join(STATE_DIR, "parameter_bank.json")
 TRAIN_PERIOD = "5y"          # depth of history used for advisor training
@@ -146,6 +147,10 @@ def ensemble_rank(candidates):
     return df.sort_values("ensemble_rank")
 
 def train():
+    killed = kill_switch_active(global_only=True)   # CE-4-02
+    if killed is not None:
+        print(f"KILL SWITCH ACTIVE -- {killed}; no state changed.")
+        return
     print("Advisor training: downloading historical prices "
           f"(period={TRAIN_PERIOD})...")
     px = fetch_history()

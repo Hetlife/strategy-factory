@@ -106,6 +106,13 @@ def missing_dates(state):
 
 def main():
     apply_changes = "--apply" in sys.argv
+    # CE-4-02 follow-up: this tool writes ledger.json without going through
+    # update()/report(), so it must honour the kill switch itself. A dry run
+    # (no --apply) writes nothing and is allowed.
+    killed = factory.kill_switch_active()
+    if apply_changes and killed is not None:
+        print(f"KILL SWITCH ACTIVE -- {killed}; refusing --apply, nothing written.")
+        sys.exit(1)
     state = factory.load_state()
     con = state["contestants"]
 

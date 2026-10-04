@@ -24,6 +24,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Kill switch status
+        run: |
+          if [ -f factory_state/KILL ]; then
+            echo "KILL SWITCH ACTIVE -- $(head -c 200 factory_state/KILL); writes are disabled."
+          else
+            echo "Kill switch: not active."
+          fi
+          if [ -n "$FACTORY_PROFILE" ] && [ -f "factory_state/$FACTORY_PROFILE/KILL" ]; then
+            echo "PROFILE KILL SWITCH ACTIVE ($FACTORY_PROFILE) -- $(head -c 200 "factory_state/$FACTORY_PROFILE/KILL")"
+          fi
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
