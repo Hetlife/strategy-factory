@@ -40,7 +40,7 @@ grep -n "merge CE-0-01" .autonomous/het_directives.md
 
 ## TASK 3 — Work that needs no merge (do these, in order)
 
-1. `CE-1-02` — profile loader (golden master exists; must stay byte-identical). Fable review before merge.
+1. `CE-1-02` — a Sonnet worker built it on side branch `ce/CE-1-02-profiles` (2026-10-04). Fetch it, read EVIDENCE/CE-1-02.md, run the tests (golden must be unchanged), review the factory.py diff, then `git merge --no-ff ce/CE-1-02-profiles` into the work branch AFTER PR #24 is merged. If the side branch does not exist, the worker failed: build it per the order file.
 2. `CE-2-03` — portfolio aggregator (read-only) once CE-1-02 is in.
 3. `CE-4-03` — execution-adapter contract (document only).
 (CE-1-01, CE-2-01, CE-3-01, CE-3-02 tool, CE-0-04 were done 2026-10-04.)

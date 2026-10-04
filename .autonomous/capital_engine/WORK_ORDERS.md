@@ -14,7 +14,7 @@ without the matching §8 sentence in `.autonomous/het_directives.md`.
 | [CE-0-03](work_orders/CE-0-03.md) | Retire-never-traded decision packet | CLAUDE_CODE + OWNER | CE-0-02 | NO | PACKET DELIVERED 2026-10-04 (NEEDS HET b); awaiting Het |
 | [CE-0-04](work_orders/CE-0-04.md) | Phantom-day guard in `update()` (21% fake days, measured) | CLAUDE_CODE | CE-1-01 | YES | IMPLEMENTED + Fable-reviewed 2026-10-04 (8 tests OK, golden unchanged cab121de), EVIDENCE/CE-0-04.md — awaiting Het: `merge CE-0-04` |
 | [CE-1-01](work_orders/CE-1-01.md) | Golden-master regression harness | CLAUDE_CODE | CE-0-01 | NO | DONE 2026-10-04 (Sonnet built, Fable reviewed: fresh-state design approved, CI-missing-golden now fails), EVIDENCE/CE-1-01.md; first CI run pending |
-| [CE-1-02](work_orders/CE-1-02.md) | Profile loader (one engine, N classes) | CLAUDE_CODE | CE-1-01 | YES | OPEN |
+| [CE-1-02](work_orders/CE-1-02.md) | Profile loader (one engine, N classes) | CLAUDE_CODE | CE-1-01 | YES | IN_PROGRESS (2026-10-04, Sonnet worker on side branch `ce/CE-1-02-profiles`; merge into the work branch after PR #24 lands, Fable review first) |
 | [CE-1-03](work_orders/CE-1-03.md) | Per-profile workflow matrix | CLAUDE_CODE | CE-1-02 | NO | OPEN |
 | [CE-1-04](work_orders/CE-1-04.md) | Health harness per class | CLAUDE_CODE | CE-1-02, CE-1-03 | NO | OPEN |
 | [CE-2-01](work_orders/CE-2-01.md) | Class A hypothesis doc (Law 1) | CLAUDE_CODE → OWNER sign | — | NO | WRITTEN 2026-10-04, docs/capital_engine/hypotheses/A1_shield_core.md — awaiting Het's sign-off line |
