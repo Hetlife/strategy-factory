@@ -1,6 +1,6 @@
 # NEXT SESSION — mechanical task list (written for a low-cost model)
 
-**Last updated: 2026-10-03.** Follow top to bottom. Don't improvise; when a
+**Last updated: 2026-10-04.** CE-0-01 is MERGED (7866e5a, Het merged PR #23 himself); TASK 2 below is therefore already satisfied — skip it. Follow top to bottom. Don't improvise; when a
 step's outcome doesn't match, stop and read the matching RUNBOOK in
 `.autonomous/RUNBOOKS.md`. The Capital Engine queue
 (`.autonomous/capital_engine/WORK_ORDERS.md`) is now the standing source of

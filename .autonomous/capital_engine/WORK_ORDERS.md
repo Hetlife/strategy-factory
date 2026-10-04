@@ -9,19 +9,19 @@ without the matching §8 sentence in `.autonomous/het_directives.md`.
 
 | ID | Title | Executor | Depends | Fable review | Status |
 |---|---|---|---|---|---|
-| [CE-0-01](work_orders/CE-0-01.md) | Merge the work branch to `main` | OWNER | — | NO | OPEN — PR #23 open (needs Het: `merge CE-0-01`) |
-| [CE-0-02](work_orders/CE-0-02.md) | Run ACCELERATION_PLAN steps 2-4 on `main` | CLAUDE_CODE | CE-0-01 | NO | OPEN |
+| [CE-0-01](work_orders/CE-0-01.md) | Merge the work branch to `main` | OWNER | — | NO | DONE 2026-10-04, merge 7866e5a (Het merged PR #23 himself), EVIDENCE/CE-0-01.md |
+| [CE-0-02](work_orders/CE-0-02.md) | Run ACCELERATION_PLAN steps 2-4 on `main` | CLAUDE_CODE | CE-0-01 | NO | IN_PROGRESS (2026-10-04) |
 | [CE-0-03](work_orders/CE-0-03.md) | Retire-never-traded decision packet | CLAUDE_CODE + OWNER | CE-0-02 | NO | OPEN |
-| [CE-1-01](work_orders/CE-1-01.md) | Golden-master regression harness | CLAUDE_CODE | CE-0-01 | NO | OPEN |
+| [CE-1-01](work_orders/CE-1-01.md) | Golden-master regression harness | CLAUDE_CODE | CE-0-01 | NO | IN_PROGRESS (2026-10-04, Sonnet worker) |
 | [CE-1-02](work_orders/CE-1-02.md) | Profile loader (one engine, N classes) | CLAUDE_CODE | CE-1-01 | YES | OPEN |
 | [CE-1-03](work_orders/CE-1-03.md) | Per-profile workflow matrix | CLAUDE_CODE | CE-1-02 | NO | OPEN |
 | [CE-1-04](work_orders/CE-1-04.md) | Health harness per class | CLAUDE_CODE | CE-1-02, CE-1-03 | NO | OPEN |
 | [CE-2-01](work_orders/CE-2-01.md) | Class A hypothesis doc (Law 1) | CLAUDE_CODE → OWNER sign | — | NO | OPEN |
 | [CE-2-02](work_orders/CE-2-02.md) | `shield_nse` profile + fixed-weight signal | CLAUDE_CODE | CE-1-02, CE-2-01 signed | YES | OPEN |
 | [CE-2-03](work_orders/CE-2-03.md) | Portfolio aggregator (read-only) | CLAUDE_CODE | CE-1-02, CE-1-03 | NO | OPEN |
-| [CE-3-01](work_orders/CE-3-01.md) | Class B hypothesis docs (Law 1) | CLAUDE_CODE → OWNER sign | — | NO | OPEN |
-| [CE-3-02](work_orders/CE-3-02.md) | Crypto data feasibility on Actions | CLAUDE_CODE + DET | CE-0-01 | NO | OPEN |
-| [CE-3-03](work_orders/CE-3-03.md) | `crypto` profile + trend signal (paper) | CLAUDE_CODE | CE-1-02, CE-1-03, CE-3-01, CE-3-02, **§8 A2** | YES | GATED (A2) |
+| [CE-3-01](work_orders/CE-3-01.md) | Class B hypothesis docs (Law 1) | CLAUDE_CODE → OWNER sign | — | NO | DONE 2026-10-04, docs/capital_engine/hypotheses/B0,B1 (Het may veto before CE-3-03) |
+| [CE-3-02](work_orders/CE-3-02.md) | Crypto data feasibility on Actions | CLAUDE_CODE + DET | CE-0-01 | NO | IN_PROGRESS (2026-10-04, Sonnet worker builds tool+workflow; run needs merge) |
+| [CE-3-03](work_orders/CE-3-03.md) | `crypto` profile + trend signal (paper) | CLAUDE_CODE | CE-1-02, CE-1-03, CE-3-01, CE-3-02 | YES | OPEN (A2 granted 2026-10-04) |
 | [CE-4-01](work_orders/CE-4-01.md) | Capital activation gates evaluator | CLAUDE_CODE | CE-2-03 | NO | OPEN |
 | [CE-4-02](work_orders/CE-4-02.md) | Kill switch file | CLAUDE_CODE | CE-1-01 | YES | OPEN |
 | [CE-4-03](work_orders/CE-4-03.md) | Execution-adapter contract (doc only) | CLAUDE_CODE | CE-4-01 | YES | OPEN |
