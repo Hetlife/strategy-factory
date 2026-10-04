@@ -10,7 +10,8 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## OPEN
 
-### OPEN — phantom-trading-days-not-covered-by-idempotence-guard (found 2026-10-04, measured on main)
+### FIXED — phantom-trading-days-not-covered-by-idempotence-guard (found 2026-10-04, fixed CE-0-04, MERGED to main via PR #24 on 2026-10-04 by Het; effective on the next scheduled run). Historical phantom rows (6) deliberately left in place (ACCELERATION STEP 6).
+Original entry:
 `tools/detect_phantom_days.py` (run 37176894252): 6 of 28 judgeable days since 2026-08-26 are phantom (≥80% of tickers at exactly 0.0): 2026-08-27, 08-31, 09-14 (NSE holiday), 09-28, 10-01, 10-02 (Gandhi Jayanti). The 2026-09-13 idempotence guard keys on the DATE of the last panel row; an NSE holiday still produces a new date row because `BZ=F` trades, and `.ffill()` makes every NSE ticker "unchanged". So every holiday (and every late-posting day) advances `days_on_rung` for all contestants and adds a paired benchmark day. ACCELERATION_PLAN item 2 said item 1's guard covers this — falsified. Fix specified in `.autonomous/capital_engine/work_orders/CE-0-04.md` (select the last REAL row, same 80% rule as the detector). Changes what the gate sees → needs Het's "merge CE-0-04". Historical phantom rows are NOT cleaned by the fix (ACCELERATION STEP 6, Het's call).
 
 - **FIX ON BRANCH, NOT YET MERGED | 2026-09-13 | ledger-duplicate-trading-days | HIGH** —
