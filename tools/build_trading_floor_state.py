@@ -186,6 +186,12 @@ def build(ledger_path=None, state_path=None, log_path=None, directives_path=None
         "log": recent_log_entries(log_path),
         "notes": [],
     }
+    # CE-2-03: additive read-only portfolio view; a failure must never break the build.
+    try:
+        from portfolio import aggregate as _agg
+        out["portfolio"] = _agg.aggregate()
+    except Exception as e:
+        out["portfolio"] = {"error": f"{type(e).__name__}: {e}"}
     return out
 
 
