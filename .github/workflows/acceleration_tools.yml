@@ -27,6 +27,9 @@ on:
 jobs:
   run-tool:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # the backfill-apply step commits ledger.json back; without this
+                        # the push fails with 403 (observed 2026-10-04, run 37177021992)
 
     steps:
       - name: Checkout repository

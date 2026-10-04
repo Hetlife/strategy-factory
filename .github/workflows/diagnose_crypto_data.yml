@@ -1,0 +1,46 @@
+name: Strategy Factory - Diagnose Crypto Data
+
+on:
+  workflow_dispatch:
+    inputs:
+      tickers:
+        description: 'Space-separated Yahoo tickers'
+        required: false
+        default: 'BTC-USD ETH-USD BNB-USD SOL-USD XRP-USD ADA-USD DOGE-USD AVAX-USD LINK-USD LTC-USD DOT-USD TRX-USD'
+      years:
+        description: 'Years of daily history to request'
+        required: false
+        default: '5'
+
+# Manual-only, read-only diagnostic (CE-3-02). No schedule, no commits, no
+# uploads -- the log is the output. Checks whether yfinance returns usable
+# 7-day/week daily crypto bars (this sandbox can't reach Yahoo Finance,
+# GitHub Actions runners can). See tools/diagnose_crypto_data.py.
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          # Cache pip's download dir so each run stops re-downloading the
+          # same wheels. Keyed on requirements.txt, which pins the full
+          # superset -- each workflow still installs only the subset it
+          # needs, it just gets the wheels from cache instead of PyPI.
+          cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
+
+      - name: Install dependencies
+        run: pip install pandas numpy yfinance
+
+      - name: Run diagnostic
+        env:
+          TICKERS: ${{ github.event.inputs.tickers }}
+          YEARS: ${{ github.event.inputs.years }}
+        run: python tools/diagnose_crypto_data.py --tickers $TICKERS --years "$YEARS"

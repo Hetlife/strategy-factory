@@ -210,6 +210,40 @@ def check_bug_log_state_consistency(bug_log_path, state_path):
     return findings
 
 
+def check_phantom_days(market_log_path=None, log_data=None):
+    """CE-0-04: list recorded days that look phantom -- at least
+    factory.PHANTOM_UNCHANGED_FRACTION of NON-macro tickers at exactly 0.0
+    return (same rule update() now applies, same threshold as
+    tools/detect_phantom_days.py). INFORMATION ONLY: returns a single
+    'warning' (never an error) naming the dates. The guard stops NEW phantom
+    days; historical ones stay in the record (cleanup is Het's call), so this
+    keeps reporting them. Pass log_data to skip the local-file read."""
+    import factory
+    if log_data is None:
+        if not market_log_path or not os.path.exists(market_log_path):
+            return []
+        log_data = json.load(open(market_log_path))
+    phantom = []
+    for date in sorted(log_data):
+        day = log_data[date]
+        if not isinstance(day, dict):
+            continue
+        rows = [v for t, v in day.items() if t not in factory.MACRO_PROXIES
+                and isinstance(v, dict) and "ret" in v]
+        if len(rows) < 10:        # too few tickers to judge (detector's rule)
+            continue
+        frac = sum(1 for v in rows if v["ret"] == 0.0) / len(rows)
+        if frac >= factory.PHANTOM_UNCHANGED_FRACTION:
+            phantom.append(f"{date} ({frac:.0%})")
+    if not phantom:
+        return []
+    return [("info",
+        f"market_log.json has {len(phantom)} phantom day(s) (>= "
+        f"{factory.PHANTOM_UNCHANGED_FRACTION:.0%} of tickers unchanged): "
+        f"{', '.join(phantom)}. Information only -- history is never "
+        f"rewritten; see tools/detect_phantom_days.py and CE-0-04.")]
+
+
 def run_all(ledger_path=None, state_path=None, live=False):
     ledger_path = ledger_path or os.path.join(REPO_ROOT, "factory_state", "ledger.json")
     state_path = state_path or os.path.join(REPO_ROOT, ".autonomous", "state.json")
@@ -220,8 +254,15 @@ def run_all(ledger_path=None, state_path=None, live=False):
     if live:
         ledger_data = fetch_live_json("factory_state/ledger.json")
         findings += check_registry_drift(ledger_data=ledger_data)
+        try:
+            findings += check_phantom_days(
+                log_data=fetch_live_json("factory_state/market_log.json"))
+        except RuntimeError as e:
+            findings.append(("info", f"phantom-day check skipped: {e}"))
     else:
         findings += check_registry_drift(ledger_path=ledger_path)
+        findings += check_phantom_days(os.path.join(
+            REPO_ROOT, "factory_state", "market_log.json"))
     # state.json/CLAUDE.md/bug_log.md aren't subject to the same
     # branch-vs-main drift (they're not written by factory.yml's
     # main-only cron) -- local checkout is a trustworthy source for these
@@ -250,4 +291,9 @@ if __name__ == "__main__":
         sys.exit(0)
     for level, msg in results:
         print(f"[{level.upper()}] {msg}")
+    # info-only findings are context, not failures: the 15-minute supervisor
+    # and the ce-workorder orient step treat exit 1 as "something is wrong".
+    if all(level == "info" for level, _ in results):
+        print("health_check: informational findings only, nothing to fix.")
+        sys.exit(0)
     sys.exit(1)

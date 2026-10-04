@@ -304,9 +304,8 @@ ASSET CLASS: stay on Indian equity delivery through Phase 1-3.
                   [2026-10-03 note: Het's Capital Engine directive
                   reopens crypto as a PAPER research class (B) only,
                   with low-turnover long-or-flat hypotheses and the
-                  no-offset tax modelled per class. Takes effect only
-                  when he writes "AUTHORIZE CLASS B PAPER"
-                  (docs/capital_engine/00_DESIGN.md §8). The rejection
+                  no-offset tax modelled per class. GRANTED 2026-10-04
+                  ("Authorize class b", = 00_DESIGN.md §8 A2). The rejection
                   of real-capital crypto stands until a class-B
                   contestant clears the gate AND §8 A6 is written.]
   US equities  -> solves the fixed-cost problem permanently

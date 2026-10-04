@@ -113,6 +113,13 @@ MACRO_PROXIES = ["BZ=F"]   # ICE Brent Crude continuous future
 ALL_TICKERS = sorted({t for v in UNIVERSE.values() for t in v}
                       | {BENCHMARK} | set(MACRO_PROXIES))
 
+# A panel row is a PHANTOM session (NSE holiday Yahoo still lists because
+# Brent trades, or a day whose data hasn't posted) when at least this
+# fraction of NON-macro tickers show exactly 0.0/NaN return after ffill.
+# Same threshold as PHANTOM_THRESHOLD in tools/detect_phantom_days.py --
+# keep the two in step. Used by update() (CE-0-04) and health_check.py.
+PHANTOM_UNCHANGED_FRACTION = 0.80
+
 LADDER = [0, 25_000, 50_000, 100_000, 200_000]    # rupees per rung (0 = paper)
                                    # Raised 2026-08-25 (Het, fresh explicit
                                    # confirmation): rung-1 was Rs 10,000, where
@@ -523,8 +530,22 @@ def round_trip_cost(turn, tickers_sold, effective_capital):
 # ---------------- daily arena ----------------
 def update():
     px = fetch_prices()
-    today = str(px.index[-1].date())
-    todays_ret = px.pct_change().iloc[-1]
+    rets = px.pct_change()
+    # PHANTOM-DAY GUARD (CE-0-04): select the last REAL row, not blindly the
+    # last row. See PHANTOM_UNCHANGED_FRACTION.
+    core = [t for t in px.columns if t not in MACRO_PROXIES]
+    unchanged = rets[core].fillna(0.0).eq(0.0).mean(axis=1)
+    real_rows = unchanged[unchanged < PHANTOM_UNCHANGED_FRACTION]
+    if unchanged.iloc[-1] >= PHANTOM_UNCHANGED_FRACTION:
+        print(f"PHANTOM SKIPPED: {px.index[-1].date()} "
+              f"({unchanged.iloc[-1]:.0%} unchanged) -- treating as no new session")
+    if real_rows.empty:
+        print("Arena update SKIPPED: no real (non-phantom) row in the price "
+              "panel. Nothing was changed.")
+        return
+    sel = real_rows.index[-1]
+    today = str(sel.date())
+    todays_ret = rets.loc[sel]
     state = load_state()
     reg, con = state["registry"], state["contestants"]
 
@@ -552,7 +573,7 @@ def update():
               f"guard working, not an error.")
         return
 
-    append_market_log(today, px)
+    append_market_log(today, px.loc[:sel])
 
     for name, params in reg.items():
         s = con.setdefault(name, blank_stats())
