@@ -46,3 +46,5 @@ Done when ALL hold: (1) three classes buildable as profiles — A `shield_nse` (
 Waves: W1 DONE 2026-10-04 (CE-1-04, CE-2-03, CE-4-02 [needs review], CE-2-04) → W2 CE-3-03, CE-2-02b, CE-4-01, CE-4-03 → review → M1 PR.
 
 **M1 status 2026-10-04:** all buildable orders are built and merged into the work branch (tests 106 OK twice, equity golden unchanged, only equity_nse enabled). Remaining to close M1: (a) ONE high-reasoning review per `.autonomous/capital_engine/M1_REVIEW_BRIEF.md`; (b) ONE PR "Milestone M1" -> Het's `merge M1`. Open owner decisions: holding tax for class A, evidence-files commit/ignore, CE-3-03b authorization.
+
+**M1 review 2026-10-04 (Sonnet-level, `.autonomous/capital_engine/M1_REVIEW_RECORD.md`):** CE-2-02, CE-2-02b, CE-3-03, CE-4-02, CE-4-03 APPROVED by the orchestrator with real runs (kill switch proven end to end: state hash identical with a KILL file across update/report/advisors/backfill). Found and fixed: empty-download IndexError; class A ceiling. A stronger-model pass remains optional (brief kept).

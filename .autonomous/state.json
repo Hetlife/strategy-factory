@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "updated_at": "2026-10-04T05:53:44Z",
+ "updated_at": "2026-10-04T13:52:02Z",
  "updated_by_commit": "7866e5a",
  "branch": "claude/scheduled-maintenance-template-d7yufr",
  "pr_number": 24,
@@ -331,5 +331,5 @@
   "breeding_unit_tests": "passing -- crossover bounds/categorical integrity (200 draws), cross-family rejection, parent-stat immutability, population cap at zero headroom, all verified in /tmp/factory_test_run/breeding_test.py (not committed, sandbox-local -- rerun logic inline if needed, see commit 1b7d29e message for what was checked)",
   "real_market_data": "never tested -- yfinance blocked in every sandbox this project has used so far"
  },
- "next_action_hint": "M1 is BUILT on the work branch. Run ONE high-reasoning review using .autonomous/capital_engine/M1_REVIEW_BRIEF.md, then open the single PR 'Milestone M1' for Het's 'merge M1'. Do not enable any profile."
+ "next_action_hint": "M1 reviewed at Sonnet level (M1_REVIEW_RECORD.md) and PR opened for Het's 'merge M1'. After merge: dispatch supervisor.yml once, then wait on Het's decisions (holding tax class A, CE-3-03b, evidence files)."
 }

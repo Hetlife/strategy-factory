@@ -708,6 +708,13 @@ def update():
         _kill_notice(killed)
         return
     px = fetch_prices()
+    if px is None or len(px) < 2:
+        # Empty/failed download (data source unreachable, Yahoo outage).
+        # Fail loudly and cleanly -- the run goes red so the supervisor sees
+        # it -- instead of crashing later with an IndexError. Nothing written.
+        print("Arena update FAILED: the price download returned no usable rows "
+              "(data source unreachable?). Nothing was changed.")
+        sys.exit(1)
     rets = px.pct_change()
     # PHANTOM-DAY GUARD (CE-0-04): select the last REAL row, not blindly the
     # last row. See PHANTOM_UNCHANGED_FRACTION.
