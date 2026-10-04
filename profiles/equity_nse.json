@@ -141,6 +141,7 @@
  "STCG_RATE": 0.2,
  "LTCG_RATE": 0.125,
  "LTCG_EXEMPTION_PER_YEAR": 125000,
+ "paper_holding_tax_weekly": 0.0013,
  "trades_weekends": false,
  "enabled": true,
  "class": "A2",

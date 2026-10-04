@@ -233,7 +233,7 @@ TRADING_DAYS_PER_YEAR = 252         # same convention as the Sharpe annualizatio
 # `permanent` contestant (nifty_benchmark -- the passive bar itself doesn't
 # pay a management fee in this model, taxing it would corrupt the comparison
 # P0-3 exists to provide).
-PAPER_HOLDING_TAX_WEEKLY = 0.0013
+PAPER_HOLDING_TAX_WEEKLY = _PROFILE.get("paper_holding_tax_weekly", 0.0013)   # CE-2-04: per-profile, default unchanged
 
 def post_tax_expectancy(mean_daily_return, days_in_market, trades):
     """Rough, ranking-purpose approximation, not a lot-level tax computation
