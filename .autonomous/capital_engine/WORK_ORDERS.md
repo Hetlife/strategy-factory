@@ -26,7 +26,7 @@ without the matching §8 sentence in `.autonomous/het_directives.md`.
 | [CE-4-01](work_orders/CE-4-01.md) | Capital activation gates evaluator | CLAUDE_CODE | CE-2-03 | NO | OPEN |
 | [CE-4-02](work_orders/CE-4-02.md) | Kill switch file | CLAUDE_CODE | CE-1-01 | YES | OPEN |
 | [CE-4-03](work_orders/CE-4-03.md) | Execution-adapter contract (doc only) | CLAUDE_CODE | CE-4-01 | YES | OPEN |
-| [CE-5-01](work_orders/CE-5-01.md) | LucyOS project definition | FABLE (this session) | — | — | DONE 2026-10-03 (LucyOS PR open, unmerged) |
+| [CE-5-01](work_orders/CE-5-01.md) | LucyOS project definition | FABLE (this session) | — | — | DONE 2026-10-04 — LucyOS PR #96 MERGED by Het (04:49 UTC); money_path.json now live in LucyOS |
 | [CE-5-02](work_orders/CE-5-02.md) | Evidence sync into LucyOS money path | CLAUDE_CODE (LucyOS repo) | CE-5-01 | NO | IN_PROGRESS (2026-10-04, Sonnet worker, LucyOS branch `task/CE-5-02-evidence-sync`) |
 | [CE-X-01](work_orders/CE-X-01.md) | Class C (F&O) paper — design complete | CLAUDE_CODE | A, B producing evidence, **§8 A4** | YES | GATED (A4) |
 | [CE-X-02](work_orders/CE-X-02.md) | Broker adapter, read-only first | CLAUDE_CODE | CE-4-03, CE-4-01 AMBER, **§8 A5** | YES | GATED (A5) |
