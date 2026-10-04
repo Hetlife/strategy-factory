@@ -40,9 +40,10 @@ grep -n "merge CE-0-01" .autonomous/het_directives.md
 
 ## TASK 3 — Work that needs no merge (do these, in order)
 
-1. `CE-2-02` — class A profile `shield_nse` + `sig_fixed_weight` (A1 approved by Het 2026-10-04; profile loader CE-1-02 is merged on the branch). Fable review: YES before merge — a low-token session BUILDS it and sets NEEDS_REVIEW.
+1. `CE-2-02` is BUILT on side branch `ce/CE-2-02` (NEEDS_REVIEW; read EVIDENCE/CE-2-02.md on that branch). Do NOT merge it. Next: a high-reasoning review session (see START_PROMPTS #3) after Het answers the holding-tax question in NEEDS HET. Then CE-2-02b (band logic).
 1b. `CE-3-03` — class B profile `crypto` + trend signal (A2 granted; needs CE-3-02's real-run USABLE list first, which needs PR #24 merged).
-1c. `CE-1-03` — workflow matrix over enabled profiles.
+1c. `CE-1-03` is DONE on the work branch, waiting for Het's `merge CE-1-03`.
+1d. Next buildable now: `CE-3-03` (crypto profile; universe frozen in docs/capital_engine/research/R3_crypto_data_feasibility.md; NOTE the same holding-tax issue applies — crypto's benchmarks are BTC and cash, both permanent), `CE-1-04`, `CE-2-03`, `CE-4-02`.
 2. `CE-2-03` — portfolio aggregator (read-only) once CE-1-02 is in.
 3. `CE-4-03` — execution-adapter contract (document only).
 (CE-1-01, CE-2-01, CE-3-01, CE-3-02 tool, CE-0-04 were done 2026-10-04.)

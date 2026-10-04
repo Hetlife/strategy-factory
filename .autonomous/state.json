@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "updated_at": "2026-10-04T05:00:31Z",
+ "updated_at": "2026-10-04T05:03:25Z",
  "updated_by_commit": "7866e5a",
  "branch": "claude/scheduled-maintenance-template-d7yufr",
  "pr_number": 24,
@@ -331,5 +331,5 @@
   "breeding_unit_tests": "passing -- crossover bounds/categorical integrity (200 draws), cross-family rejection, parent-stat immutability, population cap at zero headroom, all verified in /tmp/factory_test_run/breeding_test.py (not committed, sandbox-local -- rerun logic inline if needed, see commit 1b7d29e message for what was checked)",
   "real_market_data": "never tested -- yfinance blocked in every sandbox this project has used so far"
  },
- "next_action_hint": "Review the three worker branches (ce/CE-1-03, ce/CE-2-02, LucyOS task/CE-5-02-evidence-sync) per their EVIDENCE packets; CE-2-02 needs Fable review. Then CE-3-03, CE-1-04, CE-2-03, CE-4-02."
+ "next_action_hint": "Ask Het: 'merge CE-1-03', LucyOS CE-5-02 PR merge, and the holding-tax decision (exempt class A or keep). CE-2-02 awaits review on ce/CE-2-02. Next cheap builds: CE-3-03, CE-1-04, CE-2-03, CE-4-02."
 }
