@@ -542,8 +542,42 @@ def round_trip_cost(turn, tickers_sold, effective_capital):
              if effective_capital > 0 else 0.0)
     return variable + fixed
 
+# ---------------- kill switch (CE-4-02) ----------------
+# A file `factory_state/KILL` (any content) stops every WRITE path: update()
+# and report() return before fetch_prices()/load_state(); advisors.py train()
+# does the same. A non-default profile also honours its own
+# `factory_state/<profile>/KILL`. Pull it by committing the file (GitHub web
+# UI works from a phone); release it by deleting the file. No file -> no
+# behaviour change at all.
+KILL_GLOBAL_PATH = os.path.join("factory_state", "KILL")
+
+def kill_switch_active(global_only=False):
+    """Return the KILL file's text (first 200 chars, stripped; "(no reason
+    given)" if empty) when a kill switch applies to this process, else None.
+    Checks the global factory_state/KILL and, unless global_only, the per-
+    profile <STATE_DIR>/KILL of a non-default profile."""
+    paths = [KILL_GLOBAL_PATH]
+    if not global_only and FACTORY_PROFILE != DEFAULT_PROFILE:
+        paths.append(os.path.join(STATE_DIR, "KILL"))
+    for path in paths:
+        if os.path.exists(path):
+            try:
+                with open(path, errors="replace") as fh:
+                    text = fh.read(200).strip()
+            except OSError:
+                text = "(KILL file present but unreadable)"
+            return text or "(no reason given)"
+    return None
+
+def _kill_notice(text):
+    print(f"KILL SWITCH ACTIVE -- {text}; no state changed.")
+
 # ---------------- daily arena ----------------
 def update():
+    killed = kill_switch_active()
+    if killed is not None:
+        _kill_notice(killed)
+        return
     px = fetch_prices()
     rets = px.pct_change()
     # PHANTOM-DAY GUARD (CE-0-04): select the last REAL row, not blindly the
@@ -997,6 +1031,10 @@ def _isnan(x):
 
 # ---------------- weekly tournament ----------------
 def report():
+    killed = kill_switch_active()
+    if killed is not None:
+        _kill_notice(killed)
+        return
     state = load_state()
     reg, con = state["registry"], state["contestants"]
     R = RULES
