@@ -10,7 +10,7 @@ without the matching §8 sentence in `.autonomous/het_directives.md`.
 | ID | Title | Executor | Depends | Fable review | Status |
 |---|---|---|---|---|---|
 | [CE-0-01](work_orders/CE-0-01.md) | Merge the work branch to `main` | OWNER | — | NO | DONE 2026-10-04, merge 7866e5a (Het merged PR #23 himself), EVIDENCE/CE-0-01.md |
-| [CE-0-02](work_orders/CE-0-02.md) | Run ACCELERATION_PLAN steps 2-4 on `main` | CLAUDE_CODE | CE-0-01 | NO | PARTIAL 2026-10-04, EVIDENCE/CE-0-02.md — validate+phantom done; backfill-apply computed but push 403'd (workflow lacked contents:write, fixed on branch); re-dispatch after next merge; Sunday-skip check 2026-10-05 |
+| [CE-0-02](work_orders/CE-0-02.md) | Run ACCELERATION_PLAN steps 2-4 on `main` | CLAUDE_CODE | CE-0-01 | NO | DONE 2026-10-04, EVIDENCE/CE-0-02.md — backfill applied on main (aa0ad36, benchmark 61 rows); Sunday-skip observation 2026-10-05 is the last loose end |
 | [CE-0-03](work_orders/CE-0-03.md) | Retire-never-traded decision packet | CLAUDE_CODE + OWNER | CE-0-02 | NO | DONE 2026-10-04: Het "if it's failing remove it" → `RETIRED_BY_OWNER` in factory.py (NOT in PR #24 — rides the NEXT PR; effective first daily run after that merge) |
 | [CE-0-04](work_orders/CE-0-04.md) | Phantom-day guard in `update()` (21% fake days, measured) | CLAUDE_CODE | CE-1-01 | YES | DONE 2026-10-04 — MERGED to main (PR #24, Het), EVIDENCE/CE-0-04.md |
 | [CE-1-01](work_orders/CE-1-01.md) | Golden-master regression harness | CLAUDE_CODE | CE-0-01 | NO | DONE 2026-10-04 (Sonnet built, Fable reviewed: fresh-state design approved, CI-missing-golden now fails), EVIDENCE/CE-1-01.md; first CI run pending |
@@ -21,8 +21,8 @@ without the matching §8 sentence in `.autonomous/het_directives.md`.
 | [CE-2-02](work_orders/CE-2-02.md) | `shield_nse` profile + fixed-weight signal | CLAUDE_CODE | CE-1-02, CE-2-01 signed | YES | OPEN |
 | [CE-2-03](work_orders/CE-2-03.md) | Portfolio aggregator (read-only) | CLAUDE_CODE | CE-1-02, CE-1-03 | NO | OPEN |
 | [CE-3-01](work_orders/CE-3-01.md) | Class B hypothesis docs (Law 1) | CLAUDE_CODE → OWNER sign | — | NO | DONE 2026-10-04, docs/capital_engine/hypotheses/B0,B1 (Het may veto before CE-3-03) |
-| [CE-3-02](work_orders/CE-3-02.md) | Crypto data feasibility on Actions | CLAUDE_CODE + DET | CE-0-01 | NO | TOOL BUILT 2026-10-04 (synthetic-tested), EVIDENCE/CE-3-02.md — real run after next merge |
-| [CE-3-03](work_orders/CE-3-03.md) | `crypto` profile + trend signal (paper) | CLAUDE_CODE | CE-1-02, CE-1-03, CE-3-01, CE-3-02 | YES | OPEN (A2 granted 2026-10-04) |
+| [CE-3-02](work_orders/CE-3-02.md) | Crypto data feasibility on Actions | CLAUDE_CODE + DET | CE-0-01 | NO | DONE 2026-10-04 — real run: 12/12 USABLE, universe frozen (R3), EVIDENCE/CE-3-02.md |
+| [CE-3-03](work_orders/CE-3-03.md) | `crypto` profile + trend signal (paper) | CLAUDE_CODE | CE-1-02 (PR #25), CE-1-03, CE-3-01, CE-3-02 | YES | OPEN — all inputs ready (A2 granted, B1 signed, universe frozen in R3); build after PR #25 merges |
 | [CE-4-01](work_orders/CE-4-01.md) | Capital activation gates evaluator | CLAUDE_CODE | CE-2-03 | NO | OPEN |
 | [CE-4-02](work_orders/CE-4-02.md) | Kill switch file | CLAUDE_CODE | CE-1-01 | YES | OPEN |
 | [CE-4-03](work_orders/CE-4-03.md) | Execution-adapter contract (doc only) | CLAUDE_CODE | CE-4-01 | YES | OPEN |

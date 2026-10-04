@@ -1,23 +1,36 @@
-# R3 — Crypto data feasibility (yfinance, daily, 7 days/week)
+# R3 — Crypto data feasibility (REAL run on GitHub Actions, 2026-10-04)
 
-**Status: STUB — no data result yet.** The sandbox cannot reach Yahoo Finance, so nothing below is a measurement. Do not read any verdict into this file until the real run output is pasted.
+Run: https://github.com/Hetlife/strategy-factory/actions/runs/37177876954 (`diagnose_crypto_data.yml`,
+main at 7fd5ca3, yfinance 1.7.0, 5y daily, auto_adjust). Tool: `tools/diagnose_crypto_data.py`.
 
-## What exists
-- `tools/diagnose_crypto_data.py` — downloads daily closes (`auto_adjust=True`) for a crypto ticker list and prints, per ticker: rows, first/last date, % of calendar days present, weekend coverage %, gaps > 1 day, longest gap, count of exactly-0.0 returns (phantom-day indicator), and a VERDICT. Also prints a 10-row tail of the close panel and a 1-year average dollar-volume ranking (stablecoins excluded) when Volume is available. Exits non-zero with a clear message if the download returns nothing.
-- `.github/workflows/diagnose_crypto_data.yml` — `workflow_dispatch` only, inputs `tickers` and `years`.
+## Verdict table (verbatim)
+```
+Downloaded 1826 rows x 12 columns (5y requested, daily, auto_adjust=True)
+every ticker: rows=1826  first=2021-10-04  last=2026-10-04  history=5.00y
+              calendar-day coverage = 99.95%   weekend coverage = 99.81%
+              gaps > 1 day = 1   longest gap = 2 day(s)   days with exactly 0.0 return = 0 (TRX-USD: 1)
+BTC-USD USABLE · ETH-USD USABLE · BNB-USD USABLE · SOL-USD USABLE · XRP-USD USABLE · ADA-USD USABLE
+DOGE-USD USABLE · AVAX-USD USABLE · LINK-USD USABLE · LTC-USD USABLE · DOT-USD USABLE · TRX-USD USABLE
+1y average dollar volume ranking (stablecoins excluded): BTC > ETH > BNB > SOL > LTC > LINK > XRP > AVAX > DOT > ADA > TRX > DOGE
+```
+Conclusion: **yfinance crypto bars are USABLE as the class B data source** on GitHub
+Actions: true 7-day calendar (weekend coverage 99.8%), one 2-day gap in 5 years,
+no forward-filled phantom days (TRX has one exact-0.0 day). Binance public REST
+stays the documented fallback (R2 §5), not built.
 
-## Verdict rule
-- USABLE: >= 4 years of history AND calendar coverage >= 98% AND weekend coverage >= 95%
-- GAPPY: calendar coverage 90–98%
-- UNUSABLE: otherwise
+## Frozen class B universe (B1 §2 rule applied on 2026-10-04)
+BTC + ETH + the next 8 by 1-year average dollar volume, stablecoins excluded,
+all with ≥ 2 years of history (all have 5): **BTC, ETH, BNB, SOL, LTC, LINK, XRP,
+AVAX, DOT, ADA.** Excluded by rank: TRX, DOGE. Wrapped/pegged tokens: none in
+the candidate list. Review date: 2027-01-04 (quarterly), by a dated commit only.
+Note on the ranking line: the printed dollar-volume *magnitudes* are implausible
+(BTC "3488314.82B") — the tool multiplies a volume that Yahoo already reports in
+USD by price. The ORDER is still correct for ranking purposes; the magnitude
+bug is cosmetic and logged for CE-3-03 to fix in passing (tool-only, no
+financial effect).
 
-## How to dispatch
-The workflow must be on `main` first (depends on CE-0-01). Then: GitHub -> Actions -> "Strategy Factory - Diagnose Crypto Data" -> Run workflow (defaults are the 12-ticker list, 5 years), or `gh workflow run diagnose_crypto_data.yml`.
-
-## To fill in after the real run
-- Run URL: _(paste)_
-- Verdict table (paste from the Actions log): _(paste)_
-- Dollar-volume ranking line: _(paste)_
-
-## Fallback (candidate only, not built)
-If yfinance proves unusable: Binance public REST klines (no API key).
+## Caveats
+- Yahoo's crypto close is a UTC-midnight composite, not an Indian exchange price;
+  INR conversion and exchange-specific spreads are modelled as costs (B1 §3).
+- Data is adjusted/composite; the live run on Actions is the validation, not the
+  sandbox (which cannot reach Yahoo).
