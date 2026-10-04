@@ -32,12 +32,18 @@ grep -n "merge CE-0-01" .autonomous/het_directives.md
 - Not found → do NOT merge. Say once, plainly, in your reply: the package is
   waiting on his `merge CE-0-01`. Then go to TASK 3 — do not idle.
 
+## TASK 2b — After Het says `merge CE-0-04` (one PR carries everything on the branch)
+1. Merge via GitHub, record SHA in EVIDENCE/CE-0-04.md, add bug_log FIXED entry for phantom days.
+2. Dispatch `acceleration_tools.yml` tool=`backfill-apply` on main; confirm a "Backfill nifty_benchmark history" commit lands (the 2026-10-04 attempt 403'd before the permissions fix). Mark CE-0-02 DONE.
+3. Dispatch `diagnose_crypto_data.yml` on main; paste its verdict table into docs/capital_engine/research/R3_crypto_data_feasibility.md; mark CE-3-02 DONE.
+4. Check Sunday 2026-10-05's factory.yml run for the skip/phantom messages (CE-0-02 step 2) and whether Friday 10-03's missing run recurs.
+
 ## TASK 3 — Work that needs no merge (do these, in order)
 
-1. `CE-2-01` — class A hypothesis document (no code). Follow the order file.
-2. `CE-3-01` — class B hypothesis documents (no code).
-3. `CE-1-01` — golden-master harness can be BUILT on the branch now; only its
-   workflow needs `main`. Build + run it locally with the synthetic panel.
+1. `CE-1-02` — profile loader (golden master exists; must stay byte-identical). Fable review before merge.
+2. `CE-2-03` — portfolio aggregator (read-only) once CE-1-02 is in.
+3. `CE-4-03` — execution-adapter contract (document only).
+(CE-1-01, CE-2-01, CE-3-01, CE-3-02 tool, CE-0-04 were done 2026-10-04.)
 Use `/ce-workorder` for each (claim row → execute → evidence packet → flip row →
 one log line → push). One order per commit.
 
