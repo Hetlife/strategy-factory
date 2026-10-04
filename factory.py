@@ -215,6 +215,11 @@ LTCG_EXEMPTION_PER_YEAR = _PROFILE["LTCG_EXEMPTION_PER_YEAR"]   # Rs, account-wi
                                      # per-strategy here, see note above
 TRADING_DAYS_PER_YEAR = 252         # same convention as the Sharpe annualization
 
+# CE-3-03: per-profile tax model + cash rate. Equity default is unchanged.
+TAX_MODEL = _PROFILE.get("tax_model", "india_equity")   # "vda_india" for class B crypto
+CASH_RATE_ANNUAL = float(_PROFILE.get("cash_rate_annual", 0.0))   # accrual of fn "cash" entries
+VDA_TDS_RATE = 0.01                  # 1% TDS withheld on every crypto sale (R2 s3)
+
 # ---------------- paper holding-cost decay (P1, per Het's request 2026-08-26) --
 # Real capital sitting in an unproven strategy has a real opportunity cost --
 # even doing nothing (a savings account / T-bill) earns something. A
@@ -248,6 +253,18 @@ def post_tax_expectancy(mean_daily_return, days_in_market, trades):
     if avg_holding_days > TRADING_DAYS_PER_YEAR:
         return mean_daily_return * (1 - LTCG_RATE), "LTCG"
     return mean_daily_return * (1 - STCG_RATE), "STCG"
+
+def post_tax_expectancy_vda(mean_daily_return, days_in_market, trades):
+    """CE-3-03, class B (India VDA regime, R2 s3). DISPLAY ONLY: never feeds
+    a PROMOTE/DEMOTE verdict. 30% flat (STCG_RATE) on a POSITIVE mean, with
+    NO loss set-off: a non-positive mean gets no tax credit (post-tax equals
+    pre-tax, never better). 1% TDS on each sale is a cash drag, subtracted
+    after tax; trades/2 is used as the sale count (a round trip = one buy
+    + one sale), a stated approximation. Returns (post_tax_mean, label)."""
+    taxed = (mean_daily_return * (1 - STCG_RATE) if mean_daily_return > 0
+             else mean_daily_return)
+    tds_drag = VDA_TDS_RATE * (trades / 2.0) / max(days_in_market, 1)
+    return taxed - tds_drag, "VDA30"
 
 # ---------------- strategy implementations (parametric) ----------------
 def sig_event_drift(px, p):
@@ -348,9 +365,56 @@ def fixed_weight_next(cur, todays_ret, target, band, is_rebalance_day, cash=None
         return dict(target), drifted
     return drifted, drifted
 
+def sig_trend_long_flat(px, p):
+    """CE-3-03 (Class B, hypothesis B1): slow trend, long-or-flat, per coin.
+    Long if close > the trailing p["lookback"]-day Donchian midpoint
+    (rule "donchian": (max close + min close)/2 over the PRIOR N closes,
+    today excluded) or close > the N-day simple moving average (rule "sma",
+    last N closes including today); else flat. Equal weight across coins
+    in an uptrend; a coin whose trailing 90-day realised daily vol exceeds
+    2x BTC's (BENCHMARK column) gets half weight BEFORE normalising to
+    gross 1.0. Never short, never leveraged. Needs >= N+1 rows else {}.
+    Stateless: acting only on p["rebalance_weekday"] is done in update()."""
+    n = int(p["lookback"])
+    coins = [t for t in px.columns if t not in MACRO_PROXIES]
+    if len(px) < n + 1 or not coins:
+        return {}
+    close = px[coins]
+    last = close.iloc[-1]
+    if p["rule"] == "donchian":
+        win = close.iloc[-n - 1:-1]
+        level = (win.max() + win.min()) / 2.0
+    elif p["rule"] == "sma":
+        level = close.iloc[-n:].mean()
+    else:
+        raise ValueError(f"unknown trend rule {p['rule']!r}")
+    longs = [t for t in coins if not pd.isna(last[t]) and not pd.isna(level[t])
+             and last[t] > level[t]]
+    if not longs:
+        return {}
+    ref_vol = None
+    if BENCHMARK in close.columns and len(close) >= 91:
+        ref_vol = close[BENCHMARK].pct_change().iloc[-90:].std()
+    raw = {}
+    for t in longs:
+        w = 1.0
+        if ref_vol is not None and not pd.isna(ref_vol) and len(close) >= 91:
+            v = close[t].pct_change().iloc[-90:].std()
+            if not pd.isna(v) and v > 2.0 * ref_vol:
+                w = 0.5
+        raw[t] = w
+    tot = sum(raw.values())
+    return {t: w / tot for t, w in raw.items()}
+
+def sig_cash(px, p):
+    """CE-3-03 (B0): always no position. The daily accrual of cash_rate_annual
+    is applied in update() for registry fn "cash"."""
+    return {}
+
 IMPLS = {"event_drift": sig_event_drift, "momentum": sig_momentum,
          "input_cost": sig_input_cost, "monsoon": sig_monsoon,
-         "benchmark": sig_benchmark, "fixed_weight": sig_fixed_weight}
+         "benchmark": sig_benchmark, "fixed_weight": sig_fixed_weight,
+         "trend_long_flat": sig_trend_long_flat, "cash": sig_cash}
 
 def seed_registry():
     """Starting population: a small grid of variants per hypothesis."""
@@ -696,6 +760,8 @@ def update():
         # P&L from positions decided yesterday (no lookahead)
         day_ret = sum(w * todays_ret.get(t, 0.0)
                       for t, w in s["positions"].items())
+        if params["fn"] == "cash":          # CE-3-03: B0 accrual, no positions
+            day_ret = CASH_RATE_ANNUAL / 365.0
         try:
             targets = IMPLS[params["fn"]](px, params)
         except Exception as e:
@@ -708,6 +774,12 @@ def update():
                 s["positions"], todays_ret, targets, params.get("band", 0.05),
                 pd.Timestamp(today).weekday() == params.get("rebalance_weekday", 4),
                 cash=BENCHMARK)
+
+        # CE-3-03 (B1 s3): trend positions change ONLY on the rebalance
+        # weekday; other days hold what the contestant already holds.
+        if (params["fn"] == "trend_long_flat"
+                and sel.weekday() != params.get("rebalance_weekday", 4)):
+            targets = dict(s["positions"])
         tickers = set(s["positions"]) | set(targets)
         turn = sum(abs(targets.get(t, 0) - s["positions"].get(t, 0))
                    for t in tickers)
@@ -1151,8 +1223,12 @@ def report():
             # contestants (Q5 fix, authorized by Het).
             verdict = "PROMOTE"
         paper_pnl = s["equity"] * PAPER_STARTING_CAPITAL - PAPER_STARTING_CAPITAL
-        pt_mean, tax_basis = post_tax_expectancy(mean, s["days_in_market"],
-                                                  s["trades"])
+        if TAX_MODEL == "vda_india":     # CE-3-03: display only, like the equity one
+            pt_mean, tax_basis = post_tax_expectancy_vda(
+                mean, s["days_in_market"], s["trades"])
+        else:
+            pt_mean, tax_basis = post_tax_expectancy(mean, s["days_in_market"],
+                                                      s["trades"])
         rows.append(dict(strategy=name, rung=s["rung"],
                          capital=f"Rs {LADDER[s['rung']]:,}",
                          days=s["days_on_rung"], trades=s["trades"],
@@ -1164,11 +1240,17 @@ def report():
                          tax_basis=tax_basis))
     df = pd.DataFrame(rows).sort_values(["rung", "sharpe"], ascending=False)
     print(df.to_string(index=False))
-    print("\nNote: post_tax_expectancy/tax_basis are ranking context only, "
-          "NOT part of the PROMOTE/DEMOTE verdict above (verdict stays "
-          "pre-tax per RULES). The Rs 1.25L/yr LTCG exemption is annual and "
-          "account-wide, not credited per-strategy here -- see "
-          "post_tax_expectancy()'s docstring.")
+    if TAX_MODEL == "vda_india":
+        print("\nNote: post_tax_expectancy/tax_basis (VDA30) are ranking context "
+              "only, NOT part of the PROMOTE/DEMOTE verdict above. 30% flat on "
+              "gains, no loss set-off, 1% TDS on sales as a cash drag -- see "
+              "post_tax_expectancy_vda().")
+    else:
+        print("\nNote: post_tax_expectancy/tax_basis are ranking context only, "
+              "NOT part of the PROMOTE/DEMOTE verdict above (verdict stays "
+              "pre-tax per RULES). The Rs 1.25L/yr LTCG exemption is annual and "
+              "account-wide, not credited per-strategy here -- see "
+              "post_tax_expectancy()'s docstring.")
     ranked_rows = df.to_dict("records")   # tournament-wide rank order (1 = best)
 
     # apply verdicts + evolution

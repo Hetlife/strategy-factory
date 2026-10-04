@@ -1,0 +1,91 @@
+{
+ "UNIVERSE": {
+  "crypto": [
+   "BTC-USD",
+   "ETH-USD",
+   "BNB-USD",
+   "SOL-USD",
+   "LTC-USD",
+   "LINK-USD",
+   "XRP-USD",
+   "AVAX-USD",
+   "DOT-USD",
+   "ADA-USD"
+  ]
+ },
+ "MACRO_PROXIES": [],
+ "BENCHMARK": "BTC-USD",
+ "STATE_DIR": "factory_state/crypto",
+ "VARIABLE_COST_PER_SIDE": 0.002,
+ "DP_CHARGE_PER_SCRIP": 0,
+ "STCG_RATE": 0.3,
+ "LTCG_RATE": 0.3,
+ "LTCG_EXEMPTION_PER_YEAR": 0,
+ "tax_model": "vda_india",
+ "cash_rate_annual": 0.0525,
+ "paper_holding_tax_weekly": 0.0013,
+ "_holding_tax_note": "DEFAULT 0.0013/week (the equity value), pending Het's decision on whether class B paper contestants should carry this opportunity-cost decay. The cash baseline and BTC benchmark are permanent and exempt either way. Change only by a dated commit after Het decides.",
+ "trades_weekends": true,
+ "enabled": false,
+ "class": "B1",
+ "description": "Class B1 crypto slow-trend, long-or-flat, paper only (hypotheses docs/capital_engine/hypotheses/B1_crypto_trend.md and B0_crypto_cash_baseline.md). DISABLED until Het enables it; crypto exists as paper research only.",
+ "VARIABLE_COST_PER_SIDE_note": "B1 s3: 0.30% round-trip exchange fee + 0.10% spread = 0.40% round trip = 0.20% per side.",
+ "candidate_note": "Universe frozen 2026-10-04 by the B1 s2 rule from the CE-3-02 real run (R3_crypto_data_feasibility.md); BTC and ETH plus the next 8 by 1y average USD volume, stablecoins excluded. Excluded by rank: TRX-USD, DOGE-USD. Review date 2027-01-04, by a dated commit only; no mid-quarter additions.",
+ "registry": {
+  "crypto_trend_donchian_50": {
+   "fn": "trend_long_flat",
+   "rule": "donchian",
+   "lookback": 50,
+   "rebalance_weekday": 4
+  },
+  "crypto_trend_donchian_100": {
+   "fn": "trend_long_flat",
+   "rule": "donchian",
+   "lookback": 100,
+   "rebalance_weekday": 4
+  },
+  "crypto_trend_donchian_200": {
+   "fn": "trend_long_flat",
+   "rule": "donchian",
+   "lookback": 200,
+   "rebalance_weekday": 4
+  },
+  "crypto_trend_sma_50": {
+   "fn": "trend_long_flat",
+   "rule": "sma",
+   "lookback": 50,
+   "rebalance_weekday": 4
+  },
+  "crypto_trend_sma_100": {
+   "fn": "trend_long_flat",
+   "rule": "sma",
+   "lookback": 100,
+   "rebalance_weekday": 4
+  },
+  "crypto_trend_sma_200": {
+   "fn": "trend_long_flat",
+   "rule": "sma",
+   "lookback": 200,
+   "rebalance_weekday": 4
+  },
+  "crypto_btc_benchmark": {
+   "fn": "benchmark",
+   "permanent": true
+  },
+  "crypto_cash_baseline": {
+   "fn": "cash",
+   "permanent": true
+  }
+ },
+ "rules_proposal": {
+  "_note": "INERT until Het writes 'ENABLE PROFILE crypto WITH RULES AS PROPOSED'. Values copy factory.RULES as of 2026-10-04; nothing reads this key.",
+  "min_days_on_rung": 126,
+  "min_trades": 10,
+  "min_expectancy": 0.0005,
+  "max_drawdown": -0.12,
+  "min_sharpe": 0.4,
+  "max_paper_failures": 2,
+  "require_beat_benchmark": true,
+  "promotion_alpha": 0.05
+ }
+}
