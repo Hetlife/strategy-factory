@@ -20,6 +20,14 @@ says `GATED`, grep `.autonomous/het_directives.md` for the §8 sentence named in
 `docs/capital_engine/00_DESIGN.md` §8; absent → skip the row, do not ask again
 in the same session, and move to the next one.
 
+## 1b. Branch check (learned 2026-10-04 the hard way)
+`git branch --show-current` must print `claude/scheduled-maintenance-template-d7yufr`
+before EVERY commit, not just at the start. A worker or a side-branch step can
+leave HEAD elsewhere; three commits once landed on a side branch and the PR
+silently lacked them until a hook caught it. If a side branch was used, merge
+it into the work branch with `--ff-only` or `--no-ff`, then `git checkout` the
+work branch explicitly and confirm with `git branch --show-current`.
+
 ## 2. Claim
 Edit the row's Status to `IN_PROGRESS (<today>)`; commit that one-line change
 (`git add .autonomous/capital_engine/WORK_ORDERS.md`). Stage by exact filename
