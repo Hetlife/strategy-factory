@@ -130,6 +130,8 @@ no real money. Today: RED on every class (G1 unmet; zero promotions ever).
 buy-and-hold ≤ 0 or max DD > 40% → B stays paper indefinitely; (h) portfolio
 rules in §3.3; (i) a reconciliation mismatch between broker and ledger → KILL.
 
+**Execution contract (document only, no code):** `EXECUTION_ADAPTER_CONTRACT.md` specifies the interface, idempotency, limits order (kill switch first), nightly reconciliation (mismatch writes `KILL`), secret naming and the paper adapter a later, separately authorized order would implement. It does not authorize any adapter code; §8 A5/A6 still do.
+
 ## 7. Economics, stated without optimism
 
 - **Tax is the largest cost in two of three classes.** Crypto: 30% flat on gains,
