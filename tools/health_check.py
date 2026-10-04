@@ -271,6 +271,32 @@ def check_profile_integrity(profile_dir=None):
     return findings
 
 
+def check_kill_switch(state_dir=None):
+    """CE-4-02: WARNING while a kill-switch file is present, naming the file
+    and its text, so the supervisor surfaces a halted engine. Looks at the
+    global factory_state/KILL and any factory_state/<profile>/KILL. Reads the
+    local checkout (on main this is the live state)."""
+    state_dir = state_dir or os.path.join(REPO_ROOT, "factory_state")
+    paths = [os.path.join(state_dir, "KILL")]
+    if os.path.isdir(state_dir):
+        for d in sorted(os.listdir(state_dir)):
+            if os.path.isdir(os.path.join(state_dir, d)):
+                paths.append(os.path.join(state_dir, d, "KILL"))
+    findings = []
+    for path in paths:
+        if os.path.isfile(path):
+            try:
+                text = open(path, errors="replace").read(200).strip()
+            except OSError:
+                text = "(unreadable)"
+            rel = os.path.relpath(path, os.path.dirname(state_dir))
+            findings.append(("warning",
+                f"KILL SWITCH ACTIVE: {rel} exists -- {text or '(no reason given)'}. "
+                f"update()/report()/advisor training write nothing while it "
+                f"stays. Release it by deleting the file."))
+    return findings
+
+
 def run_all(ledger_path=None, state_path=None, live=False):
     ledger_path = ledger_path or os.path.join(REPO_ROOT, "factory_state", "ledger.json")
     state_path = state_path or os.path.join(REPO_ROOT, ".autonomous", "state.json")
@@ -294,6 +320,7 @@ def run_all(ledger_path=None, state_path=None, live=False):
     # branch-vs-main drift (they're not written by factory.yml's
     # main-only cron) -- local checkout is a trustworthy source for these
     # regardless of --live.
+    findings += check_kill_switch()
     findings += check_profile_integrity()
     findings += check_state_json_wellformed(state_path)
     findings += check_claude_md_sha1(state_path, claude_md_path)
