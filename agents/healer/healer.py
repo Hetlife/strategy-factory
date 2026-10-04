@@ -33,25 +33,14 @@ sys.path.insert(0, os.path.join(REPO_ROOT, "tools"))
 import health_check
 
 
-def report(ledger_path=None, state_path=None, live=False):
-    """Runs every deterministic check and prints a plain-language summary.
-    Returns the raw findings list too, for a caller that wants to act on
-    it programmatically rather than just read the printout.
-
-    live=True fetches ledger.json fresh from main instead of trusting a
-    local checkout, which may be on the working branch and stale relative
-    to main's daily auto-commits -- see health_check.py's own docstring."""
-    findings = health_check.run_all(ledger_path, state_path, live=live)
-    print("\n--- Healer (advisory, read-only, code-only detection) ---")
-    if not findings:
-        print("  Nothing found. Repo trackers and ledger are internally "
-              "consistent as of this check.")
-        return findings
-
+def _print_section(findings):
     errors = [f for f in findings if f[0] == "error"]
     warnings = [f for f in findings if f[0] == "warning"]
     infos = [f for f in findings if f[0] == "info"]
 
+    if not findings:
+        print("  Nothing found. Repo trackers and ledger are internally "
+              "consistent as of this check.")
     if errors:
         print(f"  {len(errors)} thing(s) that look like real problems:")
         for _, msg in errors:
@@ -65,9 +54,38 @@ def report(ledger_path=None, state_path=None, live=False):
         for _, msg in infos:
             print(f"    [.] {msg}")
 
-    print("  None of these were auto-fixed -- the healer only detects. "
+
+def report(ledger_path=None, state_path=None, live=False, profile=None):
+    """Runs every deterministic check and prints a plain-language summary,
+    one section per asset-class profile (CE-1-04). Returns the raw findings
+    list too (all sections concatenated), for a caller that wants to act on
+    it programmatically rather than just read the printout.
+
+    Which profiles: `profile` if given; else just the default profile when an
+    explicit ledger_path is passed (a path belongs to one profile); else every
+    enabled profile from profiles/*.json.
+
+    live=True fetches ledger.json fresh from main instead of trusting a
+    local checkout, which may be on the working branch and stale relative
+    to main's daily auto-commits -- see health_check.py's own docstring."""
+    import list_enabled_profiles
+    if profile:
+        profiles = [profile]
+    elif ledger_path:
+        profiles = ["equity_nse"]
+    else:
+        profiles = list_enabled_profiles.list_profiles() or ["equity_nse"]
+    all_findings = []
+    print("\n--- Healer (advisory, read-only, code-only detection) ---")
+    for name in profiles:
+        print(f"\n[profile: {name}]")
+        findings = health_check.run_all(ledger_path, state_path, live=live,
+                                        profile=name)
+        _print_section(findings)
+        all_findings += findings
+    print("\n  None of these were auto-fixed -- the healer only detects. "
           "A session (or Het) decides what, if anything, to do about each one.")
-    return findings
+    return all_findings
 
 
 if __name__ == "__main__":

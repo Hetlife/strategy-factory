@@ -38,9 +38,26 @@ jobs:
       - name: Install dependencies
         run: pip install pandas numpy
 
-      - name: Run supervisor check
-        # --live: read ledger.json from main, not the local checkout.
-        # ledger.json is only ever committed to main, so a branch
-        # checkout looks days-stale and triggers a FALSE "the daily
-        # run has stopped firing" error. Caught 2026-08-29.
-        run: python tools/supervisor_check.py --live
+      - name: Run supervisor check (one health_check per enabled profile)
+        # CE-1-04: loop over every enabled asset-class profile (all, no
+        # filter) and run health_check.py for each. --live: read each
+        # profile's ledger from main, not the local checkout. ledger.json
+        # is only ever committed to main, so a branch checkout looks
+        # days-stale and would raise a FALSE "daily run stopped" alarm
+        # (caught 2026-08-29). Every profile runs even if an earlier one
+        # fails, then the job fails if any did. Detection only, no commits.
+        run: |
+          PROFILES=$(python tools/list_enabled_profiles.py)
+          echo "enabled profiles: $PROFILES"
+          LIST=$(python -c "import json,sys; print(' '.join(json.loads(sys.argv[1])))" "$PROFILES")
+          if [ -z "$LIST" ]; then
+            echo "no enabled profiles -- nothing is being supervised"
+            exit 1
+          fi
+          FAILED=0
+          for P in $LIST; do
+            echo "::group::health_check --profile $P"
+            python tools/health_check.py --profile "$P" --live || FAILED=1
+            echo "::endgroup::"
+          done
+          exit $FAILED
