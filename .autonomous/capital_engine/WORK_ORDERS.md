@@ -16,15 +16,16 @@ without the matching §8 sentence in `.autonomous/het_directives.md`.
 | [CE-1-01](work_orders/CE-1-01.md) | Golden-master regression harness | CLAUDE_CODE | CE-0-01 | NO | DONE 2026-10-04 (Sonnet built, Fable reviewed: fresh-state design approved, CI-missing-golden now fails), EVIDENCE/CE-1-01.md; first CI run pending |
 | [CE-1-02](work_orders/CE-1-02.md) | Profile loader (one engine, N classes) | CLAUDE_CODE | CE-1-01 | YES | DONE 2026-10-04 (Sonnet built on `ce/CE-1-02-profiles`, Fable reviewed + merged into the work branch 42dc01f; 14 tests OK, golden unchanged), EVIDENCE/CE-1-02.md — MERGED to main via PR #25 (75907a1, Het) |
 | [CE-1-03](work_orders/CE-1-03.md) | Per-profile workflow matrix | CLAUDE_CODE | CE-1-02 | NO | DONE 2026-10-04 (Sonnet built, reviewed: 22 tests OK twice, YAML parsed, equity crons/guard/prefix unchanged), EVIDENCE/CE-1-03.md — MERGED to main via PR #26 (Het, 2026-10-04 05:37 UTC, ae6d534). VERIFIED on the real runner (manual dispatch run 37180428638, 2026-10-04): discover ok, weekend leg skipped, equity leg ran with FACTORY_PROFILE=equity_nse and ended "No changes to commit" (day already recorded). monsoon_cement's retirement and the phantom guard get their first real write on Monday 2026-10-05's scheduled update |
-| [CE-1-04](work_orders/CE-1-04.md) | Health harness per class | CLAUDE_CODE | CE-1-02, CE-1-03 | NO | OPEN |
+| [CE-1-04](work_orders/CE-1-04.md) | Health harness per class | CLAUDE_CODE | CE-1-02, CE-1-03 | NO | IN_PROGRESS (2026-10-04, Sonnet worker, `ce/CE-1-04`) |
 | [CE-2-01](work_orders/CE-2-01.md) | Class A hypothesis doc (Law 1) | CLAUDE_CODE → OWNER sign | — | NO | DONE 2026-10-04, A1_shield_core.md, Het: "3 approved" |
 | [CE-2-02](work_orders/CE-2-02.md) | `shield_nse` profile + fixed-weight signal | CLAUDE_CODE | CE-1-02, CE-2-01 signed | YES | NEEDS_REVIEW 2026-10-04 — built on side branch `ce/CE-2-02` (9deabdc, packet 73b157c; 24 tests OK twice, equity golden unchanged, profile disabled). NOT merged. Two design problems for Fable/Het BEFORE it merges or is ever enabled: (1) no band logic (stateless sig, daily free rebalancing flatters the sleeve); (2) PAPER_HOLDING_TAX_WEEKLY would make shield_core trail its own exempt cash benchmark by ~6.5%/yr, tripping A1's kill test by construction |
-| [CE-2-03](work_orders/CE-2-03.md) | Portfolio aggregator (read-only) | CLAUDE_CODE | CE-1-02, CE-1-03 | NO | OPEN |
+| [CE-2-04](work_orders/CE-2-04.md) | Paper holding tax per profile (default unchanged) | CLAUDE_CODE | CE-1-02 | NO | IN_PROGRESS (2026-10-04, Sonnet worker, `ce/CE-2-04`) |
+| [CE-2-03](work_orders/CE-2-03.md) | Portfolio aggregator (read-only) | CLAUDE_CODE | CE-1-02, CE-1-03 | NO | IN_PROGRESS (2026-10-04, Sonnet worker, `ce/CE-2-03`) |
 | [CE-3-01](work_orders/CE-3-01.md) | Class B hypothesis docs (Law 1) | CLAUDE_CODE → OWNER sign | — | NO | DONE 2026-10-04, docs/capital_engine/hypotheses/B0,B1 (Het may veto before CE-3-03) |
 | [CE-3-02](work_orders/CE-3-02.md) | Crypto data feasibility on Actions | CLAUDE_CODE + DET | CE-0-01 | NO | DONE 2026-10-04 — real run: 12/12 USABLE, universe frozen (R3), EVIDENCE/CE-3-02.md |
 | [CE-3-03](work_orders/CE-3-03.md) | `crypto` profile + trend signal (paper) | CLAUDE_CODE | CE-1-02 (PR #25), CE-1-03, CE-3-01, CE-3-02 | YES | OPEN — all inputs ready (A2 granted, B1 signed, universe frozen in R3); build after PR #25 merges |
 | [CE-4-01](work_orders/CE-4-01.md) | Capital activation gates evaluator | CLAUDE_CODE | CE-2-03 | NO | OPEN |
-| [CE-4-02](work_orders/CE-4-02.md) | Kill switch file | CLAUDE_CODE | CE-1-01 | YES | OPEN |
+| [CE-4-02](work_orders/CE-4-02.md) | Kill switch file | CLAUDE_CODE | CE-1-01 | YES | IN_PROGRESS (2026-10-04, Sonnet worker, `ce/CE-4-02`; NEEDS_REVIEW after) |
 | [CE-4-03](work_orders/CE-4-03.md) | Execution-adapter contract (doc only) | CLAUDE_CODE | CE-4-01 | YES | OPEN |
 | [CE-5-01](work_orders/CE-5-01.md) | LucyOS project definition | FABLE (this session) | — | — | DONE 2026-10-04 — LucyOS PR #96 MERGED by Het (04:49 UTC); money_path.json now live in LucyOS |
 | [CE-5-02](work_orders/CE-5-02.md) | Evidence sync into LucyOS money path | CLAUDE_CODE (LucyOS repo) | CE-5-01 | NO | DONE 2026-10-04 (Sonnet built, reviewed: gates re-run independently, 11 tests OK, authority strict+anti-dup ok, scan clean) — MERGED to LucyOS main via PR #97 (Het, 2026-10-04 05:37 UTC); nightly maintenance now runs the sync; EVIDENCE/CE-5-02.md |
@@ -37,3 +38,7 @@ Everything in CE-1 can be built on the branch before CE-0-01 but its workflow
 tests only run after the merge.
 
 **Status values:** OPEN · IN_PROGRESS (<session date>) · DONE <date, evidence file> · BLOCKED (<why>) · GATED (<§8 item>).
+
+## MILESTONE M1 — "Capital Engine paper-ready" (defined 2026-10-04, Het: "start building until major milestone")
+Done when ALL hold: (1) three classes buildable as profiles — A `shield_nse` (CE-2-02 + band logic CE-2-02b), B `crypto` (CE-3-03), C stays gated; (2) per-class health checks (CE-1-04) and the portfolio view (CE-2-03); (3) kill switch (CE-4-02) and activation-gate evaluator (CE-4-01); (4) execution-adapter CONTRACT written (CE-4-03, no code); (5) every NEEDS_REVIEW order reviewed by a high-reasoning model and rolled into ONE milestone PR; (6) profiles still `enabled: false`. Enabling them (§8 A3) and anything touching real money stay Het's sentences, so M1 ends with a PR + a short owner brief, not with live trading.
+Waves: W1 (parallel) CE-1-04, CE-2-03, CE-4-02, CE-2-04 → W2 CE-3-03, CE-2-02b, CE-4-01, CE-4-03 → review → M1 PR.
