@@ -38,7 +38,9 @@ grep -n "merge CE-0-01" .autonomous/het_directives.md
 3. Dispatch `diagnose_crypto_data.yml` on main; paste its verdict table into docs/capital_engine/research/R3_crypto_data_feasibility.md; mark CE-3-02 DONE.
 4. Check Sunday 2026-10-05's factory.yml run for the skip/phantom messages (CE-0-02 step 2) and whether Friday 10-03's missing run recurs.
 
-## TASK 2c — MILESTONE M1 in flight (started 2026-10-04, Het: "start building until major milestone")
+## TASK 2c — MILESTONE M1 BUILT (2026-10-04): next step is the review, then ONE PR. Start with `.autonomous/capital_engine/M1_REVIEW_BRIEF.md`. (Earlier text below describes how it was built.)
+
+### (history) MILESTONE M1 in flight (started 2026-10-04, Het: "start building until major milestone")
 Definition and waves: bottom of `.autonomous/capital_engine/WORK_ORDERS.md`. Wave 1 workers (side branches `ce/CE-1-04`, `ce/CE-2-03`, `ce/CE-4-02`, `ce/CE-2-04`, each off the work branch) were launched 2026-10-04. To resume: `git fetch origin`, list `ce/*` branches, read each EVIDENCE packet on its branch, re-run `python3 -m unittest discover -s tests` twice on the branch (golden fingerprint must be unchanged), then `git merge --no-ff` into the work branch ONE AT A TIME, re-running the suite after each. Resolve conflicts in tools/health_check.py (CE-1-04 vs CE-4-02 both edit it; keep both). Wave 2: CE-3-03 (branch off ce/CE-2-02: needs seed_registry_for_profile), CE-2-02b (band logic), CE-4-01, CE-4-03. Then ONE high-reasoning review of CE-2-02, CE-2-02b, CE-3-03, CE-4-02, then ONE milestone PR.
 
 ## TASK 3 — Work that needs no merge (do these, in order)
