@@ -291,9 +291,31 @@ def sig_benchmark(px, p):
     Always fully invested in BENCHMARK once it appears in the price panel."""
     return {BENCHMARK: 1.0} if BENCHMARK in px.columns else {}
 
+def sig_fixed_weight(px, p):
+    """CE-2-02 (Class A shield, hypothesis A1): hold fixed TARGET weights
+    p["weights"] ({ticker: weight}, summing to 1.0). Long-only, unlevered.
+
+    The A1 band rule (trade only when a sleeve drifts > p["band"] from
+    target) needs the contestant's CURRENT positions, and a sig_* function
+    sees only (px, p) -- it is stateless, and this order forbids adding
+    ledger state. So the band is NOT enforced here: the signal returns the
+    target weights every day. update() stores positions = targets, so after
+    day 1 turnover is 0 (the engine models a continuously rebalanced fixed
+    mix, at zero cost). Real band logic needs CE-2-02b (a state-aware hook).
+    `band` is carried in the registry entry for that follow-up and is
+    unused today.
+
+    Tickers missing from the price panel are dropped and the rest are
+    renormalised to gross 1.0; if none are present, returns {} (no
+    position)."""
+    w = {t: float(x) for t, x in p["weights"].items()
+         if t in px.columns and x > 0 and not pd.isna(px[t].iloc[-1])}
+    tot = sum(w.values())
+    return {t: x / tot for t, x in w.items()} if tot > 0 else {}
+
 IMPLS = {"event_drift": sig_event_drift, "momentum": sig_momentum,
          "input_cost": sig_input_cost, "monsoon": sig_monsoon,
-         "benchmark": sig_benchmark}
+         "benchmark": sig_benchmark, "fixed_weight": sig_fixed_weight}
 
 def seed_registry():
     """Starting population: a small grid of variants per hypothesis."""
@@ -384,6 +406,14 @@ def seed_registry():
     reg["nifty_benchmark"] = dict(fn="benchmark", permanent=True)
     return reg
 
+def seed_registry_for_profile():
+    """CE-2-02: the equity_nse profile seeds from seed_registry() (unchanged).
+    Any other profile carrying a "registry" key seeds from that key instead
+    (a deep copy, so the profile dict is never aliased into the ledger)."""
+    if FACTORY_PROFILE != DEFAULT_PROFILE and "registry" in _PROFILE:
+        return json.loads(json.dumps(_PROFILE["registry"]))
+    return seed_registry()
+
 def spawn_children(name, params, registry):
     """Breed neighbour variants when a parent wins promotion. Children start
     on paper (rung 0) and must earn their own way up. Selection, not editing."""
@@ -440,7 +470,7 @@ def load_state():
     else:
         # brand-new ledger: seed, then fall through so the backfill loop
         # creates blank stats and RETIRED_BY_OWNER applies from day one
-        state = {"registry": seed_registry(), "contestants": {}}
+        state = {"registry": seed_registry_for_profile(), "contestants": {}}
     for s in state["contestants"].values():   # backfill pre-advisor-layer entries
         s.setdefault("lineage", None)
         s.setdefault("evolved_out", False)
@@ -451,7 +481,7 @@ def load_state():
     # ledger, so a pre-existing one silently never gets new seed entries
     # without this. Additive only: never touches an existing registry key
     # or existing contestant stats, only adds missing ones fresh.
-    for name, params in seed_registry().items():
+    for name, params in seed_registry_for_profile().items():
         if name not in state["registry"]:
             state["registry"][name] = params
         if name not in state["contestants"]:
