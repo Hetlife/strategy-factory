@@ -10,9 +10,10 @@ without the matching §8 sentence in `.autonomous/het_directives.md`.
 | ID | Title | Executor | Depends | Fable review | Status |
 |---|---|---|---|---|---|
 | [CE-0-01](work_orders/CE-0-01.md) | Merge the work branch to `main` | OWNER | — | NO | DONE 2026-10-04, merge 7866e5a (Het merged PR #23 himself), EVIDENCE/CE-0-01.md |
-| [CE-0-02](work_orders/CE-0-02.md) | Run ACCELERATION_PLAN steps 2-4 on `main` | CLAUDE_CODE | CE-0-01 | NO | IN_PROGRESS (2026-10-04) |
-| [CE-0-03](work_orders/CE-0-03.md) | Retire-never-traded decision packet | CLAUDE_CODE + OWNER | CE-0-02 | NO | OPEN |
-| [CE-1-01](work_orders/CE-1-01.md) | Golden-master regression harness | CLAUDE_CODE | CE-0-01 | NO | IN_PROGRESS (2026-10-04, Sonnet worker) |
+| [CE-0-02](work_orders/CE-0-02.md) | Run ACCELERATION_PLAN steps 2-4 on `main` | CLAUDE_CODE | CE-0-01 | NO | DONE 2026-10-04, EVIDENCE/CE-0-02.md (Sunday-skip check 2026-10-05 still to observe) |
+| [CE-0-03](work_orders/CE-0-03.md) | Retire-never-traded decision packet | CLAUDE_CODE + OWNER | CE-0-02 | NO | PACKET DELIVERED 2026-10-04 (NEEDS HET b); awaiting Het |
+| [CE-0-04](work_orders/CE-0-04.md) | Phantom-day guard in `update()` (21% fake days, measured) | CLAUDE_CODE | CE-1-01 | YES | IN_PROGRESS (2026-10-04, Sonnet worker); merge needs Het |
+| [CE-1-01](work_orders/CE-1-01.md) | Golden-master regression harness | CLAUDE_CODE | CE-0-01 | NO | DONE 2026-10-04 (Sonnet built, Fable reviewed: fresh-state design approved, CI-missing-golden now fails), EVIDENCE/CE-1-01.md; first CI run pending |
 | [CE-1-02](work_orders/CE-1-02.md) | Profile loader (one engine, N classes) | CLAUDE_CODE | CE-1-01 | YES | OPEN |
 | [CE-1-03](work_orders/CE-1-03.md) | Per-profile workflow matrix | CLAUDE_CODE | CE-1-02 | NO | OPEN |
 | [CE-1-04](work_orders/CE-1-04.md) | Health harness per class | CLAUDE_CODE | CE-1-02, CE-1-03 | NO | OPEN |
