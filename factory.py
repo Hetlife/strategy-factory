@@ -435,9 +435,12 @@ def blank_stats(lineage=None):
 def load_state():
     os.makedirs(STATE_DIR, exist_ok=True)
     p = os.path.join(STATE_DIR, "ledger.json")
-    if not os.path.exists(p):
-        return {"registry": seed_registry(), "contestants": {}}
-    state = json.load(open(p))
+    if os.path.exists(p):
+        state = json.load(open(p))
+    else:
+        # brand-new ledger: seed, then fall through so the backfill loop
+        # creates blank stats and RETIRED_BY_OWNER applies from day one
+        state = {"registry": seed_registry(), "contestants": {}}
     for s in state["contestants"].values():   # backfill pre-advisor-layer entries
         s.setdefault("lineage", None)
         s.setdefault("evolved_out", False)
