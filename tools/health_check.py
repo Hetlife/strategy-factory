@@ -256,10 +256,19 @@ def check_profile_integrity(profile_dir=None):
         profile = load_profile(DEFAULT_PROFILE, os.path.dirname(path))
     except ProfileError as e:
         return [("error", f"profile integrity: {e}")]
-    if os.environ.get("FACTORY_PROFILE", DEFAULT_PROFILE) != DEFAULT_PROFILE:
-        return []         # factory's constants belong to another profile here
-    import factory
     findings = []
+    # CE-2-04: the holding tax is pinned to the literal 0.0013 for the equity
+    # arena; changing it is a financial-parameter decision, not an edit.
+    if "paper_holding_tax_weekly" not in profile:
+        findings.append(("error",
+            f"{DEFAULT_PROFILE}.json is missing paper_holding_tax_weekly"))
+    elif profile["paper_holding_tax_weekly"] != 0.0013:
+        findings.append(("error",
+            f"{DEFAULT_PROFILE}.json paper_holding_tax_weekly is "
+            f"{profile['paper_holding_tax_weekly']!r}, pinned value is 0.0013"))
+    if os.environ.get("FACTORY_PROFILE", DEFAULT_PROFILE) != DEFAULT_PROFILE:
+        return findings   # factory's constants belong to another profile here
+    import factory
     for name in ("UNIVERSE", "MACRO_PROXIES", "BENCHMARK", "STATE_DIR",
                  "VARIABLE_COST_PER_SIDE", "DP_CHARGE_PER_SCRIP", "STCG_RATE",
                  "LTCG_RATE", "LTCG_EXEMPTION_PER_YEAR"):
