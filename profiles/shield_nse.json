@@ -1,0 +1,50 @@
+{
+ "UNIVERSE": {
+  "shield": [
+   "LIQUIDCASE.NS",
+   "LTGILTBEES.NS",
+   "GOLDBEES.NS",
+   "NIFTYBEES.NS"
+  ]
+ },
+ "MACRO_PROXIES": [],
+ "BENCHMARK": "LIQUIDCASE.NS",
+ "STATE_DIR": "factory_state/shield_nse",
+ "VARIABLE_COST_PER_SIDE": 0.00111,
+ "DP_CHARGE_PER_SCRIP": 15.34,
+ "STCG_RATE": 0.2,
+ "LTCG_RATE": 0.125,
+ "LTCG_EXEMPTION_PER_YEAR": 125000,
+ "trades_weekends": false,
+ "enabled": false,
+ "class": "A1",
+ "description": "Class A1 shield core (hypothesis docs/capital_engine/hypotheses/A1_shield_core.md): fixed 40/20/20/20 cash/G-sec/gold/Nifty ETFs, paper only. DISABLED until Het's A3 sign-off.",
+ "candidate_tickers_note": "All four tickers are CANDIDATES until verified on GitHub Actions (>= 3 years of daily history, no >1-day gaps; A1 section 2). A failing sleeve switches to its named alternative via a dated commit, not an edit of this note.",
+ "registry": {
+  "shield_core": {
+   "fn": "fixed_weight",
+   "weights": {
+    "LIQUIDCASE.NS": 0.4,
+    "LTGILTBEES.NS": 0.2,
+    "GOLDBEES.NS": 0.2,
+    "NIFTYBEES.NS": 0.2
+   },
+   "band": 0.05
+  },
+  "shield_cash_benchmark": {
+   "fn": "benchmark",
+   "permanent": true
+  }
+ },
+ "rules_proposal": {
+  "_note": "INERT until Het writes 'ENABLE PROFILE shield_nse WITH RULES AS PROPOSED'. Values copy factory.RULES as of 2026-10-04; nothing reads this key.",
+  "min_days_on_rung": 126,
+  "min_trades": 10,
+  "min_expectancy": 0.0005,
+  "max_drawdown": -0.12,
+  "min_sharpe": 0.4,
+  "max_paper_failures": 2,
+  "require_beat_benchmark": true,
+  "promotion_alpha": 0.05
+ }
+}
