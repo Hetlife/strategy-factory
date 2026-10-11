@@ -181,7 +181,7 @@
   "event_cement_t30": {
    "rung": 0,
    "days_on_rung": 72,
-   "equity": 0.9922253061028194,
+   "equity": 0.9909354132048858,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -559,7 +559,7 @@
   "event_cement_t40": {
    "rung": 0,
    "days_on_rung": 72,
-   "equity": 0.9922253061028194,
+   "equity": 0.9909354132048858,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -937,7 +937,7 @@
   "event_cement_t50": {
    "rung": 0,
    "days_on_rung": 72,
-   "equity": 0.9922253061028194,
+   "equity": 0.9909354132048858,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -1315,7 +1315,7 @@
   "event_infra_t30": {
    "rung": 0,
    "days_on_rung": 72,
-   "equity": 0.9922253061028194,
+   "equity": 0.9909354132048858,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -1693,7 +1693,7 @@
   "event_infra_t40": {
    "rung": 0,
    "days_on_rung": 72,
-   "equity": 0.9922253061028194,
+   "equity": 0.9909354132048858,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -2071,7 +2071,7 @@
   "event_infra_t50": {
    "rung": 0,
    "days_on_rung": 72,
-   "equity": 0.9922253061028194,
+   "equity": 0.9909354132048858,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -2449,7 +2449,7 @@
   "event_steel_t30": {
    "rung": 0,
    "days_on_rung": 72,
-   "equity": 0.9709886667245466,
+   "equity": 0.9697263814578048,
    "peak": 1.0,
    "positions": {},
    "trades": 4,
@@ -2827,7 +2827,7 @@
   "event_steel_t40": {
    "rung": 0,
    "days_on_rung": 72,
-   "equity": 0.9922253061028194,
+   "equity": 0.9909354132048858,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -3205,7 +3205,7 @@
   "event_steel_t50": {
    "rung": 0,
    "days_on_rung": 72,
-   "equity": 0.9922253061028194,
+   "equity": 0.9909354132048858,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -3583,7 +3583,7 @@
   "mom_cement_lb40": {
    "rung": 0,
    "days_on_rung": 25,
-   "equity": 0.9320208365002194,
+   "equity": 0.9308092094127691,
    "peak": 1.0,
    "positions": {
     "JKCEMENT.NS": 0.5,
@@ -3729,7 +3729,7 @@
   "mom_cement_lb60": {
    "rung": 0,
    "days_on_rung": 25,
-   "equity": 0.9390843161322666,
+   "equity": 0.9378635065212947,
    "peak": 1.0,
    "positions": {
     "JKCEMENT.NS": 0.5,
@@ -3875,7 +3875,7 @@
   "mom_cement_lb90": {
    "rung": 0,
    "days_on_rung": 19,
-   "equity": 0.9524883230860233,
+   "equity": 0.9512500882660114,
    "peak": 1.008685855505891,
    "positions": {
     "JKCEMENT.NS": 0.5,
@@ -3991,7 +3991,7 @@
   "mom_infra_lb40": {
    "rung": 0,
    "days_on_rung": 37,
-   "equity": 0.8773878481018907,
+   "equity": 0.8762472438993583,
    "peak": 1.0044402394331786,
    "positions": {
     "IRB.NS": 1.0
@@ -4000,8 +4000,8 @@
    "days_in_market": 36,
    "sum_ret": -0.11903249680274317,
    "sum_sq": 0.00409895837897939,
-   "paper_failures": 1,
-   "retired": false,
+   "paper_failures": 2,
+   "retired": true,
    "history": [
     [
      "2026-08-24",
@@ -4466,7 +4466,7 @@
   "mom_pipes_tiles_lb40": {
    "rung": 0,
    "days_on_rung": 19,
-   "equity": 0.9753270534755284,
+   "equity": 0.9740591283060103,
    "peak": 1.0030331690742724,
    "positions": {
     "KAJARIACER.NS": 1.0
@@ -4581,7 +4581,7 @@
   "mom_pipes_tiles_lb60": {
    "rung": 0,
    "days_on_rung": 19,
-   "equity": 0.9874629338236295,
+   "equity": 0.9861792320096588,
    "peak": 1.0009235231835514,
    "positions": {
     "ASTRAL.NS": 1.0
@@ -4891,7 +4891,7 @@
   "input_cost_lag": {
    "rung": 0,
    "days_on_rung": 72,
-   "equity": 0.995314912116794,
+   "equity": 0.9940210027310422,
    "peak": 1.0116613804011818,
    "positions": {
     "ULTRACEMCO.NS": 0.14285714285714285,
@@ -5636,7 +5636,7 @@
   "input_cost_crude_cement": {
    "rung": 0,
    "days_on_rung": 35,
-   "equity": 0.9769739866194891,
+   "equity": 0.9757039204368838,
    "peak": 1.0,
    "positions": {},
    "trades": 2,
@@ -5829,7 +5829,7 @@
   "input_cost_crude_steel": {
    "rung": 0,
    "days_on_rung": 35,
-   "equity": 0.9665846179245032,
+   "equity": 0.9653280579212014,
    "peak": 1.0,
    "positions": {},
    "trades": 2,
@@ -6367,7 +6367,7 @@
   "event_cement_t17": {
    "rung": 0,
    "days_on_rung": 33,
-   "equity": 0.9270331434239235,
+   "equity": 0.9258280003374725,
    "peak": 1.0093170902891333,
    "positions": {
     "AMBUJACEM.NS": -0.16666666666666666,
@@ -6557,7 +6557,7 @@
   "event_infra_t20": {
    "rung": 0,
    "days_on_rung": 33,
-   "equity": 0.9915936921610543,
+   "equity": 0.990304620361245,
    "peak": 1.0131522800066188,
    "positions": {
     "IRB.NS": -0.25,
@@ -6745,7 +6745,7 @@
   "event_steel_t22": {
    "rung": 0,
    "days_on_rung": 33,
-   "equity": 0.9030047629667963,
+   "equity": 0.9018308567749396,
    "peak": 1.007384125775764,
    "positions": {},
    "trades": 8,
@@ -6928,7 +6928,7 @@
   "mom_nifty100_lb90": {
    "rung": 0,
    "days_on_rung": 32,
-   "equity": 0.8867374255502138,
+   "equity": 0.8855846668969986,
    "peak": 1.0,
    "positions": {
     "DIVISLAB.NS": 0.1,
