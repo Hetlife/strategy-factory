@@ -41,6 +41,40 @@ def _ladder():
     return list(factory.LADDER)
 
 
+def _kill_switch_active():
+    """The KILL reason string if the GLOBAL kill switch applies, else None.
+
+    CE-4-02 follow-up (found 2026-10-11): --write persists
+    factory_state/portfolio_view.json without going through update()/report(),
+    so like tools/backfill_benchmark_history.py it has to honour the kill
+    switch itself. Before this, every write path in the repo checked the kill
+    switch except this one -- which made the M1 review brief's claim ("no write
+    path in the repo runs under KILL") false. Printing the table is a read and
+    stays allowed under KILL; only persisting the file is refused.
+
+    Anchored at REPO_ROOT, NOT the current directory. factory's own
+    KILL_GLOBAL_PATH is relative ("factory_state/KILL"), so a plain
+    factory.kill_switch_active() resolves against cwd -- but this module always
+    writes to REPO_ROOT. Run from any other directory and the naive version
+    would look for a kill file somewhere else and happily write to the real
+    repo. The filename still comes from factory so there is one source for it.
+
+    Global-only on purpose: this is a cross-profile read-only view, so a single
+    profile's KILL should not block it; the global freeze should. Same choice
+    advisors.py makes."""
+    sys.path.insert(0, REPO_ROOT)
+    import factory
+    path = os.path.join(REPO_ROOT, factory.KILL_GLOBAL_PATH)
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, errors="replace") as fh:
+            text = fh.read(200).strip()
+    except OSError:
+        text = "(KILL file present but unreadable)"
+    return text or "(no reason given)"
+
+
 def _ledger_path(root, name):
     if name == "equity_nse":
         return os.path.join(root, "factory_state", "ledger.json")
@@ -237,6 +271,13 @@ def main(argv=None):
     view = aggregate()
     print(format_table(view))
     if args.write:
+        # Read-only output above is always allowed; persisting is a write and
+        # must fail closed under a kill switch. See _kill_switch_active().
+        killed = _kill_switch_active()
+        if killed is not None:
+            print(f"\nKILL SWITCH ACTIVE -- {killed}; refusing --write, "
+                  f"nothing written.")
+            return 1
         out = os.path.join(REPO_ROOT, "factory_state", "portfolio_view.json")
         with open(out, "w") as fh:
             json.dump(view, fh, indent=1, sort_keys=True)

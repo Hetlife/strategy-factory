@@ -10,6 +10,66 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## OPEN
 
+- **OPEN | 2026-10-11 | unpinned-pandas-3.0-changes-the-money-path | P0-SYSTEMIC** —
+  `requirements.txt` pins NOTHING (bare `pandas`, `numpy`, ...), and both
+  `.github/workflows/factory.yml` (lines 94, 201) and `tests.yml` (line 15)
+  install `pip install ... pandas numpy` unpinned. pandas 3.0 removed the
+  implicit `fill_method='pad'` from `Series.pct_change()`. Verified directly on
+  pandas 3.0.5: `pd.Series([100, NaN, 102, 103]).pct_change()` now returns
+  `[nan, nan, nan, 0.0098]` where older pandas forward-filled first and returned
+  numbers. `pct_change()` is on the live money path --
+  `factory.py:618` (`todays_ret = px.pct_change().iloc[-1]`, the daily return
+  for every contestant) and `factory.py:271` (`sig_event_drift`'s leader
+  return), plus `advisors.py:83` and the backfill tool.
+  **Evidence it already bites:** the golden-master fingerprint is RED on the
+  work branch -- `fbedc106...e075` -> `958892a1...2d67`. Confirmed pre-existing
+  (identical failures with and without the same session's aggregator change) and
+  NOT caused by code: `git log --since=2026-10-04 -- factory.py tests/golden` is
+  empty, so the engine is untouched since M1 recorded the golden green. The
+  drift is selective -- `event_cement_t17/t30/t40/t50`, `input_cost_lag`,
+  `mom_nifty100_lb90` -- which fits NaN-pattern-dependent behaviour, not float
+  noise.
+  **Why nothing alarmed:** `tests.yml` triggers on `pull_request` only. The
+  scheduled daily run never executes the golden master, so an unpinned
+  dependency can change live numbers with no code change and no red run. Last
+  tests.yml run was 2026-10-04 (M1's PR).
+  **Honest limit on the live claim:** `fetch_prices()` calls `.ffill()`, so the
+  live panel is largely NaN-free and the realistic live exposure is LEADING
+  NaNs (a ticker with no data at the start of a window, e.g. newly added
+  constituents). Whether live ledger numbers actually moved cannot be settled
+  from this sandbox -- it needs a runner.
+  **Not fixed here** (pinning dependencies changes what the live daily run
+  installs, and re-baselining a golden fingerprint is an evidence decision):
+  proposed order is (1) pin `pandas<3`, `numpy` in requirements.txt and both
+  workflows, (2) re-run the golden on a runner to confirm it returns to
+  `fbedc106...e075`, (3) add the golden master to the scheduled run, not just
+  PRs, so this class of drift fails loudly. Needs Het.
+
+- **FIXED | 2026-10-11 | aggregator-write-ignored-kill-switch | MEDIUM** —
+  `portfolio/aggregate.py --write` persisted
+  `factory_state/portfolio_view.json` with no kill-switch check, while every
+  other write path in the repo (update, report, advisors.train, the backfill
+  tool) checked it. That made the M1 review brief's claim -- "Can any write path
+  still run while a KILL file exists? (Known: none in the repo)" -- false.
+  Low blast radius (a derived view, never a ledger, not wired into any
+  workflow) but it is a hole in a safety mechanism, found during the M1
+  post-merge review.
+  **Fix:** `_kill_switch_active()` + a refusal before the write. Printing the
+  table is a read and stays allowed under KILL; only persisting is refused.
+  **Second-order flaw caught while testing the first fix:** the naive version
+  called `factory.kill_switch_active()`, whose `KILL_GLOBAL_PATH` is RELATIVE
+  (`factory_state/KILL`) and so resolves against the CURRENT DIRECTORY -- but
+  this module always writes to `REPO_ROOT`. Run from any other directory and the
+  guard would look for the kill file in the wrong place and write anyway. Now
+  anchored at `REPO_ROOT`, taking only the filename from factory so there is one
+  source for it. Global-only by design (a cross-profile read-only view should
+  not be blocked by one profile's KILL -- same choice `advisors.py` makes).
+  **Tested:** `tests/test_aggregate_kill_switch.py`, 4 cases, all passing --
+  refuses under KILL, still writes without one, read still allowed under KILL,
+  and the cwd case that catches the first attempt. Tests run against a temp copy
+  of the tree so a regression can never freeze the live daily run. Full suite
+  112 tests, twice, no new failures.
+
 ### FIXED + VERIFIED LIVE 2026-10-08 — phantom-trading-days-not-covered-by-idempotence-guard (found 2026-10-04, fixed CE-0-04, MERGED to main via PR #24 on 2026-10-04 by Het; effective on the next scheduled run). Historical phantom rows (6) deliberately left in place (ACCELERATION STEP 6).
 Original entry:
 `tools/detect_phantom_days.py` (run 37176894252): 6 of 28 judgeable days since 2026-08-26 are phantom (≥80% of tickers at exactly 0.0): 2026-08-27, 08-31, 09-14 (NSE holiday), 09-28, 10-01, 10-02 (Gandhi Jayanti). The 2026-09-13 idempotence guard keys on the DATE of the last panel row; an NSE holiday still produces a new date row because `BZ=F` trades, and `.ffill()` makes every NSE ticker "unchanged". So every holiday (and every late-posting day) advances `days_on_rung` for all contestants and adds a paired benchmark day. ACCELERATION_PLAN item 2 said item 1's guard covers this — falsified. Fix specified in `.autonomous/capital_engine/work_orders/CE-0-04.md` (select the last REAL row, same 80% rule as the detector). Changes what the gate sees → needs Het's "merge CE-0-04". Historical phantom rows are NOT cleaned by the fix (ACCELERATION STEP 6, Het's call).
