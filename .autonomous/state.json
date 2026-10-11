@@ -99,6 +99,12 @@
  ],
  "queue": [
   {
+   "id": "P1-event-drift-books-shorts",
+   "priority": "P1",
+   "status": "blocked_on_human",
+   "summary": "2026-10-11 audit finding, independently reproduced: sig_event_drift returns negative weights on a leader down-move and update() books them; origin/main ledger currently holds shorts in event_cement_t17 (6) and event_infra_t20 (4). Collides with 00_DESIGN.md s2.5 'no shorting in any class'. Family predates the rule. Paper only. NOT fixed -- editing mutates 12 contestants with history. Options (a) leave+document (b) new long-only keys (c) retire. See bug_log.md."
+  },
+  {
    "id": "P0-capital-engine-queue",
    "priority": "P0",
    "status": "open_see_work_orders",

@@ -10,6 +10,43 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## OPEN
 
+- **OPEN | 2026-10-11 | event-drift-books-short-positions | HIGH (rule collision, paper only)** --
+  `sig_event_drift` (factory.py, `d = float(np.sign(hit.iloc[-1]))`) returns
+  NEGATIVE weights whenever the sector leader falls past its threshold, and
+  `update()` books the resulting short basket. Found by the 2026-10-11 audit
+  (claim "HIGH") and then **reproduced independently, not trusted**:
+  (1) a synthetic -10% leader day returns 6 positions, all negative, gross 1.00,
+  net -1.00; (2) the LIVE `origin/main` ledger holds shorts right now --
+  `event_cement_t17` has six at -0.1667 each (AMBUJACEM, ACC, SHREECEM, JKCEMENT,
+  RAMCOCEM, DALBHARAT) and `event_infra_t20` has four at -0.25 (IRB, KNRCON,
+  PNCINFRA, HGINFRA). An earlier read of a stale local checkout showed none --
+  always check origin/main.
+  **Which rule it hits:** `docs/capital_engine/00_DESIGN.md` s2 item 5 --
+  "No leverage, no shorting, no margin beyond collateral held, in any class" --
+  and s192 ("shorting ... no evidence"). Honest nuance: the event_drift family
+  (Aug 2026) PREDATES that rule (Oct 2026), so this is a newer rule colliding
+  with an older strategy, not a coding slip. CLAUDE.md's literal hard rule is
+  options/futures/margin/leverage; a short is not named there, so this is a
+  design-rule breach, not a CLAUDE.md one.
+  **Executability (my understanding, NOT verified in this repo -- R2 does not
+  cover it):** in India a retail cash-segment short generally cannot be carried
+  past the day without F&O or securities-lending, so a 3-day short basket may not
+  be a trade anyone could place. If right, the paper P&L is from an unplaceable
+  position.
+  **Why it matters beyond the rule:** `tools/validate_strategies_historical.py`
+  ran this SAME function, so the 2026-09-13 five-year result for 12 of 25
+  strategies ("0 of 25 cleared the bar", e.g. event_steel_t30 -74.5%) includes
+  short exposure. Recorded P&L split by sign of day, last 33-72 days, shows the
+  down-move days dominate the losses (event_steel_t22: down-days -13.22% vs
+  up-days +3.94%) -- consistent with the shorts mattering, NOT proof they
+  caused it (history rows are not split by side).
+  **NOT FIXED, deliberately.** Editing the function mutates 12 contestants that
+  carry history (Law 2 / hard rule: new ideas are new registry keys). Options
+  for Het: (a) leave and document -- these are paper-only and already failed the
+  validation; (b) add a NEW long-only function + new registry keys, retire the
+  old family; (c) retire the 12 outright. A long-only variant is a DIFFERENT
+  strategy, not a bugfix, and must have its hypothesis written first (Law 1).
+
 - **OPEN | 2026-10-11 | unpinned-pandas-3.0-changes-the-money-path | P0-SYSTEMIC** —
   `requirements.txt` pins NOTHING (bare `pandas`, `numpy`, ...), and both
   `.github/workflows/factory.yml` (lines 94, 201) and `tests.yml` (line 15)
