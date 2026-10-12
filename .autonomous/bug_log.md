@@ -10,6 +10,49 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## OPEN
 
+- **OPEN | 2026-10-11 | entry-day-cost-omitted-from-promotion-stats | HIGH (promotion gate; verified in part)** --
+  Found by 4 of the audit's independent finders (rated CRITICAL by them; I rate it
+  HIGH, see limits). In `update()` (factory.py ~796-804) `net = day_ret - cost` is
+  applied to `equity` unconditionally, but `sum_ret`, `sum_sq` and `days_in_market`
+  accumulate only `if s["positions"]` -- i.e. only on days a position was ALREADY
+  held. On the day a position is first opened `s["positions"]` is still empty, so
+  that day's entry cost reaches equity but never reaches the statistics
+  `report()` feeds to `promotion_check()` as expectancy and Sharpe. The gate's
+  inputs therefore describe a better-looking series than equity actually produced.
+  **Verified by me, not just claimed:** read the guard at factory.py:799; replayed
+  its accumulation rules against the real `round_trip_cost()` at the Rs 25,000 rung
+  (entry 0.111%, exit 0.172%). Result: a 10-day hold shows gate-implied total
+  +0.228% vs real +0.116% (almost 2x). A sweep of thin edges (1-day holds, 60
+  cycles) found a band where the gate's two statistics pass while equity LOSES
+  MONEY: gross 0.14%/day -> gate mean +0.0538%/day (bar 0.050%), Sharpe over bar,
+  real equity -0.21%.
+  **Limits, stated plainly:** (1) I tested only expectancy and Sharpe; the real gate
+  ALSO requires beating the benchmark with a Bonferroni-corrected excess Sharpe, a
+  trade count and a drawdown check, so I have NOT shown the full gate can be
+  passed -- only that two of its inputs are biased upward. (2) The replay is my own
+  replica of the accumulation rules, not a run of the real `update()`. (3) The bias
+  is largest for frequent short-hold strategies; the live arena has 0 promotions and
+  nothing near the bar, so there is no active risk today. (4) The live magnitude is
+  not quantified (history carries duplicate and phantom rows).
+  **NOT FIXED.** Changing what feeds `promotion_check()` changes who can be
+  promoted -- same category as the Q5/Q6 and 2026-09-13 fixes, needs Het's fresh
+  authorization. Candidate fix: accumulate the entry-day net into `sum_ret`/`sum_sq`
+  (and `days_in_market`) too, then re-baseline the golden master deliberately.
+
+- **UNVERIFIED | 2026-10-11 | audit-claims-61-of-69-never-verified** --
+  The 38-finder audit returned 69 claims (8 CRITICAL, 32 HIGH, 25 MEDIUM, 4 LOW)
+  but its adversarial-verification stage NEVER ran: 79 of 103 agents died on a
+  session limit (reset 22:40 UTC). The workflow's own summary read
+  `confirmed: [], refuted: 0` -- which means "nothing was checked", NOT "nothing
+  found". Of the 69: 2 verified (the event_drift shorting claim), 8 verified in
+  part (the entry-cost cluster above), 59 still UNVERIFIED. All are preserved with
+  per-row status in `.autonomous/audit/2026-10-11_unverified_claims.json`. Also
+  unverified: a NaN-poisoning cluster (a held ticker whose column is all-NaN makes
+  `day_ret` NaN and permanently poisons equity). The mechanism is trivially true
+  (NaN propagates); I checked the live ledger and found no NaN/inf in any field, and
+  `fetch_prices()` ffills, so the trigger needs a ticker with NO data in the window
+  -- plausible, not demonstrated. Do not act on an UNVERIFIED row.
+
 - **OPEN | 2026-10-11 | event-drift-books-short-positions | HIGH (rule collision, paper only)** --
   `sig_event_drift` (factory.py, `d = float(np.sign(hit.iloc[-1]))`) returns
   NEGATIVE weights whenever the sector leader falls past its threshold, and

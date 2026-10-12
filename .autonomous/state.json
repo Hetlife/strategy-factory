@@ -99,6 +99,18 @@
  ],
  "queue": [
   {
+   "id": "P2-audit-verify-stage-rerun",
+   "priority": "P2",
+   "status": "open_waiting_on_limit_reset",
+   "summary": "2026-10-12. The 38-finder audit's verifier stage died on a session limit (79/103 agents errored; summary 'confirmed 0, refuted 0' means NOTHING WAS CHECKED). 59 of 69 claims still UNVERIFIED, saved with per-row status in .autonomous/audit/2026-10-11_unverified_claims.json. Re-run the verify stage via workflow script + resumeFromRunId wf_f4f11281-4f1 once the limit resets, or hand-verify each failing_input. Do not act on an UNVERIFIED row."
+  },
+  {
+   "id": "P1-entry-cost-omitted-from-gate-stats",
+   "priority": "P1",
+   "status": "blocked_on_human",
+   "summary": "2026-10-12. update() applies entry-day cost to equity but accumulates sum_ret/sum_sq/days_in_market only if positions were already held (factory.py ~799), so promotion_check()'s expectancy/Sharpe inputs omit every entry-day cost. 4 audit finders found it; verified in part by replica (gate-implied +0.228% vs real +0.116%; a thin-edge band passes expectancy+Sharpe while equity loses 0.21%). Tested only 2 of the gate's conditions, replica not real update(). Not fixed -- changes who can be promoted, needs Het. See bug_log.md."
+  },
+  {
    "id": "P1-event-drift-books-shorts",
    "priority": "P1",
    "status": "blocked_on_human",
