@@ -798,7 +798,21 @@ def update():
         s["peak"] = max(s["peak"], s["equity"])
         s["days_on_rung"] += 1
         s["trades"] += 1 if turn > 0.01 else 0
-        if s["positions"]:
+        # Het-authorized fix, 2026-10-12 (audit finding, verified in part).
+        # This used to read `if s["positions"]:` -- i.e. count a day only when a
+        # position was ALREADY held at the start of it. On the day a position is
+        # first opened s["positions"] is still empty, so that day's entry cost
+        # was charged to equity (above) but never reached sum_ret / sum_sq /
+        # days_in_market, the exact inputs report() hands to promotion_check()
+        # as expectancy and Sharpe. The promotion statistics therefore described
+        # a better series than equity actually produced; a thin-edge strategy
+        # could clear them while losing real (paper) money. Counting the day when
+        # the book is exposed at EITHER end (`or targets`) puts the entry day --
+        # its day_ret is 0 and its net is -cost -- into the same series as every
+        # other day, so the statistics now agree with equity.
+        # Going forward only: ledger history is never rewritten, so contestants'
+        # existing sums still omit their PAST entry days.
+        if s["positions"] or targets:
             s["days_in_market"] += 1
             s["sum_ret"] += net
             s["sum_sq"] += net * net

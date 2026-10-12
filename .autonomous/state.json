@@ -107,8 +107,8 @@
   {
    "id": "P1-entry-cost-omitted-from-gate-stats",
    "priority": "P1",
-   "status": "blocked_on_human",
-   "summary": "2026-10-12. update() applies entry-day cost to equity but accumulates sum_ret/sum_sq/days_in_market only if positions were already held (factory.py ~799), so promotion_check()'s expectancy/Sharpe inputs omit every entry-day cost. 4 audit finders found it; verified in part by replica (gate-implied +0.228% vs real +0.116%; a thin-edge band passes expectancy+Sharpe while equity loses 0.21%). Tested only 2 of the gate's conditions, replica not real update(). Not fixed -- changes who can be promoted, needs Het. See bug_log.md."
+   "status": "fixed_on_branch_needs_merge",
+   "summary": "2026-10-12. FIXED ON BRANCH with Het's in-session authorization ('Approved entry cost fix'): update() now counts the day when the book is exposed at either end (`if s['positions'] or targets`), so entry-day cost reaches sum_ret/sum_sq/days_in_market. Real-update() test fails on unfixed code (days_in_market 24 vs 32; sum_ret +0.0089) and passes on fixed; field-by-field golden diff shows ONLY those 3 fields changed (25 contestants), booked results bit-identical; golden re-baselined on py3.11 (fbedc106 -> 3277feda). Going forward only. NOT MERGED -- needs a separate fresh yes."
   },
   {
    "id": "P1-event-drift-books-shorts",

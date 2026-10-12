@@ -10,34 +10,37 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## OPEN
 
-- **OPEN | 2026-10-11 | entry-day-cost-omitted-from-promotion-stats | HIGH (promotion gate; verified in part)** --
-  Found by 4 of the audit's independent finders (rated CRITICAL by them; I rate it
-  HIGH, see limits). In `update()` (factory.py ~796-804) `net = day_ret - cost` is
-  applied to `equity` unconditionally, but `sum_ret`, `sum_sq` and `days_in_market`
-  accumulate only `if s["positions"]` -- i.e. only on days a position was ALREADY
-  held. On the day a position is first opened `s["positions"]` is still empty, so
-  that day's entry cost reaches equity but never reaches the statistics
-  `report()` feeds to `promotion_check()` as expectancy and Sharpe. The gate's
-  inputs therefore describe a better-looking series than equity actually produced.
-  **Verified by me, not just claimed:** read the guard at factory.py:799; replayed
-  its accumulation rules against the real `round_trip_cost()` at the Rs 25,000 rung
-  (entry 0.111%, exit 0.172%). Result: a 10-day hold shows gate-implied total
-  +0.228% vs real +0.116% (almost 2x). A sweep of thin edges (1-day holds, 60
-  cycles) found a band where the gate's two statistics pass while equity LOSES
-  MONEY: gross 0.14%/day -> gate mean +0.0538%/day (bar 0.050%), Sharpe over bar,
-  real equity -0.21%.
-  **Limits, stated plainly:** (1) I tested only expectancy and Sharpe; the real gate
-  ALSO requires beating the benchmark with a Bonferroni-corrected excess Sharpe, a
-  trade count and a drawdown check, so I have NOT shown the full gate can be
-  passed -- only that two of its inputs are biased upward. (2) The replay is my own
-  replica of the accumulation rules, not a run of the real `update()`. (3) The bias
-  is largest for frequent short-hold strategies; the live arena has 0 promotions and
-  nothing near the bar, so there is no active risk today. (4) The live magnitude is
-  not quantified (history carries duplicate and phantom rows).
-  **NOT FIXED.** Changing what feeds `promotion_check()` changes who can be
-  promoted -- same category as the Q5/Q6 and 2026-09-13 fixes, needs Het's fresh
-  authorization. Candidate fix: accumulate the entry-day net into `sum_ret`/`sum_sq`
-  (and `days_in_market`) too, then re-baseline the golden master deliberately.
+- **FIXED ON BRANCH, NOT MERGED | 2026-10-12 | entry-day-cost-omitted-from-promotion-stats | HIGH** --
+  Het's fresh in-session authorization 2026-10-12 ("Approved entry cost fix").
+  `update()` charged the entry-day cost to equity but accumulated `sum_ret`,
+  `sum_sq` and `days_in_market` only `if s["positions"]` (a position ALREADY held),
+  so on the day a position is first opened the cost never reached the statistics
+  `report()` hands to `promotion_check()`. Found by 4 audit finders; verified in
+  part on 2026-10-11 by a replica, now confirmed on the REAL `update()`.
+  **Fix (factory.py, one condition):** `if s["positions"] or targets:` -- count the
+  day when the book is exposed at EITHER end, so the entry day (day_ret 0, net
+  -cost) joins the same series as every other day.
+  **Tested for real:** `tests/test_entry_cost_stats.py` (6 tests) drives the real
+  `update()` on a seeded synthetic panel with a controllable enter/hold/exit
+  strategy. Proved to FAIL on the unfixed code -- days_in_market 24 vs 32 real
+  exposed days; sum_ret overstated by 0.0089 (~0.9%, i.e. 8 entries x ~0.11%) --
+  and PASS on the fixed code. **Containment proved by field-by-field diff** of the
+  golden scenario's full ledger before vs after: the ONLY fields that changed are
+  `days_in_market`, `sum_ret`, `sum_sq` (25 contestants each); equity, peak,
+  history, positions, trades, days_on_rung, rung, retired, paper_failures are
+  bit-identical. Booked results are untouched.
+  **Golden master deliberately re-baselined** (`tests/golden/equity_nse.sha256`):
+  ledger_sha256 `fbedc106...` -> `3277feda...`; 0 registry lines changed, 25
+  contestant lines changed (matches the field diff). Re-baselined ONLY on Python
+  3.11 + numpy 2.2.6 + pandas 2.2.3, the nearest available to CI's 3.10; on Python
+  >= 3.12 the golden is red regardless (see the RETRACTED pandas entry -- float
+  sum() changed in 3.12). Full suite 118 tests, twice, green on that env.
+  **Limits:** (1) going forward only -- ledger history is never rewritten, so every
+  existing contestant's sums still omit their PAST entry days; recomputing them
+  from history would be a ledger write and is Het's call. (2) `days_in_market` now
+  includes entry days, nudging `post_tax_expectancy`'s average holding period up by
+  ~1 day per entry (irrelevant at the 12-month STCG/LTCG threshold). (3) Still
+  needs a merge to take effect on the live daily run, which is a separate fresh yes.
 
 - **UNVERIFIED | 2026-10-11 | audit-claims-61-of-69-never-verified** --
   The 38-finder audit returned 69 claims (8 CRITICAL, 32 HIGH, 25 MEDIUM, 4 LOW)
