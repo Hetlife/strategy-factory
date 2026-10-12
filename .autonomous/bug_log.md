@@ -90,40 +90,37 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
   old family; (c) retire the 12 outright. A long-only variant is a DIFFERENT
   strategy, not a bugfix, and must have its hypothesis written first (Law 1).
 
-- **OPEN | 2026-10-11 | unpinned-pandas-3.0-changes-the-money-path | P0-SYSTEMIC** —
-  `requirements.txt` pins NOTHING (bare `pandas`, `numpy`, ...), and both
-  `.github/workflows/factory.yml` (lines 94, 201) and `tests.yml` (line 15)
-  install `pip install ... pandas numpy` unpinned. pandas 3.0 removed the
-  implicit `fill_method='pad'` from `Series.pct_change()`. Verified directly on
-  pandas 3.0.5: `pd.Series([100, NaN, 102, 103]).pct_change()` now returns
-  `[nan, nan, nan, 0.0098]` where older pandas forward-filled first and returned
-  numbers. `pct_change()` is on the live money path --
-  `factory.py:618` (`todays_ret = px.pct_change().iloc[-1]`, the daily return
-  for every contestant) and `factory.py:271` (`sig_event_drift`'s leader
-  return), plus `advisors.py:83` and the backfill tool.
-  **Evidence it already bites:** the golden-master fingerprint is RED on the
-  work branch -- `fbedc106...e075` -> `958892a1...2d67`. Confirmed pre-existing
-  (identical failures with and without the same session's aggregator change) and
-  NOT caused by code: `git log --since=2026-10-04 -- factory.py tests/golden` is
-  empty, so the engine is untouched since M1 recorded the golden green. The
-  drift is selective -- `event_cement_t17/t30/t40/t50`, `input_cost_lag`,
-  `mom_nifty100_lb90` -- which fits NaN-pattern-dependent behaviour, not float
-  noise.
-  **Why nothing alarmed:** `tests.yml` triggers on `pull_request` only. The
-  scheduled daily run never executes the golden master, so an unpinned
-  dependency can change live numbers with no code change and no red run. Last
-  tests.yml run was 2026-10-04 (M1's PR).
-  **Honest limit on the live claim:** `fetch_prices()` calls `.ffill()`, so the
-  live panel is largely NaN-free and the realistic live exposure is LEADING
-  NaNs (a ticker with no data at the start of a window, e.g. newly added
-  constituents). Whether live ledger numbers actually moved cannot be settled
-  from this sandbox -- it needs a runner.
-  **Not fixed here** (pinning dependencies changes what the live daily run
-  installs, and re-baselining a golden fingerprint is an evidence decision):
-  proposed order is (1) pin `pandas<3`, `numpy` in requirements.txt and both
-  workflows, (2) re-run the golden on a runner to confirm it returns to
-  `fbedc106...e075`, (3) add the golden master to the scheduled run, not just
-  PRs, so this class of drift fails loudly. Needs Het.
+- **RETRACTED | 2026-10-12 | unpinned-pandas-3.0-changes-the-money-path (was P0-SYSTEMIC)** --
+  **THIS ENTRY WAS WRONG; the P0 label is withdrawn.** On 2026-10-11 I recorded
+  that the golden-master fingerprint was red because pandas 3.0 changed
+  `pct_change()`, and that the live daily run could be affected. Both claims are
+  false. Found by testing my own diagnosis on 2026-10-12:
+  (1) The golden is red on UNMODIFIED code at the last CI-green commit `b38f9fa`
+  when run on this sandbox's Python 3.13 -- and also on 3.12 -- so nothing in the
+  repo moved. It is GREEN at `b38f9fa` on Python 3.11 with numpy 2.4.6/pandas
+  2.3.3 and with numpy 2.2.6/pandas 2.2.3.
+  (2) It stays RED on Python 3.13 with the OLD libraries (numpy 2.2.6, pandas
+  2.2.3), and red under pandas 2.3.3 AND 3.0.5 with the identical set of
+  drifting contestants. So neither pandas 3 nor numpy 2.5 is the cause.
+  (3) **Actual cause: the Python version.** Python 3.12 made builtin float
+  `sum()` compensated: `sum([0.1]*10)` is `0.9999999999999999` on 3.11 and exactly
+  `1.0` on 3.12/3.13. factory.py uses builtin `sum()` for turnover and day return,
+  and the golden is a byte-exact SHA-256 of the resulting floats, so it can only
+  match on Python <= 3.11. CI and the live job both pin Python 3.10
+  (`tests.yml:14`, `factory.yml:82,195`), so both stay on the golden's side.
+  (4) pandas 3.0 cannot be installed on Python 3.10 at all (`pip download
+  pandas==3.0.5 --python-version 3.10` finds no matching distribution; newest is
+  2.3.3). It therefore never reached the live daily job, whatever the unpinned
+  `requirements.txt` says.
+  **What survives, honestly:** the pandas-3 `pct_change()` behaviour change is
+  real (verified on 3.0.5) but unreachable from the live job while it stays on
+  Python 3.10; an unpinned `requirements.txt` is ordinary hygiene, not a P0; and
+  anyone running the tests locally on Python >= 3.12 will see a red golden that
+  means nothing. My earlier "tests.yml runs on PRs only so nothing alarmed" point
+  is true but moot. **Lesson for the next session:** a red golden on a non-3.10
+  interpreter is an environment artifact until proven otherwise. Reproduce on
+  Python 3.11 (`python3.11 -m venv`, numpy<=2.4, pandas<3) BEFORE diagnosing, and
+  re-baseline only there.
 
 - **FIXED | 2026-10-11 | aggregator-write-ignored-kill-switch | MEDIUM** —
   `portfolio/aggregate.py --write` persisted
