@@ -181,7 +181,7 @@
   "event_cement_t30": {
    "rung": 0,
    "days_on_rung": 77,
-   "equity": 0.9909354132048858,
+   "equity": 0.9896471971677194,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -584,7 +584,7 @@
   "event_cement_t40": {
    "rung": 0,
    "days_on_rung": 77,
-   "equity": 0.9909354132048858,
+   "equity": 0.9896471971677194,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -987,7 +987,7 @@
   "event_cement_t50": {
    "rung": 0,
    "days_on_rung": 77,
-   "equity": 0.9909354132048858,
+   "equity": 0.9896471971677194,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -1390,7 +1390,7 @@
   "event_infra_t30": {
    "rung": 0,
    "days_on_rung": 77,
-   "equity": 0.9909354132048858,
+   "equity": 0.9896471971677194,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -1793,7 +1793,7 @@
   "event_infra_t40": {
    "rung": 0,
    "days_on_rung": 77,
-   "equity": 0.9909354132048858,
+   "equity": 0.9896471971677194,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -2196,7 +2196,7 @@
   "event_infra_t50": {
    "rung": 0,
    "days_on_rung": 77,
-   "equity": 0.9909354132048858,
+   "equity": 0.9896471971677194,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -2599,7 +2599,7 @@
   "event_steel_t30": {
    "rung": 0,
    "days_on_rung": 77,
-   "equity": 0.9697263814578048,
+   "equity": 0.9684657371619096,
    "peak": 1.0,
    "positions": {},
    "trades": 4,
@@ -3002,7 +3002,7 @@
   "event_steel_t40": {
    "rung": 0,
    "days_on_rung": 77,
-   "equity": 0.9909354132048858,
+   "equity": 0.9896471971677194,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -3405,7 +3405,7 @@
   "event_steel_t50": {
    "rung": 0,
    "days_on_rung": 77,
-   "equity": 0.9909354132048858,
+   "equity": 0.9896471971677194,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -3808,7 +3808,7 @@
   "mom_cement_lb40": {
    "rung": 0,
    "days_on_rung": 30,
-   "equity": 0.9306084971097068,
+   "equity": 0.9293987060634642,
    "peak": 1.0,
    "positions": {
     "ULTRACEMCO.NS": 0.5,
@@ -3979,7 +3979,7 @@
   "mom_cement_lb60": {
    "rung": 0,
    "days_on_rung": 30,
-   "equity": 0.9437218437023144,
+   "equity": 0.9424950053055015,
    "peak": 1.0,
    "positions": {
     "ULTRACEMCO.NS": 0.5,
@@ -4150,7 +4150,7 @@
   "mom_cement_lb90": {
    "rung": 0,
    "days_on_rung": 24,
-   "equity": 0.93457796858881,
+   "equity": 0.9333630172296447,
    "peak": 1.008685855505891,
    "positions": {
     "DALBHARAT.NS": 0.5,
@@ -4766,7 +4766,7 @@
   "mom_pipes_tiles_lb40": {
    "rung": 0,
    "days_on_rung": 24,
-   "equity": 0.9727923698280714,
+   "equity": 0.9715277397472949,
    "peak": 1.0030331690742724,
    "positions": {
     "KAJARIACER.NS": 1.0
@@ -4906,7 +4906,7 @@
   "mom_pipes_tiles_lb60": {
    "rung": 0,
    "days_on_rung": 24,
-   "equity": 1.014680811384402,
+   "equity": 1.0133617263296022,
    "peak": 1.020466086487553,
    "positions": {
     "SUPREMEIND.NS": 1.0
@@ -5241,7 +5241,7 @@
   "input_cost_lag": {
    "rung": 0,
    "days_on_rung": 77,
-   "equity": 0.9852878604927986,
+   "equity": 0.984006986274158,
    "peak": 1.0116613804011818,
    "positions": {},
    "trades": 6,
@@ -6003,7 +6003,7 @@
   "input_cost_crude_cement": {
    "rung": 0,
    "days_on_rung": 40,
-   "equity": 0.9757039204368838,
+   "equity": 0.9744355053403159,
    "peak": 1.0,
    "positions": {},
    "trades": 2,
@@ -6221,7 +6221,7 @@
   "input_cost_crude_steel": {
    "rung": 0,
    "days_on_rung": 40,
-   "equity": 0.9653280579212014,
+   "equity": 0.9640731314459038,
    "peak": 1.0,
    "positions": {},
    "trades": 2,
@@ -6809,7 +6809,7 @@
   "event_cement_t17": {
    "rung": 0,
    "days_on_rung": 38,
-   "equity": 0.9271107583684624,
+   "equity": 0.9259055143825834,
    "peak": 1.0093170902891333,
    "positions": {},
    "trades": 10,
@@ -7017,7 +7017,7 @@
   "event_infra_t20": {
    "rung": 0,
    "days_on_rung": 38,
-   "equity": 1.0225560716607385,
+   "equity": 1.0212267487675795,
    "peak": 1.0225560716607385,
    "positions": {},
    "trades": 8,
@@ -7225,7 +7225,7 @@
   "event_steel_t22": {
    "rung": 0,
    "days_on_rung": 38,
-   "equity": 0.9018308567749396,
+   "equity": 0.9006584766611322,
    "peak": 1.007384125775764,
    "positions": {},
    "trades": 8,
@@ -7433,7 +7433,7 @@
   "mom_nifty100_lb90": {
    "rung": 0,
    "days_on_rung": 37,
-   "equity": 0.9099736901617309,
+   "equity": 0.9087907243645207,
    "peak": 1.0,
    "positions": {
     "DIVISLAB.NS": 0.1,
