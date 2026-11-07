@@ -30,3 +30,19 @@ commit directly to `main`. The next scheduled run does nothing.
 
 **Release it:** open `factory_state/KILL` on `main` in the web UI, delete the
 file, commit. The next run resumes normally.
+
+## Data archive (CE-6-01)
+
+Every `factory.py update` / `report` run leaves a record under
+`<state dir>/archive/` (`factory_state/archive/` for `equity_nse`,
+`factory_state/<profile>/archive/` otherwise), committed by the workflows'
+existing `git add factory_state`. GitHub is the one writer; see
+`docs/capital_engine/DATA_ARCHIVE.md` for why.
+
+- `pulls/YYYY-MM.csv` -- raw (pre-forward-fill) closes of the last 6 sessions, one row each time a (date, ticker) value is first seen or changes (NaN included), so late postings and Yahoo revisions stay visible.
+- `runs/YYYY-MM.jsonl` -- one JSON line per run: outcome (`recorded`, `skipped`, `failed`, `reported`, `error:<Name>`), phantom-skipped date, ticker/NaN counts, ledger hash, commit, run id, library versions.
+- `reports/YYYY-MM-DD.txt` -- the full weekly report text.
+
+A run stopped by `KILL` writes nothing. An archive failure only prints
+`[archive warning] ...`; it never changes the run's output or exit code.
+Code: `archive.py`, wired in by `factory.main()`; tests: `tests/test_archive.py`.
