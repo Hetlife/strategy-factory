@@ -50,3 +50,10 @@ Waves: W1 DONE 2026-10-04 (CE-1-04, CE-2-03, CE-4-02 [needs review], CE-2-04) â†
 **M1 review 2026-10-04 (Sonnet-level, `.autonomous/capital_engine/M1_REVIEW_RECORD.md`):** CE-2-02, CE-2-02b, CE-3-03, CE-4-02, CE-4-03 APPROVED by the orchestrator with real runs (kill switch proven end to end: state hash identical with a KILL file across update/report/advisors/backfill). Found and fixed: empty-download IndexError; class A ceiling. A stronger-model pass remains optional (brief kept).
 
 **2026-10-08:** PR #27 (Milestone M1) MERGED by Het 2026-10-04 14:21 UTC; scheduled runs 80-84 and supervisor 262-265 green; phantom guard and monsoon_cement retirement verified on the live ledger (EVIDENCE/CE-0-04.md). Shield tickers checked on a real runner (docs/capital_engine/research/R4_shield_tickers_check.md): A1's four tickers confirmed, LIQUIDBEES rejected as predicted. Nothing buildable remains without Het: holding tax (class A), CE-3-03b authorization, evidence-files choice, A3 enable sentences. M1_REVIEW_BRIEF.md (stronger-model review) is optional.
+## Data archive (Het, 2026-11-07: "make sure the data is stored from each pull and run ... GitHub or Lucy-den or both, which works best")
+Decision: GitHub is the single writer and system of record; Lucy-den is a read-only mirror (`docs/capital_engine/DATA_ARCHIVE.md`).
+| ID | Title | Executor | Status |
+|---|---|---|---|
+| [CE-6-01](work_orders/CE-6-01.md) | Archive every pull (raw vintage log) and every run (JSONL) and weekly report text | CLAUDE_CODE | IN_PROGRESS (2026-11-07, Sonnet worker) |
+| [CE-6-02](work_orders/CE-6-02.md) | Diagnostic: can Actions fetch NSE's official bhavcopy? | CLAUDE_CODE | IN_PROGRESS (2026-11-07, Sonnet worker) |
+| [CE-6-03](work_orders/CE-6-03.md) | LucyOS mirror: full clone + prints what it holds (LucyOS repo) | CLAUDE_CODE | IN_PROGRESS (2026-11-07, Sonnet worker) |
