@@ -1,10 +1,10 @@
 {
  "schema_version": 1,
- "updated_at": "2026-10-04T13:52:31Z",
+ "updated_at": "2026-11-07T14:48:49Z",
  "updated_by_commit": "7866e5a",
  "branch": "claude/scheduled-maintenance-template-d7yufr",
  "pr_number": 27,
- "pr_status": "PR #1 (aa55914), #2 (b55b562), #3 (3df9143), #4 (9f5f30e), #5 (ea877a1) all merged to main, all with Het's fresh explicit confirmation. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement. main now has everything: Phase 0 (P0-1..P0-4), agents/ team, LADDER raise, nifty_benchmark backfill fix, healer agent + health_check tool, dashboard Office tab + factor toggle, paper holding-cost decay, and the shared graveyard anti-repeat guard. No known outstanding branch-vs-main gap as of this update. 2026-10-03: branch re-synced with main (merge 8ce9693, clean); Capital Engine package added on branch; PR open for CE-0-01, unmerged. PR #23 opened 2026-10-03 (branch -> main) = CE-0-01; LucyOS PR for TR-8-04 opened the same day. PR #23 MERGED by Het 2026-10-04 (7866e5a); branch recreated from main with the same name. PR #24 opened 2026-10-04 (CE-0-04 phantom guard + perms fix + tests + hypotheses + crypto tool); merge needs Het: 'merge CE-0-04'. PR #24 MERGED by Het 2026-10-04 04:35 UTC (phantom guard, perms fix, tests, hypotheses, crypto tool). CE-1-02 profile loader + monsoon_cement retirement were NOT in it (branch slip, corrected) -> next PR. Backfill applied on main (aa0ad36). PR #25 open (CE-1-02 + retirement) needs Het: 'merge CE-1-02'. PR #25 MERGED by Het 2026-10-04 04:49 UTC (75907a1): profile loader + monsoon_cement retirement live. Low-token workers started on CE-1-03, CE-2-02, CE-5-02 (side branches). LucyOS PR #96 MERGED by Het 2026-10-04 04:49 UTC. PR #26 (CE-1-03 workflow matrix) MERGED 2026-10-04 05:37 UTC; LucyOS PR #97 (CE-5-02 evidence sync) MERGED same minute. PR #27 'Milestone M1' opened 2026-10-04 (Sonnet-level reviewed; needs Het: 'merge M1').",
+ "pr_status": "PR #1 (aa55914), #2 (b55b562), #3 (3df9143), #4 (9f5f30e), #5 (ea877a1) all merged to main, all with Het's fresh explicit confirmation. Branch still exists and is still where all further work happens per this repo's git-development-branch requirement. main now has everything: Phase 0 (P0-1..P0-4), agents/ team, LADDER raise, nifty_benchmark backfill fix, healer agent + health_check tool, dashboard Office tab + factor toggle, paper holding-cost decay, and the shared graveyard anti-repeat guard. No known outstanding branch-vs-main gap as of this update. 2026-10-03: branch re-synced with main (merge 8ce9693, clean); Capital Engine package added on branch; PR open for CE-0-01, unmerged. PR #23 opened 2026-10-03 (branch -> main) = CE-0-01; LucyOS PR for TR-8-04 opened the same day. PR #23 MERGED by Het 2026-10-04 (7866e5a); branch recreated from main with the same name. PR #24 opened 2026-10-04 (CE-0-04 phantom guard + perms fix + tests + hypotheses + crypto tool); merge needs Het: 'merge CE-0-04'. PR #24 MERGED by Het 2026-10-04 04:35 UTC (phantom guard, perms fix, tests, hypotheses, crypto tool). CE-1-02 profile loader + monsoon_cement retirement were NOT in it (branch slip, corrected) -> next PR. Backfill applied on main (aa0ad36). PR #25 open (CE-1-02 + retirement) needs Het: 'merge CE-1-02'. PR #25 MERGED by Het 2026-10-04 04:49 UTC (75907a1): profile loader + monsoon_cement retirement live. Low-token workers started on CE-1-03, CE-2-02, CE-5-02 (side branches). LucyOS PR #96 MERGED by Het 2026-10-04 04:49 UTC. PR #26 (CE-1-03 workflow matrix) MERGED 2026-10-04 05:37 UTC; LucyOS PR #97 (CE-5-02 evidence sync) MERGED same minute. PR #27 'Milestone M1' opened 2026-10-04 (Sonnet-level reviewed; needs Het: 'merge M1'). PR #27 (Milestone M1) MERGED by Het 2026-10-04 14:21 UTC.",
  "claude_md_sha1": "56cc03ef5e7ac7a204863c00a2cdab489d59c138",
  "execution_plan_ref": "EXECUTION_PLAN.md -- READ THIS BEFORE THE QUEUE BELOW. It is the condensed strategic reference (settled facts, phases, gates, kill conditions, guardrails) derived from mission_document.txt/pivot_document.txt/understanding.txt. If EXECUTION_PLAN.md and this queue ever disagree, EXECUTION_PLAN.md wins -- fix the queue, don't silently trust it.",
  "current_phase": "phase_1",
@@ -98,6 +98,24 @@
   }
  ],
  "queue": [
+  {
+   "id": "P2-audit-verify-stage-rerun",
+   "priority": "P2",
+   "status": "open_waiting_on_limit_reset",
+   "summary": "2026-10-12. The 38-finder audit's verifier stage died on a session limit (79/103 agents errored; summary 'confirmed 0, refuted 0' means NOTHING WAS CHECKED). 59 of 69 claims still UNVERIFIED, saved with per-row status in .autonomous/audit/2026-10-11_unverified_claims.json. Re-run the verify stage via workflow script + resumeFromRunId wf_f4f11281-4f1 once the limit resets, or hand-verify each failing_input. Do not act on an UNVERIFIED row."
+  },
+  {
+   "id": "P1-entry-cost-omitted-from-gate-stats",
+   "priority": "P1",
+   "status": "fixed_on_branch_needs_merge",
+   "summary": "2026-10-12. FIXED ON BRANCH with Het's in-session authorization ('Approved entry cost fix'): update() now counts the day when the book is exposed at either end (`if s['positions'] or targets`), so entry-day cost reaches sum_ret/sum_sq/days_in_market. Real-update() test fails on unfixed code (days_in_market 24 vs 32; sum_ret +0.0089) and passes on fixed; field-by-field golden diff shows ONLY those 3 fields changed (25 contestants), booked results bit-identical; golden re-baselined on py3.11 (fbedc106 -> 3277feda). Going forward only. NOT MERGED -- needs a separate fresh yes."
+  },
+  {
+   "id": "P1-event-drift-books-shorts",
+   "priority": "P1",
+   "status": "blocked_on_human",
+   "summary": "2026-10-11 audit finding, independently reproduced: sig_event_drift returns negative weights on a leader down-move and update() books them; origin/main ledger currently holds shorts in event_cement_t17 (6) and event_infra_t20 (4). Collides with 00_DESIGN.md s2.5 'no shorting in any class'. Family predates the rule. Paper only. NOT fixed -- editing mutates 12 contestants with history. Options (a) leave+document (b) new long-only keys (c) retire. See bug_log.md."
+  },
   {
    "id": "P0-capital-engine-queue",
    "priority": "P0",
@@ -331,5 +349,5 @@
   "breeding_unit_tests": "passing -- crossover bounds/categorical integrity (200 draws), cross-family rejection, parent-stat immutability, population cap at zero headroom, all verified in /tmp/factory_test_run/breeding_test.py (not committed, sandbox-local -- rerun logic inline if needed, see commit 1b7d29e message for what was checked)",
   "real_market_data": "never tested -- yfinance blocked in every sandbox this project has used so far"
  },
- "next_action_hint": "M1 reviewed at Sonnet level (M1_REVIEW_RECORD.md) and PR opened for Het's 'merge M1'. After merge: dispatch supervisor.yml once, then wait on Het's decisions (holding tax class A, CE-3-03b, evidence files)."
+ "next_action_hint": "Data archive (CE-6-01) built and merged into the work branch with CE-6-02; LucyOS PR #113 (full-clone mirror) awaits Het. Open ONE strategy-factory PR carrying: archive, NSE diagnostic, Het-approved entry-cost fix (since 2026-10-12, unmerged), aggregator kill-gap fix, docs. After merge: dispatch 'Diagnose NSE Bhavcopy' once; confirm the first scheduled run commits factory_state/archive/. TEST ENV: use a Python 3.11 + pandas 2.3.3/numpy 2.2.6 venv; the sandbox default Python 3.13 makes the golden tests red for reasons unrelated to the repo."
 }

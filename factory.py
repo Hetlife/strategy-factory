@@ -631,10 +631,14 @@ def load_advisor_state():
     return load_json(ADVISOR_STATE_PATH,
                       {"trust_weight": 0.25, "history": []})
 
+LAST_RAW = None   # CE-6-01: the pre-ffill Close panel of the latest pull (archive.py)
+
 def fetch_prices():
+    global LAST_RAW
     import yfinance as yf
     px = yf.download(ALL_TICKERS, period="1y", auto_adjust=True,
                      progress=False)["Close"]
+    LAST_RAW = px.copy()              # raw, BEFORE dropna/ffill (CE-6-01 archive)
     px = px.dropna(how="all").ffill()
     if not TRADES_WEEKENDS:           # no-op for equity (yfinance has trading days only)
         px = px[px.index.weekday < 5]
@@ -798,7 +802,21 @@ def update():
         s["peak"] = max(s["peak"], s["equity"])
         s["days_on_rung"] += 1
         s["trades"] += 1 if turn > 0.01 else 0
-        if s["positions"]:
+        # Het-authorized fix, 2026-10-12 (audit finding, verified in part).
+        # This used to read `if s["positions"]:` -- i.e. count a day only when a
+        # position was ALREADY held at the start of it. On the day a position is
+        # first opened s["positions"] is still empty, so that day's entry cost
+        # was charged to equity (above) but never reached sum_ret / sum_sq /
+        # days_in_market, the exact inputs report() hands to promotion_check()
+        # as expectancy and Sharpe. The promotion statistics therefore described
+        # a better series than equity actually produced; a thin-edge strategy
+        # could clear them while losing real (paper) money. Counting the day when
+        # the book is exposed at EITHER end (`or targets`) puts the entry day --
+        # its day_ret is 0 and its net is -cost -- into the same series as every
+        # other day, so the statistics now agree with equity.
+        # Going forward only: ledger history is never rewritten, so contestants'
+        # existing sums still omit their PAST entry days.
+        if s["positions"] or targets:
             s["days_in_market"] += 1
             s["sum_ret"] += net
             s["sum_sq"] += net * net
@@ -1321,6 +1339,109 @@ def report():
         print(f"  [warn] agents/ advisory layer failed (non-fatal, does not "
               f"affect verdicts above): {e}")
 
+# ---------------- run archive wrapper (CE-6-01) ----------------
+# main() runs update()/report() unchanged, tees their stdout so the outcome can
+# be read from the literal messages they already print, then appends to
+# <STATE_DIR>/archive/ via archive.safe() (an archive failure never changes the
+# output flow or the exit code). A KILL run writes nothing. See
+# docs/capital_engine/DATA_ARCHIVE.md.
+class _Tee:
+    def __init__(self, real):
+        self.real, self.parts = real, []
+
+    def write(self, s):
+        self.parts.append(s)
+        return self.real.write(s)
+
+    def flush(self):
+        self.real.flush()
+
+    def __getattr__(self, name):
+        return getattr(self.real, name)
+
+
+def _derive_outcome(cmd, text, err):
+    import re
+    m = re.search(r"PHANTOM SKIPPED: (\d{4}-\d{2}-\d{2})", text)
+    phantom = m.group(1) if m else None
+    if "KILL SWITCH ACTIVE" in text:
+        return "killed", None, phantom
+    if isinstance(err, SystemExit):
+        if err.code not in (None, 0):
+            return "failed", None, phantom
+    elif err is not None:
+        return "error:" + type(err).__name__, None, phantom
+    if "Arena update FAILED" in text:
+        return "failed", None, phantom
+    if cmd == "report":
+        return "reported", None, phantom
+    m = re.search(r"Arena updated (\d{4}-\d{2}-\d{2}):", text)
+    if m:
+        return "recorded", m.group(1), phantom
+    if "Arena update SKIPPED" in text:
+        return "skipped", None, phantom
+    return "unknown", None, phantom
+
+
+def _archive_after(archive, cmd, text, err):
+    import datetime as _dt, hashlib, platform
+    from importlib import metadata
+    outcome, recorded, phantom = _derive_outcome(cmd, text, err)
+    if outcome == "killed":
+        return
+    now = _dt.datetime.now(_dt.timezone.utc)
+    ts = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+    run_id = os.environ.get("GITHUB_RUN_ID")
+    raw = LAST_RAW if cmd == "update" else None
+    if raw is not None:
+        archive.safe(archive.record_pull, STATE_DIR, raw, ts, run_id or now.strftime("%Y%m%dT%H%M%SZ"))
+    ledger = os.path.join(STATE_DIR, "ledger.json")
+    sha = None
+    if os.path.exists(ledger):
+        with open(ledger, "rb") as fh:
+            sha = hashlib.sha256(fh.read()).hexdigest()
+    versions = {"python": platform.python_version()}
+    for pkg in ("pandas", "numpy", "yfinance"):
+        try:
+            versions[pkg] = metadata.version(pkg)
+        except Exception:
+            pass
+    n_nan = None
+    if raw is not None and len(raw):
+        n_nan = int(raw.iloc[-1].isna().sum())
+    archive.safe(archive.record_run, STATE_DIR, {
+        "ts_utc": ts, "profile": FACTORY_PROFILE, "cmd": cmd, "outcome": outcome,
+        "recorded_date": recorded, "phantom_skipped_date": phantom,
+        "n_tickers": (len(raw.columns) if raw is not None else None),
+        "n_nan_last_row": n_nan, "ledger_sha256": sha,
+        "git_sha": os.environ.get("GITHUB_SHA"), "run_id": run_id,
+        "event": os.environ.get("GITHUB_EVENT_NAME"), "versions": versions})
+    if cmd == "report":
+        archive.safe(archive.save_report, STATE_DIR, text, now.strftime("%Y-%m-%d"))
+
+
+def main(cmd):
+    global LAST_RAW
+    fn = {"update": update, "report": report}[cmd]
+    LAST_RAW = None
+    real = sys.stdout
+    tee = _Tee(real)
+    sys.stdout = tee
+    err = None
+    try:
+        fn()
+    except BaseException as e:    # re-raised below: the exit code is unchanged
+        err = e
+    finally:
+        sys.stdout = real
+    try:
+        import archive
+        archive.safe(_archive_after, archive, cmd, "".join(tee.parts), err)
+    except Exception as e:        # e.g. archive.py missing: never stop a run
+        print(f"[archive warning] archive unavailable: {type(e).__name__}: {e}")
+    if err is not None:
+        raise err
+
+
 if __name__ == "__main__":
-    cmd = sys.argv[1] if len(sys.argv) > 1 else "update"
-    {"update": update, "report": report}[cmd]()
+    main(sys.argv[1] if len(sys.argv) > 1 else "update")

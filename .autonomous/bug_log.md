@@ -10,7 +10,147 @@ live. Format: `STATUS | date found | short id | what broke | fix / next step`.
 
 ## OPEN
 
-### FIXED — phantom-trading-days-not-covered-by-idempotence-guard (found 2026-10-04, fixed CE-0-04, MERGED to main via PR #24 on 2026-10-04 by Het; effective on the next scheduled run). Historical phantom rows (6) deliberately left in place (ACCELERATION STEP 6).
+- **FIXED ON BRANCH, NOT MERGED | 2026-10-12 | entry-day-cost-omitted-from-promotion-stats | HIGH** --
+  Het's fresh in-session authorization 2026-10-12 ("Approved entry cost fix").
+  `update()` charged the entry-day cost to equity but accumulated `sum_ret`,
+  `sum_sq` and `days_in_market` only `if s["positions"]` (a position ALREADY held),
+  so on the day a position is first opened the cost never reached the statistics
+  `report()` hands to `promotion_check()`. Found by 4 audit finders; verified in
+  part on 2026-10-11 by a replica, now confirmed on the REAL `update()`.
+  **Fix (factory.py, one condition):** `if s["positions"] or targets:` -- count the
+  day when the book is exposed at EITHER end, so the entry day (day_ret 0, net
+  -cost) joins the same series as every other day.
+  **Tested for real:** `tests/test_entry_cost_stats.py` (6 tests) drives the real
+  `update()` on a seeded synthetic panel with a controllable enter/hold/exit
+  strategy. Proved to FAIL on the unfixed code -- days_in_market 24 vs 32 real
+  exposed days; sum_ret overstated by 0.0089 (~0.9%, i.e. 8 entries x ~0.11%) --
+  and PASS on the fixed code. **Containment proved by field-by-field diff** of the
+  golden scenario's full ledger before vs after: the ONLY fields that changed are
+  `days_in_market`, `sum_ret`, `sum_sq` (25 contestants each); equity, peak,
+  history, positions, trades, days_on_rung, rung, retired, paper_failures are
+  bit-identical. Booked results are untouched.
+  **Golden master deliberately re-baselined** (`tests/golden/equity_nse.sha256`):
+  ledger_sha256 `fbedc106...` -> `3277feda...`; 0 registry lines changed, 25
+  contestant lines changed (matches the field diff). Re-baselined ONLY on Python
+  3.11 + numpy 2.2.6 + pandas 2.2.3, the nearest available to CI's 3.10; on Python
+  >= 3.12 the golden is red regardless (see the RETRACTED pandas entry -- float
+  sum() changed in 3.12). Full suite 118 tests, twice, green on that env.
+  **Limits:** (1) going forward only -- ledger history is never rewritten, so every
+  existing contestant's sums still omit their PAST entry days; recomputing them
+  from history would be a ledger write and is Het's call. (2) `days_in_market` now
+  includes entry days, nudging `post_tax_expectancy`'s average holding period up by
+  ~1 day per entry (irrelevant at the 12-month STCG/LTCG threshold). (3) Still
+  needs a merge to take effect on the live daily run, which is a separate fresh yes.
+
+- **UNVERIFIED | 2026-10-11 | audit-claims-61-of-69-never-verified** --
+  The 38-finder audit returned 69 claims (8 CRITICAL, 32 HIGH, 25 MEDIUM, 4 LOW)
+  but its adversarial-verification stage NEVER ran: 79 of 103 agents died on a
+  session limit (reset 22:40 UTC). The workflow's own summary read
+  `confirmed: [], refuted: 0` -- which means "nothing was checked", NOT "nothing
+  found". Of the 69: 2 verified (the event_drift shorting claim), 8 verified in
+  part (the entry-cost cluster above), 59 still UNVERIFIED. All are preserved with
+  per-row status in `.autonomous/audit/2026-10-11_unverified_claims.json`. Also
+  unverified: a NaN-poisoning cluster (a held ticker whose column is all-NaN makes
+  `day_ret` NaN and permanently poisons equity). The mechanism is trivially true
+  (NaN propagates); I checked the live ledger and found no NaN/inf in any field, and
+  `fetch_prices()` ffills, so the trigger needs a ticker with NO data in the window
+  -- plausible, not demonstrated. Do not act on an UNVERIFIED row.
+
+- **OPEN | 2026-10-11 | event-drift-books-short-positions | HIGH (rule collision, paper only)** --
+  `sig_event_drift` (factory.py, `d = float(np.sign(hit.iloc[-1]))`) returns
+  NEGATIVE weights whenever the sector leader falls past its threshold, and
+  `update()` books the resulting short basket. Found by the 2026-10-11 audit
+  (claim "HIGH") and then **reproduced independently, not trusted**:
+  (1) a synthetic -10% leader day returns 6 positions, all negative, gross 1.00,
+  net -1.00; (2) the LIVE `origin/main` ledger holds shorts right now --
+  `event_cement_t17` has six at -0.1667 each (AMBUJACEM, ACC, SHREECEM, JKCEMENT,
+  RAMCOCEM, DALBHARAT) and `event_infra_t20` has four at -0.25 (IRB, KNRCON,
+  PNCINFRA, HGINFRA). An earlier read of a stale local checkout showed none --
+  always check origin/main.
+  **Which rule it hits:** `docs/capital_engine/00_DESIGN.md` s2 item 5 --
+  "No leverage, no shorting, no margin beyond collateral held, in any class" --
+  and s192 ("shorting ... no evidence"). Honest nuance: the event_drift family
+  (Aug 2026) PREDATES that rule (Oct 2026), so this is a newer rule colliding
+  with an older strategy, not a coding slip. CLAUDE.md's literal hard rule is
+  options/futures/margin/leverage; a short is not named there, so this is a
+  design-rule breach, not a CLAUDE.md one.
+  **Executability (my understanding, NOT verified in this repo -- R2 does not
+  cover it):** in India a retail cash-segment short generally cannot be carried
+  past the day without F&O or securities-lending, so a 3-day short basket may not
+  be a trade anyone could place. If right, the paper P&L is from an unplaceable
+  position.
+  **Why it matters beyond the rule:** `tools/validate_strategies_historical.py`
+  ran this SAME function, so the 2026-09-13 five-year result for 12 of 25
+  strategies ("0 of 25 cleared the bar", e.g. event_steel_t30 -74.5%) includes
+  short exposure. Recorded P&L split by sign of day, last 33-72 days, shows the
+  down-move days dominate the losses (event_steel_t22: down-days -13.22% vs
+  up-days +3.94%) -- consistent with the shorts mattering, NOT proof they
+  caused it (history rows are not split by side).
+  **NOT FIXED, deliberately.** Editing the function mutates 12 contestants that
+  carry history (Law 2 / hard rule: new ideas are new registry keys). Options
+  for Het: (a) leave and document -- these are paper-only and already failed the
+  validation; (b) add a NEW long-only function + new registry keys, retire the
+  old family; (c) retire the 12 outright. A long-only variant is a DIFFERENT
+  strategy, not a bugfix, and must have its hypothesis written first (Law 1).
+
+- **RETRACTED | 2026-10-12 | unpinned-pandas-3.0-changes-the-money-path (was P0-SYSTEMIC)** --
+  **THIS ENTRY WAS WRONG; the P0 label is withdrawn.** On 2026-10-11 I recorded
+  that the golden-master fingerprint was red because pandas 3.0 changed
+  `pct_change()`, and that the live daily run could be affected. Both claims are
+  false. Found by testing my own diagnosis on 2026-10-12:
+  (1) The golden is red on UNMODIFIED code at the last CI-green commit `b38f9fa`
+  when run on this sandbox's Python 3.13 -- and also on 3.12 -- so nothing in the
+  repo moved. It is GREEN at `b38f9fa` on Python 3.11 with numpy 2.4.6/pandas
+  2.3.3 and with numpy 2.2.6/pandas 2.2.3.
+  (2) It stays RED on Python 3.13 with the OLD libraries (numpy 2.2.6, pandas
+  2.2.3), and red under pandas 2.3.3 AND 3.0.5 with the identical set of
+  drifting contestants. So neither pandas 3 nor numpy 2.5 is the cause.
+  (3) **Actual cause: the Python version.** Python 3.12 made builtin float
+  `sum()` compensated: `sum([0.1]*10)` is `0.9999999999999999` on 3.11 and exactly
+  `1.0` on 3.12/3.13. factory.py uses builtin `sum()` for turnover and day return,
+  and the golden is a byte-exact SHA-256 of the resulting floats, so it can only
+  match on Python <= 3.11. CI and the live job both pin Python 3.10
+  (`tests.yml:14`, `factory.yml:82,195`), so both stay on the golden's side.
+  (4) pandas 3.0 cannot be installed on Python 3.10 at all (`pip download
+  pandas==3.0.5 --python-version 3.10` finds no matching distribution; newest is
+  2.3.3). It therefore never reached the live daily job, whatever the unpinned
+  `requirements.txt` says.
+  **What survives, honestly:** the pandas-3 `pct_change()` behaviour change is
+  real (verified on 3.0.5) but unreachable from the live job while it stays on
+  Python 3.10; an unpinned `requirements.txt` is ordinary hygiene, not a P0; and
+  anyone running the tests locally on Python >= 3.12 will see a red golden that
+  means nothing. My earlier "tests.yml runs on PRs only so nothing alarmed" point
+  is true but moot. **Lesson for the next session:** a red golden on a non-3.10
+  interpreter is an environment artifact until proven otherwise. Reproduce on
+  Python 3.11 (`python3.11 -m venv`, numpy<=2.4, pandas<3) BEFORE diagnosing, and
+  re-baseline only there.
+
+- **FIXED | 2026-10-11 | aggregator-write-ignored-kill-switch | MEDIUM** —
+  `portfolio/aggregate.py --write` persisted
+  `factory_state/portfolio_view.json` with no kill-switch check, while every
+  other write path in the repo (update, report, advisors.train, the backfill
+  tool) checked it. That made the M1 review brief's claim -- "Can any write path
+  still run while a KILL file exists? (Known: none in the repo)" -- false.
+  Low blast radius (a derived view, never a ledger, not wired into any
+  workflow) but it is a hole in a safety mechanism, found during the M1
+  post-merge review.
+  **Fix:** `_kill_switch_active()` + a refusal before the write. Printing the
+  table is a read and stays allowed under KILL; only persisting is refused.
+  **Second-order flaw caught while testing the first fix:** the naive version
+  called `factory.kill_switch_active()`, whose `KILL_GLOBAL_PATH` is RELATIVE
+  (`factory_state/KILL`) and so resolves against the CURRENT DIRECTORY -- but
+  this module always writes to `REPO_ROOT`. Run from any other directory and the
+  guard would look for the kill file in the wrong place and write anyway. Now
+  anchored at `REPO_ROOT`, taking only the filename from factory so there is one
+  source for it. Global-only by design (a cross-profile read-only view should
+  not be blocked by one profile's KILL -- same choice `advisors.py` makes).
+  **Tested:** `tests/test_aggregate_kill_switch.py`, 4 cases, all passing --
+  refuses under KILL, still writes without one, read still allowed under KILL,
+  and the cwd case that catches the first attempt. Tests run against a temp copy
+  of the tree so a regression can never freeze the live daily run. Full suite
+  112 tests, twice, no new failures.
+
+### FIXED + VERIFIED LIVE 2026-10-08 — phantom-trading-days-not-covered-by-idempotence-guard (found 2026-10-04, fixed CE-0-04, MERGED to main via PR #24 on 2026-10-04 by Het; effective on the next scheduled run). Historical phantom rows (6) deliberately left in place (ACCELERATION STEP 6).
 Original entry:
 `tools/detect_phantom_days.py` (run 37176894252): 6 of 28 judgeable days since 2026-08-26 are phantom (≥80% of tickers at exactly 0.0): 2026-08-27, 08-31, 09-14 (NSE holiday), 09-28, 10-01, 10-02 (Gandhi Jayanti). The 2026-09-13 idempotence guard keys on the DATE of the last panel row; an NSE holiday still produces a new date row because `BZ=F` trades, and `.ffill()` makes every NSE ticker "unchanged". So every holiday (and every late-posting day) advances `days_on_rung` for all contestants and adds a paired benchmark day. ACCELERATION_PLAN item 2 said item 1's guard covers this — falsified. Fix specified in `.autonomous/capital_engine/work_orders/CE-0-04.md` (select the last REAL row, same 80% rule as the detector). Changes what the gate sees → needs Het's "merge CE-0-04". Historical phantom rows are NOT cleaned by the fix (ACCELERATION STEP 6, Het's call).
 
@@ -407,3 +547,8 @@ Original entry:
   RUNBOOK 2 no longer counts an unchecked warning as a pass, and
   SESSION_PLAYBOOK.md was brought in line so a cheaper model can't get
   contradictory instructions. Commit `62d96f8`, on branch, unmerged.
+
+### NOTE (2026-10-08, live evidence) — Yahoo's current-day NSE row is empty at run time; one session can be folded into the next
+Run 37671669431 (Wed 2026-10-07 19:04 UTC, ~9h after the NSE close) printed `PHANTOM SKIPPED: 2026-10-07 (100% unchanged)` then `Arena updated 2026-10-06`. So Yahoo's row for the current day is still unposted (forward-filled, 100% unchanged) at run time, the CE-0-04 guard skips it, and the previous real session is recorded instead. Result: ledger dates 2026-10-05 and 10-06 are real (1% of tickers unchanged), zero new duplicate rows, each real day recorded exactly once with the correct day-over-day return. Before the guard these unposted rows were booked as fake zero-return days (6 of 28). Consequence to remember: the paper arena lags the market by one session — harmless for research, but any real-money adapter must NOT use Yahoo for timing; NSE UDiFF bhavcopy (~30-60 min after close, R2 section 6) or the broker API is the data source for execution.
+
+**Correction/extension, same day (R4):** a later check showed the 2026-10-07 bar is STILL NaN a day later for 3 of 6 ETFs (GOLDBEES, NIFTYBEES, LIQUIDCASE), and 2026-10-02 (a holiday) is forward-filled for some tickers and NaN for others. So the cause is not only "Yahoo posts late": Yahoo's NSE daily series has holes that may never fill. The CE-0-04 guard still prevents fake days; the cost is that an unfilled session's return is folded into the next day's return. OPEN, LOW, no fix scheduled: reconcile with NSE UDiFF bhavcopy before any real-money step (see docs/capital_engine/research/R4_shield_tickers_check.md).
