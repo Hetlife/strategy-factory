@@ -169,3 +169,13 @@ class TestRun(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class HonestUserAgent(unittest.TestCase):
+    def test_user_agent_is_not_a_browser_and_has_no_contact_details(self):
+        import tools.diagnose_nse_bhavcopy as m
+        ua = m.USER_AGENT
+        self.assertNotIn("Mozilla", ua)
+        self.assertNotIn("Chrome", ua)
+        self.assertNotIn("@", ua)
+        self.assertIn("strategy-factory", ua)

@@ -14,7 +14,9 @@ and prints: URL, HTTP status, content length, whether the zip opens, the CSV
 header line, and the row count. The download is held in memory only; nothing is
 written to disk or to the repo.
 
-Politeness limits: browser-like User-Agent, 20 s timeout, at most 8 requests in
+Politeness limits: an HONEST, non-browser User-Agent (we do not impersonate a
+browser to get past a site's automated-client controls; if NSE refuses an honest
+client that is the real answer, VERDICT BLOCKED), 20 s timeout, at most 8 requests in
 total, a timeout/network error is retried at most once per run (not per date).
 
 Per-date outcome:
@@ -45,8 +47,8 @@ import zipfile
 
 URL_TEMPLATE = ("https://nsearchives.nseindia.com/content/cm/"
                 "BhavCopy_NSE_CM_0_0_0_{ymd}_F_0000.csv.zip")
-USER_AGENT = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-              "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
+# Honest client name, no contact details. Deliberately NOT a browser string.
+USER_AGENT = "strategy-factory-diagnostic/1.0 (personal research; 5 requests per run)"
 TIMEOUT_S = 20
 N_DATES = 5
 MAX_REQUESTS = 8

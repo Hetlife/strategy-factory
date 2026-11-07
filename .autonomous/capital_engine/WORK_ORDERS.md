@@ -55,5 +55,5 @@ Decision: GitHub is the single writer and system of record; Lucy-den is a read-o
 | ID | Title | Executor | Status |
 |---|---|---|---|
 | [CE-6-01](work_orders/CE-6-01.md) | Archive every pull (raw vintage log) and every run (JSONL) and weekly report text | CLAUDE_CODE | IN_PROGRESS (2026-11-07, Sonnet worker) |
-| [CE-6-02](work_orders/CE-6-02.md) | Diagnostic: can Actions fetch NSE's official bhavcopy? | CLAUDE_CODE | IN_PROGRESS (2026-11-07, Sonnet worker) |
-| [CE-6-03](work_orders/CE-6-03.md) | LucyOS mirror: full clone + prints what it holds (LucyOS repo) | CLAUDE_CODE | IN_PROGRESS (2026-11-07, Sonnet worker) |
+| [CE-6-02](work_orders/CE-6-02.md) | Diagnostic: can Actions fetch NSE's official bhavcopy? | CLAUDE_CODE | BUILT 2026-11-07, merged into the work branch (22 tests; orchestrator replaced the browser-impersonating User-Agent with an honest client name — a refusal is a real answer, not something to work around). Real verdict UNKNOWN until `Strategy Factory - Diagnose NSE Bhavcopy` is dispatched on main after the PR merges |
+| [CE-6-03](work_orders/CE-6-03.md) | LucyOS mirror: full clone + prints what it holds (LucyOS repo) | CLAUDE_CODE | DONE 2026-11-07 — LucyOS PR #113 open (diff read, gates re-run on the branch: 14 tests, authority strict + anti-dup, scan, portability); Het merges. EVIDENCE/CE-6-03.md |
