@@ -292,3 +292,12 @@ class FactoryMain(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FloatNoiseTolerance(unittest.TestCase):
+    def test_float_noise_is_not_a_revision_but_a_real_change_is(self):
+        import archive
+        self.assertTrue(archive._same(121.43, 121.43 + 1e-12))
+        self.assertFalse(archive._same(121.43, 121.44))
+        self.assertTrue(archive._same(float("nan"), None))
+        self.assertFalse(archive._same(float("nan"), 121.43))

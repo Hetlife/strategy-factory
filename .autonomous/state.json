@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "updated_at": "2026-10-08T05:15:41Z",
+ "updated_at": "2026-11-07T14:48:49Z",
  "updated_by_commit": "7866e5a",
  "branch": "claude/scheduled-maintenance-template-d7yufr",
  "pr_number": 27,
@@ -349,5 +349,5 @@
   "breeding_unit_tests": "passing -- crossover bounds/categorical integrity (200 draws), cross-family rejection, parent-stat immutability, population cap at zero headroom, all verified in /tmp/factory_test_run/breeding_test.py (not committed, sandbox-local -- rerun logic inline if needed, see commit 1b7d29e message for what was checked)",
   "real_market_data": "never tested -- yfinance blocked in every sandbox this project has used so far"
  },
- "next_action_hint": "M1 merged and verified live. Waiting on Het: holding tax for class A, AUTHORIZE PROMOTION BAR CHANGE (CE-3-03b), LucyOS evidence-files choice, A3 enable sentences. Nothing else is buildable. Routine check-ins: python3 tools/health_check.py --live; read the factory.yml equity-leg log for PHANTOM SKIPPED."
+ "next_action_hint": "Data archive (CE-6-01) built and merged into the work branch with CE-6-02; LucyOS PR #113 (full-clone mirror) awaits Het. Open ONE strategy-factory PR carrying: archive, NSE diagnostic, Het-approved entry-cost fix (since 2026-10-12, unmerged), aggregator kill-gap fix, docs. After merge: dispatch 'Diagnose NSE Bhavcopy' once; confirm the first scheduled run commits factory_state/archive/. TEST ENV: use a Python 3.11 + pandas 2.3.3/numpy 2.2.6 venv; the sandbox default Python 3.13 makes the golden tests red for reasons unrelated to the repo."
 }

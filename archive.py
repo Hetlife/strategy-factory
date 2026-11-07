@@ -46,7 +46,8 @@ def _same(a, b):
         return True
     if _is_nan(a) or _is_nan(b):
         return False
-    return a == b
+    # one part in a billion: absorbs float noise between identical pulls, keeps every real revision
+    return math.isclose(a, b, rel_tol=1e-9, abs_tol=0.0)
 
 
 def _load_latest(path):
