@@ -38,7 +38,7 @@ grep -n "merge CE-0-01" .autonomous/het_directives.md
 3. Dispatch `diagnose_crypto_data.yml` on main; paste its verdict table into docs/capital_engine/research/R3_crypto_data_feasibility.md; mark CE-3-02 DONE.
 4. Check Sunday 2026-10-05's factory.yml run for the skip/phantom messages (CE-0-02 step 2) and whether Friday 10-03's missing run recurs.
 
-## TEST ENVIRONMENT (learned 2026-11-07): the cloud sandbox's default python3 is now 3.13 with pandas 3.0, where tests/test_golden_master.py and test_kill_switch's golden case FAIL on a clean main (Python >= 3.12 changed float sum()). CI uses Python 3.10. Make a matching env once: `python3.11 -m venv V && V/bin/pip install pandas==2.3.3 numpy==2.2.6 yfinance pyyaml` and run `V/bin/python -m unittest discover -s tests` (141 tests OK).
+## TEST ENVIRONMENT (learned 2026-11-07): the cloud sandbox's default python3 is now 3.13 with pandas 3.0, where tests/test_golden_master.py and test_kill_switch's golden case FAIL on a clean main (Python >= 3.12 changed float sum()). CI uses Python 3.10. Make a matching env once: `python3.11 -m venv V && V/bin/pip install pandas==2.3.3 numpy==2.2.6 yfinance pyyaml` and run `V/bin/python -m unittest discover -s tests` (157 tests OK).
 
 ## TASK 2c — MILESTONE M1 is MERGED (PR #27, Het, 2026-10-04). Nothing buildable is left without Het. Stale text below is history; for today read WORK_ORDERS.md's bottom paragraph and NEEDS HET.
 
