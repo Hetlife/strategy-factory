@@ -82,6 +82,8 @@ def _load_factory_copy(tmp):
     # CE-1-02: factory.py loads profiles/<name>.json beside itself
     shutil.copytree(os.path.join(ROOT, "profiles"), os.path.join(tmp, "profiles"),
                     ignore=shutil.ignore_patterns("__pycache__"), dirs_exist_ok=True)
+    # CE-6-01: main() imports archive.py from beside factory.py
+    shutil.copy(os.path.join(ROOT, "archive.py"), os.path.join(tmp, "archive.py"))
     with open(path, "w") as f:
         f.write(src)
     spec = importlib.util.spec_from_file_location("factory_goldencopy", path)
