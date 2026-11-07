@@ -1,0 +1,29 @@
+name: Strategy Factory - Diagnose NSE Bhavcopy
+
+on:
+  workflow_dispatch:
+
+# Manual-only, read-only diagnostic (CE-6-02). No schedule, no commits, no
+# secrets, no uploads -- the log is the output. Checks whether a GitHub Actions
+# runner can fetch NSE's official end-of-day bhavcopy (5 requests, one per
+# recent weekday). This sandbox cannot reach NSE; Actions runners can try.
+# See tools/diagnose_nse_bhavcopy.py. Last log line: VERDICT: REACHABLE|BLOCKED|MIXED.
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run diagnostic
+        run: python tools/diagnose_nse_bhavcopy.py
