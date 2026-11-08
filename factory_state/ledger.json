@@ -181,7 +181,7 @@
   "event_cement_t30": {
    "rung": 0,
    "days_on_rung": 88,
-   "equity": 1.0129153514564242,
+   "equity": 1.0115985614995309,
    "peak": 1.0140409368963792,
    "positions": {
     "AMBUJACEM.NS": 0.16666666666666666,
@@ -646,7 +646,7 @@
   "event_cement_t40": {
    "rung": 0,
    "days_on_rung": 88,
-   "equity": 0.9870757869588467,
+   "equity": 0.9857925884358002,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -1104,7 +1104,7 @@
   "event_cement_t50": {
    "rung": 0,
    "days_on_rung": 88,
-   "equity": 0.9870757869588467,
+   "equity": 0.9857925884358002,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -1562,7 +1562,7 @@
   "event_infra_t30": {
    "rung": 0,
    "days_on_rung": 88,
-   "equity": 0.9860592886027544,
+   "equity": 0.9847774115275708,
    "peak": 1.0,
    "positions": {},
    "trades": 2,
@@ -2020,7 +2020,7 @@
   "event_infra_t40": {
    "rung": 0,
    "days_on_rung": 88,
-   "equity": 0.9870757869588467,
+   "equity": 0.9857925884358002,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -2478,7 +2478,7 @@
   "event_infra_t50": {
    "rung": 0,
    "days_on_rung": 88,
-   "equity": 0.9870757869588467,
+   "equity": 0.9857925884358002,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -2936,7 +2936,7 @@
   "event_steel_t30": {
    "rung": 0,
    "days_on_rung": 88,
-   "equity": 0.9939867933758563,
+   "equity": 0.9926946105444677,
    "peak": 1.0,
    "positions": {},
    "trades": 6,
@@ -3394,7 +3394,7 @@
   "event_steel_t40": {
    "rung": 0,
    "days_on_rung": 88,
-   "equity": 1.015726428246051,
+   "equity": 1.0144059838893311,
    "peak": 1.015726428246051,
    "positions": {},
    "trades": 2,
@@ -3852,7 +3852,7 @@
   "event_steel_t50": {
    "rung": 0,
    "days_on_rung": 88,
-   "equity": 1.015726428246051,
+   "equity": 1.0144059838893311,
    "peak": 1.015726428246051,
    "positions": {},
    "trades": 2,
@@ -4310,7 +4310,7 @@
   "mom_cement_lb40": {
    "rung": 0,
    "days_on_rung": 41,
-   "equity": 0.9880632755304564,
+   "equity": 0.9867787932722668,
    "peak": 1.0,
    "positions": {
     "ULTRACEMCO.NS": 0.5,
@@ -4536,7 +4536,7 @@
   "mom_cement_lb60": {
    "rung": 0,
    "days_on_rung": 41,
-   "equity": 0.9785128078029989,
+   "equity": 0.977240741152855,
    "peak": 1.0,
    "positions": {
     "ULTRACEMCO.NS": 0.5,
@@ -5588,7 +5588,7 @@
   "mom_pipes_tiles_lb60": {
    "rung": 0,
    "days_on_rung": 35,
-   "equity": 0.98394750301882,
+   "equity": 0.9826683712648955,
    "peak": 1.020466086487553,
    "positions": {
     "KAJARIACER.NS": 1.0
@@ -5978,7 +5978,7 @@
   "input_cost_lag": {
    "rung": 0,
    "days_on_rung": 88,
-   "equity": 0.9619441225808285,
+   "equity": 0.9606935952214735,
    "peak": 1.0116613804011818,
    "positions": {},
    "trades": 10,
@@ -6795,7 +6795,7 @@
   "input_cost_crude_cement": {
    "rung": 0,
    "days_on_rung": 51,
-   "equity": 1.0223386822947689,
+   "equity": 1.0210096420077857,
    "peak": 1.0223386822947689,
    "positions": {
     "ULTRACEMCO.NS": 0.14285714285714285,
@@ -7076,7 +7076,7 @@
   "input_cost_crude_steel": {
    "rung": 0,
    "days_on_rung": 51,
-   "equity": 0.9911351942401526,
+   "equity": 0.9898467184876405,
    "peak": 1.0,
    "positions": {
     "TATASTEEL.NS": 0.25,
@@ -7779,7 +7779,7 @@
   "event_cement_t17": {
    "rung": 0,
    "days_on_rung": 4,
-   "equity": 1.0710319401385413,
+   "equity": 1.0696395986163612,
    "peak": 1.0710319401385413,
    "positions": {
     "AMBUJACEM.NS": 0.16666666666666666,
@@ -7824,7 +7824,7 @@
   "event_infra_t20": {
    "rung": 0,
    "days_on_rung": 49,
-   "equity": 1.0163948983393616,
+   "equity": 1.0150735849715204,
    "peak": 1.0225560716607385,
    "positions": {
     "IRB.NS": 0.25,
@@ -8092,7 +8092,7 @@
   "event_steel_t22": {
    "rung": 0,
    "days_on_rung": 49,
-   "equity": 0.9365716053039117,
+   "equity": 0.9353540622170167,
    "peak": 1.007384125775764,
    "positions": {},
    "trades": 12,
@@ -8355,7 +8355,7 @@
   "mom_nifty100_lb90": {
    "rung": 0,
    "days_on_rung": 48,
-   "equity": 0.9218009997069083,
+   "equity": 0.9206026584072894,
    "peak": 1.0,
    "positions": {
     "DIVISLAB.NS": 0.1,
