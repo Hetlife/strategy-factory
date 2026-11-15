@@ -181,7 +181,7 @@
   "event_cement_t30": {
    "rung": 0,
    "days_on_rung": 91,
-   "equity": 1.0157196282717689,
+   "equity": 1.0143991927550156,
    "peak": 1.0157196282717689,
    "positions": {},
    "trades": 4,
@@ -654,7 +654,7 @@
   "event_cement_t40": {
    "rung": 0,
    "days_on_rung": 91,
-   "equity": 0.9857925884358002,
+   "equity": 0.9845110580708337,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -1127,7 +1127,7 @@
   "event_cement_t50": {
    "rung": 0,
    "days_on_rung": 91,
-   "equity": 0.9857925884358002,
+   "equity": 0.9845110580708337,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -1600,7 +1600,7 @@
   "event_infra_t30": {
    "rung": 0,
    "days_on_rung": 91,
-   "equity": 0.9847774115275708,
+   "equity": 0.983497200892585,
    "peak": 1.0,
    "positions": {},
    "trades": 2,
@@ -2073,7 +2073,7 @@
   "event_infra_t40": {
    "rung": 0,
    "days_on_rung": 91,
-   "equity": 0.9857925884358002,
+   "equity": 0.9845110580708337,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -2546,7 +2546,7 @@
   "event_infra_t50": {
    "rung": 0,
    "days_on_rung": 91,
-   "equity": 0.9857925884358002,
+   "equity": 0.9845110580708337,
    "peak": 1.0,
    "positions": {},
    "trades": 0,
@@ -3019,7 +3019,7 @@
   "event_steel_t30": {
    "rung": 0,
    "days_on_rung": 91,
-   "equity": 0.9926946105444677,
+   "equity": 0.9914041075507599,
    "peak": 1.0,
    "positions": {},
    "trades": 6,
@@ -3492,7 +3492,7 @@
   "event_steel_t40": {
    "rung": 0,
    "days_on_rung": 91,
-   "equity": 1.0144059838893311,
+   "equity": 1.013087256110275,
    "peak": 1.015726428246051,
    "positions": {},
    "trades": 2,
@@ -3965,7 +3965,7 @@
   "event_steel_t50": {
    "rung": 0,
    "days_on_rung": 91,
-   "equity": 1.0144059838893311,
+   "equity": 1.013087256110275,
    "peak": 1.015726428246051,
    "positions": {},
    "trades": 2,
@@ -4438,7 +4438,7 @@
   "mom_cement_lb40": {
    "rung": 0,
    "days_on_rung": 44,
-   "equity": 0.9843547079610868,
+   "equity": 0.9830750468407374,
    "peak": 1.0,
    "positions": {
     "SHREECEM.NS": 0.5,
@@ -4679,7 +4679,7 @@
   "mom_cement_lb60": {
    "rung": 0,
    "days_on_rung": 44,
-   "equity": 0.974840086677641,
+   "equity": 0.97357279456496,
    "peak": 1.0,
    "positions": {
     "ULTRACEMCO.NS": 0.5,
@@ -5746,7 +5746,7 @@
   "mom_pipes_tiles_lb60": {
    "rung": 0,
    "days_on_rung": 38,
-   "equity": 0.9959015818519976,
+   "equity": 0.9946069097955901,
    "peak": 1.020466086487553,
    "positions": {
     "KAJARIACER.NS": 1.0
@@ -6151,7 +6151,7 @@
   "input_cost_lag": {
    "rung": 0,
    "days_on_rung": 91,
-   "equity": 0.9606935952214735,
+   "equity": 0.9594446935476856,
    "peak": 1.0116613804011818,
    "positions": {},
    "trades": 10,
@@ -6983,7 +6983,7 @@
   "input_cost_crude_cement": {
    "rung": 0,
    "days_on_rung": 54,
-   "equity": 1.0252156255443796,
+   "equity": 1.023882845231172,
    "peak": 1.0277157647977602,
    "positions": {
     "ULTRACEMCO.NS": 0.14285714285714285,
@@ -7279,7 +7279,7 @@
   "input_cost_crude_steel": {
    "rung": 0,
    "days_on_rung": 54,
-   "equity": 0.9995596012317116,
+   "equity": 0.9982601737501104,
    "peak": 1.0,
    "positions": {
     "TATASTEEL.NS": 0.25,
@@ -8012,7 +8012,7 @@
   "event_cement_t17": {
    "rung": 0,
    "days_on_rung": 7,
-   "equity": 1.073997113915309,
+   "equity": 1.072600917667219,
    "peak": 1.073997113915309,
    "positions": {},
    "trades": 2,
@@ -8065,7 +8065,7 @@
   "event_infra_t20": {
    "rung": 0,
    "days_on_rung": 52,
-   "equity": 1.0611020721352837,
+   "equity": 1.0597226394415078,
    "peak": 1.0611020721352837,
    "positions": {},
    "trades": 12,
@@ -8343,7 +8343,7 @@
   "event_steel_t22": {
    "rung": 0,
    "days_on_rung": 52,
-   "equity": 0.9549662814284219,
+   "equity": 0.953724825262565,
    "peak": 1.007384125775764,
    "positions": {
     "JSWSTEEL.NS": 0.3333333333333333,
@@ -8625,7 +8625,7 @@
   "mom_nifty100_lb90": {
    "rung": 0,
    "days_on_rung": 51,
-   "equity": 0.9306350198150006,
+   "equity": 0.9294251942892412,
    "peak": 1.0,
    "positions": {
     "DIVISLAB.NS": 0.1,

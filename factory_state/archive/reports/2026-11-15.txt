@@ -1,0 +1,38 @@
+               strategy  rung capital  days  trades  equity  sharpe    dd   verdict paper_pnl  post_tax_expectancy tax_basis
+        nifty_benchmark     0    Rs 0    54       1   1.017    0.63  0.0% BENCHMARK Rs +1,681             0.000219      STCG
+   mom_pipes_tiles_lb60     0    Rs 0    38       7   0.995    0.33 -2.5%      hold   Rs -539             0.000263      STCG
+        mom_cement_lb40     0    Rs 0    44      16   0.983    0.02 -1.7%      hold Rs -1,692             0.000013      STCG
+        mom_cement_lb60     0    Rs 0    44      12   0.974   -0.22 -2.6%      hold Rs -2,643            -0.000155      STCG
+        event_steel_t22     0    Rs 0    52      13   0.954   -1.01 -5.3%      hold Rs -4,628            -0.000702      STCG
+      mom_nifty100_lb90     0    Rs 0    51      43   0.929   -1.67 -7.1%      hold Rs -7,057            -0.000861      STCG
+       event_cement_t30     0    Rs 0    91       4   1.014     NaN -0.1%      hold Rs +1,440             0.006474      STCG
+       event_cement_t40     0    Rs 0    91       0   0.985     NaN -1.5%      hold Rs -1,549             0.000000      STCG
+       event_cement_t50     0    Rs 0    91       0   0.985     NaN -1.5%      hold Rs -1,549             0.000000      STCG
+        event_infra_t30     0    Rs 0    91       2   0.983     NaN -1.7%      hold Rs -1,650             0.000594      STCG
+        event_infra_t40     0    Rs 0    91       0   0.985     NaN -1.5%      hold Rs -1,549             0.000000      STCG
+        event_infra_t50     0    Rs 0    91       0   0.985     NaN -1.5%      hold Rs -1,549             0.000000      STCG
+        event_steel_t30     0    Rs 0    91       6   0.991     NaN -0.9%      hold   Rs -860             0.001674      STCG
+        event_steel_t40     0    Rs 0    91       2   1.013     NaN -0.3%      hold Rs +1,309             0.011998      STCG
+        event_steel_t50     0    Rs 0    91       2   1.013     NaN -0.3%      hold Rs +1,309             0.011998      STCG
+         input_cost_lag     0    Rs 0    91      10   0.959     NaN -5.2%      hold Rs -4,056            -0.000868      STCG
+input_cost_crude_cement     0    Rs 0    54       3   1.024     NaN -0.4%      hold Rs +2,388             0.005655      STCG
+ input_cost_crude_steel     0    Rs 0    54       3   0.998     NaN -0.2%      hold   Rs -174             0.002260      STCG
+       event_cement_t17     0    Rs 0     7       2   1.073     NaN -0.1%      hold Rs +7,260             0.011967      STCG
+        event_infra_t20     0    Rs 0    52      12   1.060     NaN -0.1%      hold Rs +5,972             0.005474      STCG
+
+Note: post_tax_expectancy/tax_basis are ranking context only, NOT part of the PROMOTE/DEMOTE verdict above (verdict stays pre-tax per RULES). The Rs 1.25L/yr LTCG exemption is annual and account-wide, not credited per-strategy here -- see post_tax_expectancy()'s docstring.
+
+Rungs: 0=paper, then Rs 25,000 / Rs 50,000 / Rs 100,000 / Rs 200,000 per strategy. Real-money rungs mean YOU place/fund those trades deliberately.
+
+--- Risk Manager (advisory, read-only) ---
+  Real-money exposure across all rungs: Rs 0
+  Sector concentration (live contestants): cement: 8 live, infra: 4 live, nifty100: 1 live, pipes_tiles: 1 live, steel: 5 live, unknown: 1 live
+  Drawdown correlation check: 0/20 live contestants in elevated drawdown -- not flagged.
+  Portfolio (all profiles): real Rs 0 [A: Rs 0, B: Rs 0, C: Rs 0]; paper-view blended max DD -0.48%
+
+--- Weekly digest (plain-English) ---
+  20 strategies are currently active.
+  No strategy earned a promotion this round -- that's normal and expected in Phase 0/1, not a failure.
+  Best performer right now: event_cement_t17 (equity 1.073, meaning a gain of 7.3% since it started).
+  Weakest performer: mom_nifty100_lb90 (equity 0.929).
+  Reminder: every strategy above rung 0 is still paper money unless you personally funded and placed a real trade -- nothing here spends real capital on its own.
